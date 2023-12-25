@@ -24,16 +24,15 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 
 5. **Anpassung der Formatierung in `sheet.js`:**
    - Du kannst die Formatierung der Bestenlisten mit dem `sheet.js`-Skript anpassen.
-   - Jederzeit kannst du die Formatierung mit `formatSheet()` in `main.js` überarbeiten.
 
 ## Hinweise
 
 - Stelle sicher, dass du die notwendigen Berechtigungen für den Zugriff auf Google Sheets und das Ausführen von Skripten erteilt hast.
-- Du kannst die Spaltenbreite automatisch anpassen, indem du `automaticColumnWidth` in `main.js` auf `true` setzt.
+- Um eine Überlastung des DSV-Servers zu verhindern, setze den Trigger nicht all zu oft.
 
 ## Nutzung
 
 - Führe die Funktion `update` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
-- Die Funktion `formatSheet()` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
+- Die Funktion `formatSheet` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
 
 Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein!
