@@ -1,4 +1,4 @@
-# Bestenlisten-Aktualisierungsprogramm für Schwimmverein
+# Automatische Bestenlisten-Aktualisierung für Schwimmverein
 
 Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines Schwimmvereins mithilfe der Daten des Deutschen Schwimmverbands (DSV). Automatisiere den Prozess, erweitere deinen Code in Google Apps Script und halte die Bestenlisten deines Vereins stets auf dem neuesten Stand!
 
