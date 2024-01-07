@@ -67,11 +67,10 @@ class Data {
         this.poolLength = poolLength;
         this.currentSheet = spreadsheet.getSheetByName(sheetName);
         this.range = spreadsheet.getRangeByName(this.stroke + this.gender + this.poolLength + this.distance + 'm');
-        if (!this.range) {
+        if(!this.range) {
             sheet();
             this.range = spreadsheet.getRangeByName(this.stroke + this.gender + this.poolLength + this.distance + 'm');
         }
-        Logger.log(this.stroke + this.gender + this.poolLength + this.distance + 'm');
         this.leaderboard = _formatValues(this.range.getValues());
         _fillEmptyObjects(this.leaderboard);
         this.oldLeaderboard = _formatValues(this.range.getValues());
@@ -147,7 +146,7 @@ class Data {
         let columnA = this.currentSheet.getRange('A' + (parseInt(cellForUpdateDate.row) + 1) + ':' + 'A' + (parseInt(cellForUpdateDate.row) + 100));
         let currentValues = columnA.getValues();
 
-        if (currentValues[49][0] !== '') {
+        if (currentValues[50 - this.newRecords.length][0] !== '') {
             columnA.clear();
             currentValues = columnA.getValues();
         }
@@ -184,6 +183,10 @@ class Data {
 
         let year = String(new Date().getFullYear()).substring(0, 4);
 
+        let season = String(new Date().getDay());
+
+        Logger.log(season);
+
         // Create POST parameters
         let payload = {
             "ClubID": clubId,
@@ -193,7 +196,7 @@ class Data {
             "ctl00$ContentSection$_genderRadioButtonList": this.gender.substring(0, 1),
             "ctl00$ContentSection$_courseRadioButtonList": (this.poolLength === "Long course") ? "L" : "S",
             "ctl00$ContentSection$_eventDropDownList": `${this.distance + this.stroke.substring(0, 1)}|GL`,
-            "ctl00$ContentSection$_timerangeDropDownList": `01.01.${year}|31.12.${year}`
+            "ctl00$ContentSection$_timerangeDropDownList": `01.06.${year}|31.05.${year}`
         };
 
         // Configure Fetch call
@@ -242,7 +245,7 @@ function _findUpdateCell() {
         let currentCellValue = sheet.getRange('A' + i).getValue();
         let nextCellValue = sheet.getRange('A' + (i + 1)).getValue();
         if ((currentCellValue === '' && nextCellValue === '') || String(currentCellValue).includes('Zuletzt')) {
-            return {column: 'A', row: !String(currentCellValue).includes('Zuletzt') ? String(i + 1) : String(i)};
+            return { column: 'A', row: !String(currentCellValue).includes('Zuletzt') ? String(i + 1) : String(i) };
         }
         ++i;
     }
@@ -251,7 +254,7 @@ function _findUpdateCell() {
 // Fill empty objects
 function _fillEmptyObjects(arr) {
     while (arr.length < numberOfRankings) {
-        arr.push({name: " ", time: " ", birthYear: " ", location: "", date: " "});
+        arr.push({ name: " ", time: " ", birthYear: " ", location: "", date: " " });
     }
 }
 
@@ -272,7 +275,7 @@ function _extractData(context, begin, end) {
 function _convertToArray(elements, top) {
     return elements.slice(0, top).map(element => {
         let [, position, name, birthYear, time, , location, date] = _splitElement(element, '<td>', '</td>');
-        return {name, time, birthYear, location, date: date.substring(6)};
+        return { name, time, birthYear, location, date: date.substring(6) };
     });
 }
 
