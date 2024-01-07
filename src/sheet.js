@@ -74,6 +74,8 @@ function _formatSheet() {
 
     let sheet = spreadsheet.getSheetByName(sheetName);
 
+    sheet.getDataRange().clearFormat();
+
     // Format the entire sheet
     for (var col = 1; col <= sheet.getMaxColumns(); col++) {
         let fullSheet = sheet.getRange(1, col, sheet.getMaxRows(), 1)
@@ -95,7 +97,7 @@ function _formatSheet() {
         headerStroke.merge();
         headerStroke.setBackground(colorSwimPosition);
         headerStroke.setFontColor(textColorSwimPosition);
-        headerStroke.setValue(discipline.stroke);
+        headerStroke.setValue(discipline.position);
 
         // Gender headers
         row++;
@@ -197,19 +199,21 @@ function _findStartCell(stroke) {
     let sheet = spreadsheet.getSheetByName(sheetName)
     let i = 1;
 
+    if(sheet.getRange('A' + 1).getValue() === stroke) {
+        return { column: 'A', row: '1'};
+    }
+
+    if(sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + 1).getValue() === stroke) {
+        return { column: _increaseChar('A', categories.length * 2 + 1), row: '1'};
+    }
+
     while (true) {
         if ((sheet.getRange('A' + i).getValue() === '' && sheet.getRange('A' + (i + 1)).getValue() === '') || sheet.getRange('A' + i).getValue() === stroke) {
-            return {
-                column: 'A',
-                row: i > 1 && sheet.getRange('A' + i).getValue() !== stroke ? String(i + 1) : String(i)
-            };
+            return { column: 'A', row: i > 1 && sheet.getRange('A' + i).getValue() !== stroke ? String(i + 1) : String(i) };
         }
 
         if (_increaseChar('A', categories.length * 4).charCodeAt(0) <= 90 && ((sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() === '' && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + (i + 1)).getValue() === '') || sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() === stroke)) {
-            return {
-                column: _increaseChar('A', categories.length * 2 + 1),
-                row: i > 1 && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() !== stroke ? String(i + 1) : String(i)
-            };
+            return { column: _increaseChar('A', categories.length * 2 + 1), row: i > 1 && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() !== stroke ? String(i + 1) : String(i) };
         }
         ++i;
     }
