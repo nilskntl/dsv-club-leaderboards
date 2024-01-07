@@ -183,10 +183,6 @@ class Data {
 
         let year = String(new Date().getFullYear()).substring(0, 4);
 
-        let season = String(new Date().getDay());
-
-        Logger.log(season);
-
         // Create POST parameters
         let payload = {
             "ClubID": clubId,
