@@ -183,8 +183,6 @@ class Data {
 
         let year = String(new Date().getFullYear()).substring(0, 4);
 
-        year = 2023;
-
         // Create POST parameters
         let payload = {
             "ClubID": clubId,
