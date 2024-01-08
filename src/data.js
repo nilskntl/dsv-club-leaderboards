@@ -146,7 +146,7 @@ class Data {
         let columnA = this.currentSheet.getRange('A' + (parseInt(cellForUpdateDate.row) + 1) + ':' + 'A' + (parseInt(cellForUpdateDate.row) + 100));
         let currentValues = columnA.getValues();
 
-        if (currentValues[50 - this.newRecords.length][0] !== '') {
+        if (currentValues[49][0] !== '') {
             columnA.clear();
             currentValues = columnA.getValues();
         }
@@ -183,6 +183,8 @@ class Data {
 
         let year = String(new Date().getFullYear()).substring(0, 4);
 
+        year = 2023;
+
         // Create POST parameters
         let payload = {
             "ClubID": clubId,
@@ -190,9 +192,9 @@ class Data {
             "__VIEWSTATE": viewstate,
             "__EVENTVALIDATION": eventValidation,
             "ctl00$ContentSection$_genderRadioButtonList": this.gender.substring(0, 1),
-            "ctl00$ContentSection$_courseRadioButtonList": (this.poolLength === "Long course") ? "L" : "S",
+            "ctl00$ContentSection$_courseRadioButtonList": (this.poolLength === "Langbahn") ? "L" : "S",
             "ctl00$ContentSection$_eventDropDownList": `${this.distance + this.stroke.substring(0, 1)}|GL`,
-            "ctl00$ContentSection$_timerangeDropDownList": `01.06.${year}|31.05.${year}`
+            "ctl00$ContentSection$_timerangeDropDownList": `01.01.${year}|31.12.${year}`
         };
 
         // Configure Fetch call
