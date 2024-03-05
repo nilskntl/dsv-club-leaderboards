@@ -181,7 +181,16 @@ class Data {
         // Determine event validation
         let eventValidation = _extractData(loginContext, '__EVENTVALIDATION" value="', '" />');
 
+        // Determine current year
         let year = String(new Date().getFullYear()).substring(0, 4);
+
+        // Determine current month
+        let month = parseInt(new Date().getUTCMonth());
+
+        // If the current month is greater than or equal to 6, the year is incremented by cause a new season has started
+        if(month >= 6) {
+            year += 1;
+        }
 
         // Create POST parameters
         let payload = {
@@ -192,7 +201,7 @@ class Data {
             "ctl00$ContentSection$_genderRadioButtonList": this.gender.substring(0, 1),
             "ctl00$ContentSection$_courseRadioButtonList": (this.poolLength === "Langbahn") ? "L" : "S",
             "ctl00$ContentSection$_eventDropDownList": `${this.distance + this.stroke.substring(0, 1)}|GL`,
-            "ctl00$ContentSection$_timerangeDropDownList": `01.01.${year}|31.12.${year}`
+            "ctl00$ContentSection$_timerangeDropDownList": `01.06.${year - 1}|31.05.${year}`
         };
 
         // Configure Fetch call
