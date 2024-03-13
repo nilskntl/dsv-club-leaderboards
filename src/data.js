@@ -1,10 +1,14 @@
-// Remember cell for the update date
+/**
+ * Remember the cell for the last update date
+ */
 let cellForUpdateDate = {};
 
-// Function to update the data
 function updateData() {
+    /**
+     * Update data for all disciplines and distances
+     */
 
-    // Get current spreadsheet
+        // Get current spreadsheet
     let currentSheet = spreadsheet.getSheetByName(sheetName);
 
     // Check if the sheet exists
@@ -56,8 +60,15 @@ function updateData() {
     }
 }
 
-// Class for data processing
 class Data {
+    /**
+     * Data class
+     * Contains all necessary methods for data fetching processing
+     * @param stroke
+     * @param distance
+     * @param gender
+     * @param poolLength
+     */
 
     constructor(stroke, distance, gender, poolLength) {
 
@@ -67,7 +78,7 @@ class Data {
         this.poolLength = poolLength;
         this.currentSheet = spreadsheet.getSheetByName(sheetName);
         this.range = spreadsheet.getRangeByName(this.stroke + this.gender + this.poolLength + this.distance + 'm');
-        if(!this.range) {
+        if (!this.range) {
             sheet();
             this.range = spreadsheet.getRangeByName(this.stroke + this.gender + this.poolLength + this.distance + 'm');
         }
@@ -79,8 +90,10 @@ class Data {
 
     }
 
-    // Perform all updates
     updateAll() {
+        /**
+         * Perform all necessary steps to update the data
+         */
         this.updateLeaderboard();
         this.updateNewRecords();
         this.writeLeaderboardToSheet();
@@ -89,10 +102,12 @@ class Data {
         }
     }
 
-    // Update leaderboard
     updateLeaderboard() {
+        /**
+         * Update the leaderboard
+         */
 
-        // Get current values
+            // Get current values
         let currentLeaderboard = this.leaderboard;
         // Get new data
         let newLeaderboard = this._fetchNewData();
@@ -105,10 +120,14 @@ class Data {
         this.leaderboard = newLeaderboard;
     }
 
-    // Update new records
     updateNewRecords() {
+        /**
+         * Update new records (write new records separately to track changes)
+         * @returns {Array}
+         */
+
         // Filter objects that are in the new array but not in the old array
-        const differenceArray = this.leaderboard.filter(newObj => {
+        this.newRecords = this.leaderboard.filter(newObj => {
             // Check if the current object exists in the old array
             return !this.oldLeaderboard.some(oldObj => {
                 // Compare properties of the two objects
@@ -121,13 +140,13 @@ class Data {
                 );
             });
         });
-
-        this.newRecords = differenceArray;
     }
 
-    // Write leaderboard to sheet
     writeLeaderboardToSheet() {
-        // Format values
+        /**
+         * Write leaderboard to sheet
+         */
+            // Format values
         let values = this.leaderboard.map(row => Object.values(row));
         // Transfer data to the table
         try {
@@ -137,8 +156,10 @@ class Data {
         }
     }
 
-    // Write new records to sheet
     writeNewRecordsToSheet() {
+        /**
+         * Write new records to sheet
+         */
         let currentDate = new Date();
         let formattedDate = Utilities.formatDate(currentDate, "GMT+1", "dd.MM.yyyy, HH:mm");
 
@@ -167,10 +188,13 @@ class Data {
         }
     }
 
-    // Fetch new data
     _fetchNewData() {
+        /**
+         * Fetch new data from the DSV website
+         * @returns {Array}
+         */
 
-        // Perform URL request for login
+            // Perform URL request for login
         let loginResponse = UrlFetchApp.fetch(`https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=${clubId}`, {});
 
         // Check if login was successful and extract session information
@@ -188,7 +212,7 @@ class Data {
         let month = parseInt(new Date().getUTCMonth());
 
         // If the current month is greater than or equal to 6, the year is incremented by cause a new season has started
-        if(month >= 6) {
+        if (month >= 6) {
             year += 1;
         }
 
@@ -223,12 +247,17 @@ class Data {
     }
 }
 
-/*
-Utils
-*/
+/**
+ Utils functions
+ */
 
-// Format values
+
 function _formatValues(values) {
+    /**
+     * Format values
+     * @param values
+     * @returns {Array}
+     */
     return values
         .filter(row => row[0] !== '')
         .map(row => ({
@@ -240,8 +269,10 @@ function _formatValues(values) {
         }));
 }
 
-// Find cell for the update date
 function _findUpdateCell() {
+    /**
+     * Find cell for the update date
+     */
 
     let sheet = spreadsheet.getSheetByName(sheetName);
 
@@ -250,53 +281,84 @@ function _findUpdateCell() {
         let currentCellValue = sheet.getRange('A' + i).getValue();
         let nextCellValue = sheet.getRange('A' + (i + 1)).getValue();
         if ((currentCellValue === '' && nextCellValue === '') || String(currentCellValue).includes('Zuletzt')) {
-            return { column: 'A', row: !String(currentCellValue).includes('Zuletzt') ? String(i + 1) : String(i) };
+            return {column: 'A', row: !String(currentCellValue).includes('Zuletzt') ? String(i + 1) : String(i)};
         }
         ++i;
     }
 }
 
-// Fill empty objects
 function _fillEmptyObjects(arr) {
+    /**
+     * Fill empty objects
+     */
     while (arr.length < numberOfRankings) {
-        arr.push({ name: " ", time: " ", birthYear: " ", location: "", date: " " });
+        arr.push({name: " ", time: " ", birthYear: " ", location: "", date: " "});
     }
 }
 
-// Split elements
 function _splitElement(input, begin, end) {
+    /**
+     * Split elements
+     * @param input input string
+     * @param begin begin string
+     * @param end end string
+     * @returns {Array}
+     */
     return input.split(begin).map(element => element.split(end)[0]);
 }
 
-// Extract data
 function _extractData(context, begin, end) {
+    /**
+     * Extract data from the raw HTML
+     * @param context raw HTML
+     * @param begin begin string
+     * @param end end string
+     * @returns {string} extracted data
+     */
     let startIndex = context.indexOf(begin);
     let endIndex = context.indexOf(end, startIndex);
     return context.substring(startIndex + begin.length, endIndex);
 
 }
 
-// Convert to array
 function _convertToArray(elements, top) {
+    /**
+     * Convert elements to array
+     * @param elements elements
+     * @param top top
+     * @returns {Array}
+     */
     return elements.slice(0, top).map(element => {
         let [, position, name, birthYear, time, , location, date] = _splitElement(element, '<td>', '</td>');
-        return { name, time, birthYear, location, date: date.substring(6) };
+        return {name, time, birthYear, location, date: date.substring(6)};
     });
 }
 
-// Sort by time
 function _sortByTime(arr) {
+    /**
+     * Sort the array by time (from fastest to slowest)
+     * @param arr array
+     * @returns {Array} sorted array
+     */
     arr.sort((a, b) => convertStringToTime(a.time) - convertStringToTime(b.time));
     return arr;
 }
 
-// Convert time string to number
 function convertStringToTime(timeString) {
+    /**
+     * Convert time string to integer. The integer is not in a correct format for time, but it is sufficient for comparison.
+     * @param timeString time string
+     * @returns {number} time in an integer format
+     */
     return parseInt(timeString.replace(/[:,]/g, ""));
 }
 
-// Remove duplicates
 function _removeDuplicates(arr) {
+    /**
+     * Remove duplicates from the array
+     * @param arr array
+     * @returns {Array} array without duplicates
+     */
     let uniqueObjects = {};
     for (let object of arr) {
         let name = object.name;

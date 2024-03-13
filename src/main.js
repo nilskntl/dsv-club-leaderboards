@@ -1,11 +1,14 @@
-/*
-Settings
+/**
+* Settings
 */
 const clubId = '7985'; // Club-ID
-const numberOfRankings = 5; // Wieviele sollen pro Strecke angezeigt werden (Top3, Top4, Top5 ...)
+const numberOfRankings = 5; // How many people should be displayed in the rankings
 const sheetName = 'Bestenlisten';
+const automaticColumnWidth = false;
 
-// Disciplines
+/**
+ * Disciplines and distances for the different strokes
+ */
 const disciplines = [
     {position: "Freistil", distances: ["50", "100", "200", "400", "800", "1500"]},
     {position: "Schmetterling", distances: ["50", "100", "200"]},
@@ -14,7 +17,10 @@ const disciplines = [
     {position: "Lagen", distances: ["100", "200", "400"]}
 ]
 
-// Categories and width of the columns
+/**
+ * Categories for the sheet and the width of the cells
+ * The width of the cells is only relevant if automaticColumnWidth is set to false
+ */
 const categories = [
     {categorie: 'Platz', cellWidth: 75},
     {categorie: 'Name', cellWidth: 150},
@@ -24,18 +30,19 @@ const categories = [
     {categorie: 'Datum', cellWidth: 75}
 ]
 
-// Automatically adjusts the width of the columns to the content, the width of the categories then no longer has any influence
-const automaticColumnWidth = false;
-
-// Update the current data
 function update() {
+    /**
+     * Update the data (main function)
+     */
     Logger.log('Start by updating the data...');
     Logger.log('---------------');
     updateData();
     Logger.log('All data updated. Program is terminated.');
 }
 
-// Format the current sheet
 function formatSheet() {
+    /**
+     * Format the current sheet
+     */
     sheet();
 }

@@ -1,21 +1,29 @@
-// Access the current sheet
+/**
+ * Get access to the active spreadsheet
+ */
 const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-// Main function to create and format the sheet
 function sheet() {
+    /**
+     * Main function to create and format the sheet
+     */
     _createSheet();
     _formatSheet();
 }
 
-// Automatically adjust the width of all columns based on content
 function resizeColumnsAutomatically() {
+    /**
+     * Automatically adjust the width of all columns based on content
+     */
     let sheet = spreadsheet.getSheetByName(sheetName);
     sheet.autoResizeColumns(1, sheet.getLastColumn());
 }
 
-// Function to create a sheet if it doesn't exist
 function _createSheet() {
-    // Check if a sheet with the name "Test" already exists
+    /**
+     * Function to create a new sheet if it doesn't already exist
+     */
+        // Check if a sheet with the name "Test" already exists
     let sheet = spreadsheet.getSheetByName(sheetName);
 
     // If the sheet doesn't exist, create it
@@ -26,13 +34,9 @@ function _createSheet() {
     }
 }
 
-// Function to automatically adjust column width based on content
-function _automatischeSpaltenAnpassung() {
-    let sheet = spreadsheet.getSheetByName(sheetName);
-    sheet.autoResizeColumns(1, sheet.getLastColumn());
-}
-
-// Constants for styling and coloring
+/**
+ * Constants for styling and coloring
+ */
 const standardAlignment = 'center';
 const alignmentNames = 'left'
 const font = 'Questrial';
@@ -64,12 +68,16 @@ const textColorLaneLengthMale = secondaryTextColor;
 const textColorFemale = secondaryTextColor;
 const textColorMale = secondaryTextColor;
 
-// Arrays for different attributes
+/**
+ * Arrays for different disciplines and categories
+ */
 const laneLength = ['Kurzbahn', 'Langbahn'];
 const genders = ['Weiblich', 'Männlich']
 
-// Main function to format the sheet
 function _formatSheet() {
+    /**
+     * Function to format the sheet
+     */
     Logger.log('Formatting sheet...');
 
     let sheet = spreadsheet.getSheetByName(sheetName);
@@ -194,32 +202,46 @@ function _formatSheet() {
     Logger.log('---------------');
 }
 
-// Function to find the starting cell for a particular stroke
 function _findStartCell(stroke) {
+    /**
+     * Function to find the first empty cell (followed by another empty cell) in the first column. If the stroke
+     * already exists, return the cell of the stroke
+     * @param {string} stroke - The stroke to find the first empty cell for
+     */
     let sheet = spreadsheet.getSheetByName(sheetName)
     let i = 1;
 
-    if(sheet.getRange('A' + 1).getValue() === stroke) {
-        return { column: 'A', row: '1'};
+    if (sheet.getRange('A' + 1).getValue() === stroke) {
+        return {column: 'A', row: '1'};
     }
 
-    if(sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + 1).getValue() === stroke) {
-        return { column: _increaseChar('A', categories.length * 2 + 1), row: '1'};
+    if (sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + 1).getValue() === stroke) {
+        return {column: _increaseChar('A', categories.length * 2 + 1), row: '1'};
     }
 
     while (true) {
         if ((sheet.getRange('A' + i).getValue() === '' && sheet.getRange('A' + (i + 1)).getValue() === '') || sheet.getRange('A' + i).getValue() === stroke) {
-            return { column: 'A', row: i > 1 && sheet.getRange('A' + i).getValue() !== stroke ? String(i + 1) : String(i) };
+            return {
+                column: 'A',
+                row: i > 1 && sheet.getRange('A' + i).getValue() !== stroke ? String(i + 1) : String(i)
+            };
         }
 
         if (_increaseChar('A', categories.length * 4).charCodeAt(0) <= 90 && ((sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() === '' && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + (i + 1)).getValue() === '') || sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() === stroke)) {
-            return { column: _increaseChar('A', categories.length * 2 + 1), row: i > 1 && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() !== stroke ? String(i + 1) : String(i) };
+            return {
+                column: _increaseChar('A', categories.length * 2 + 1),
+                row: i > 1 && sheet.getRange(_increaseChar('A', categories.length * 2 + 1) + i).getValue() !== stroke ? String(i + 1) : String(i)
+            };
         }
         ++i;
     }
 }
 
-// Function to increase a character by a specified value
 function _increaseChar(char, increaseBy) {
+    /**
+     * Function to increase a character by a certain amount
+     * @param {string} char - The character to increase
+     * @param {number} increaseBy - The amount to increase the character by
+     */
     return String.fromCharCode(char.charCodeAt(0) + increaseBy);
 }
