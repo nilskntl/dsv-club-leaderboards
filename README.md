@@ -35,4 +35,4 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 - Führe die Funktion `update` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
 - Die Funktion `formatSheet` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
 
-Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein!
+Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein! Ein Beispiel der Implementierung findet man auf https://www.wsg-wunstorf.de/bestenlisten
