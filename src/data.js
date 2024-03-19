@@ -183,7 +183,7 @@ class Data {
 
         // Write new records to cell
         for (let x = 0; x < this.newRecords.length; ++x) {
-            this.currentSheet.getRange('A' + (start + x)).setValue("Zuletzt hinzugefügt am " + formattedDate + ": " + this.newRecords[x].name + ", " + this.distance + "m " + this.stroke + ' (' + this.poolLength + ') ,' + this.newRecords[x].time);
+            this.currentSheet.getRange('A' + (start + x)).setValue("Zuletzt hinzugefügt am " + formattedDate + ": " + this.newRecords[x].name + ", " + this.distance + "m " + this.stroke + ' (' + this.poolLength + '); ' + this.newRecords[x].time + '.');
             this.currentSheet.getRange('A' + (start + x) + ':' + _increaseChar('A', categories.length * 2 - 1) + (start + x)).merge();
         }
     }
@@ -201,7 +201,7 @@ class Data {
         let loginContext = loginResponse.getContentText();
 
         // Determine viewstate
-        let viewstate = _extractData(loginContext, '__VIEWSTATE" value="', '" />');
+        let viewState = _extractData(loginContext, '__VIEWSTATE" value="', '" />');
         // Determine event validation
         let eventValidation = _extractData(loginContext, '__EVENTVALIDATION" value="', '" />');
 
@@ -220,7 +220,7 @@ class Data {
         let payload = {
             "ClubID": clubId,
             "__EVENTTARGET": "ctl00$ContentSection$_rankingsButton",
-            "__VIEWSTATE": viewstate,
+            "__VIEWSTATE": viewState,
             "__EVENTVALIDATION": eventValidation,
             "ctl00$ContentSection$_genderRadioButtonList": this.gender.substring(0, 1),
             "ctl00$ContentSection$_courseRadioButtonList": (this.poolLength === "Langbahn") ? "L" : "S",
@@ -297,7 +297,7 @@ function _fillEmptyObjects(arr) {
 }
 
 function _splitElement(input, begin, end) {
-    /**
+    /**viewstate
      * Split elements
      * @param input input string
      * @param begin begin string
