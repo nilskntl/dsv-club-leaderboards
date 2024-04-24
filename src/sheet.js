@@ -85,7 +85,7 @@ function _formatSheet() {
     sheet.getDataRange().clearFormat();
 
     // Format the entire sheet
-    for (var col = 1; col <= sheet.getMaxColumns(); col++) {
+    for (let col = 1; col <= sheet.getMaxColumns(); col++) {
         let fullSheet = sheet.getRange(1, col, sheet.getMaxRows(), 1)
 
         fullSheet.setHorizontalAlignment(standardAlignment);
