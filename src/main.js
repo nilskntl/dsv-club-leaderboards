@@ -22,12 +22,12 @@ const disciplines = [
  * The width of the cells is only relevant if automaticColumnWidth is set to false
  */
 const categories = [
-    {categorie: 'Platz', cellWidth: 75},
-    {categorie: 'Name', cellWidth: 150},
+    {categorie: 'Platz', cellWidth: 50},
+    {categorie: 'Name', cellWidth: 200},
     {categorie: 'Zeit', cellWidth: 100},
-    {categorie: 'Jahrgang', cellWidth: 75},
+    {categorie: 'Jahrgang', cellWidth: 100},
     {categorie: 'Ort', cellWidth: 150},
-    {categorie: 'Datum', cellWidth: 75}
+    {categorie: 'Datum', cellWidth: 100}
 ]
 
 function update() {
