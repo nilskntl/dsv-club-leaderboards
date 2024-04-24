@@ -130,11 +130,6 @@ function _formatSheet() {
             header.setValue(i >= categories.length ? categories[i - categories.length].categorie : categories[i].categorie);
             header.setBackground(colorHeader);
             header.setFontColor(textColorHeaderColor);
-
-            // Column width
-            if (!resizeColumnsAutomatically) {
-                sheet.setColumnWidth(_increaseChar(column, i).charCodeAt(0) - 64, i >= categories.length ? categories[i - categories.length].cellWidth : categories[i].cellWidth);
-            }
         }
 
         ++row;
@@ -195,6 +190,19 @@ function _formatSheet() {
                     sheet.getRange(_increaseChar(column, categories.length + 1) + row).setHorizontalAlignment(alignmentNames);
                 }
             }
+        }
+    }
+
+    // Set the width for the columns according to the cellWidth in the categories array
+    if(!automaticColumnWidth) {
+        for (let index = 0; index < categories.length; ++index) {
+            let cellWidth = categories[index].cellWidth;
+            // Set width for columns of the first (left) table
+            spreadsheet.setColumnWidth(index + 1, cellWidth); // male
+            spreadsheet.setColumnWidth(index + categories.length + 1, cellWidth); // female
+            // Set width for columns of the second (right) table
+            spreadsheet.setColumnWidth(index + categories.length * 2 + 2, cellWidth); // male
+            spreadsheet.setColumnWidth(index + categories.length * 3 + 2, cellWidth); // female
         }
     }
 
