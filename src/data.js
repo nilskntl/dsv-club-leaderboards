@@ -15,6 +15,7 @@ function updateData() {
     if (!spreadsheet.getSheetByName(sheetName)) {
         Logger.log(`Sheet "${sheetName}" not found. Creating a new sheet...`);
         sheet();
+        currentSheet = spreadsheet.getSheetByName(sheetName);
     }
 
     // Retrieve data
