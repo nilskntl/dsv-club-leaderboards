@@ -3,8 +3,8 @@
 */
 const clubId = '7985'; // Club-ID
 const numberOfRankings = 5; // How many people should be displayed in the rankings
-const sheetName = 'Bestenlisten';
-const automaticColumnWidth = false;
+const sheetName = 'Bestenlisten'; // Name of the sheet
+const automaticColumnWidth = false; // Should the column width be set automatically?
 
 /**
  * Disciplines and distances for the different strokes
