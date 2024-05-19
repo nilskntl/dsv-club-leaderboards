@@ -7,23 +7,22 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 1. **Kopiere den Code in Google Apps Script:**
    - Öffne Google Sheets und erstelle ein neues Tabellenblatt oder öffne ein vorhandenes.
    - Klicke oben auf "Erweiterungen" und wähle "Apps Script" aus.
-   - Füge den Code aus `main.js`, `data.js` und `sheet.js` in separate Skriptdateien ein.
-   - Speichere die Dateien.
+   - Füge den Code aus `main.js` in eine Skriptdatei ein.
+   - Speichere die Datei.
 
 2. **Einstellungen im `main.js`-Skript anpassen:**
-   - Passe die `clubId` (Club-ID deines Vereins) und die `numberOfRankings` (Anzahl der anzuzeigenden Platzierungen pro Strecke) an.
-   - Konfiguriere die `disciplines` und `categories` entsprechend den Disziplinen und Kategorien deiner Bestenlisten.
+   - Passe die `clubId` (Club-ID deines Vereins) und optional die `numberOfEntries` (Anzahl der anzuzeigenden Platzierungen pro Strecke) an.
 
 3. **Trigger für automatische Aktualisierung einrichten:**
    - In Google Apps Script, öffne das `main.js`-Skript.
    - Klicke auf das Uhrsymbol (Trigger-Symbol) in der Symbolleiste.
-   - Füge einen neuen Trigger hinzu, der die Funktion `update` ausführt. Dies ermöglicht die automatische Aktualisierung der Bestenlisten.
+   - Füge einen neuen Trigger hinzu, der die Funktion `main()` ausführt. Dies ermöglicht die automatische Aktualisierung der Bestenlisten.
 
 4. **Manuelle Hinzufügung von All-Time Bestenlisten:**
    - Da der DSV nur Zugriff auf die Bestenlisten des aktuellen Jahres bietet, müssen All-Time Bestenlisten einmalig manuell in Google Sheets hinzugefügt werden.
 
-5. **Anpassung der Formatierung in `sheet.js`:**
-   - Du kannst die Formatierung der Bestenlisten mit dem `sheet.js`-Skript anpassen.
+5. **Anpassung der Formatierung in:**
+   - Du kannst die Formatierung der Bestenlisten mit der Funktion `formatSheet()` anpassen. Diese Funktion kann beliebig oft ausgeführt werden und beeinflusst nur die Formatierung, nicht die Daten in den Zellen.
 
 ## Hinweise
 
@@ -32,7 +31,7 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 
 ## Nutzung
 
-- Führe die Funktion `update` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
-- Die Funktion `formatSheet` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
+- Führe die Funktion `main()` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
+- Die Funktion `formatSheet()` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
 
 Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein! Ein Beispiel der Implementierung findet man auf https://www.wsg-wunstorf.de/bestenlisten
