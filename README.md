@@ -7,7 +7,7 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 1. **Kopiere den Code in Google Apps Script:**
    - Öffne Google Sheets und erstelle ein neues Tabellenblatt oder öffne ein vorhandenes.
    - Klicke oben auf "Erweiterungen" und wähle "Apps Script" aus.
-   - Füge den Code aus `main.js` in ein Skriptdateie ein.
+   - Füge den Code aus `main.js` in eine Skriptdatei ein.
    - Speichere die Datei.
 
 2. **Einstellungen im `main.js`-Skript anpassen:**
