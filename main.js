@@ -52,7 +52,7 @@ function main() {
         'payload': JSON.stringify(payload)
     }
 
-    let response = UrlFetchApp.fetch('https://script.google.com/macros/s/AKfycbyQJvPvX_zK3tlJWuz2xAso5JR4Bd2vuByqrBCvriZniHx8KoGCyhlCZ_UlN5wkXVK21A/exec', options).getContentText();
+    let response = UrlFetchApp.fetch('https://script.google.com/macros/s/AKfycbwW9R5mT7j608cnJCKz0YtwnSaOWCOHOWkiFPNNoTBr1cI4DILwtoYvz3BvO0tR_15F/exec', options).getContentText();
     response = JSON.parse(response);
 
     _writeDataToSheet(response.data);
