@@ -18,6 +18,7 @@ class CalenderDate {
             this._day = 0;
             this._month = 0;
             this._year = parseInt(date);
+            this._date = "00.00." + date;
         } else {
             let dateParts = date.split(".");
             this._day = parseInt(dateParts[0]);
