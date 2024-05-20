@@ -2,9 +2,8 @@
  * Dieses Skript erstellt und aktualisiert die Bestenliste für einen deutschen Schwimmverein vollautomatisch.
  *
  * Funktionsweise:
- * Um die Bestenliste zu aktualisieren, muss die Funktion `main()` ausgeführt werden. Diese Funktion ruft die Daten
+ * Um die Bestenliste zu aktualisieren, muss die Funktion `updateAllTime()` ausgeführt werden. Diese Funktion ruft die Daten
  * vom Deutschen Schwimm-Verband (DSV) ab und schreibt sie in das Google Sheet.
- * Die Funktion `formatSheet()` formatiert das Sheet und kann beliebig oft ausgeführt werden, um das Sheet zu formatieren.
  *
  * Einrichtung:
  * 1. Erstellen Sie ein neues Google Sheet.
@@ -14,12 +13,15 @@
  *      ändern Sie bitte auch den Namen des Sheets, um sicherzustellen, dass die Daten korrekt angezeigt werden, und kopieren Sie die
  *      ursprünglichen Daten in das neue Sheet.
  *
- * Um die Bestenliste automatisch zu aktualisieren, richten Sie einen Trigger ein, der die Funktion `main()` regelmäßig ausführt.
+ * Um die Bestenliste automatisch zu aktualisieren, richten Sie einen Trigger ein, der die Funktion `updateAllTime()` regelmäßig ausführt.
  * @see https://developers.google.com/apps-script/guides/triggers/
+ * Das Skript enthält außerdem eine Funktion `updateSeason()`, die die Bestenliste für die aktuelle Saison aktualisiert. Hierfür
+ * muss nichts weiter eingerichtet werden, da die Funktion die aktuelle Saison automatisch erkennt. Auch hier lässt sich ein Trigger
+ * einrichten, um die Funktion regelmäßig auszuführen.
  *
  * Hinweise:
  * Da vom DSV jeweils nur die Zeiten der aktuellen Saison abgerufen werden können, muss nach der erstmaligen Ausführung
- * die Bestenliste einmal manuell aktualisiert werden. Führen Sie dazu die Funktion `main()` einmal aus, um das Sheet zu initialisieren
+ * die Bestenliste einmal manuell aktualisiert werden. Führen Sie dazu die Funktion `updateAllTime()` einmal aus, um das Sheet zu initialisieren
  * und zu formatieren, und aktualisieren Sie anschließend die Bestenliste manuell.
  * Die Struktur des Sheets sollte nicht geändert werden, da das Skript davon ausgeht, dass die Daten in einer bestimmten Struktur vorliegen.
  * Die Formatierung des Sheets kann sowohl manuell als auch per Skript beliebig oft geändert werden.
@@ -30,15 +32,38 @@ const clubId = '7985' // Setze hier die ID des Vereins
 const sheetName = 'Sheet' // Optional: Setze hier den Namen des Sheets, in dem die Bestenliste gespeichert wird
 const numberOfEntries = 5 // Optional: Anzahl der Einträge pro Disziplin
 
-function main() {
+function updateAllTime() {
     /**
-     * Hauptfunktion
+     * All-Time Bestenliste
      * Diese Funktion aktualisiert die Bestenliste und schreibt die neuen Daten in das Sheet
      * In Google Apps Script kann man diese Funktion als Trigger einrichten, um sie regelmäßig auszuführen
      * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
      */
 
-    if (!sheet) formatSheet(); // Formatieren des Sheets, wenn es noch nicht existiert
+    getNewData(sheetName);
+}
+
+function updateSeason() {
+    /**
+     * Saison Bestenliste
+     * Diese Funktion aktualisiert die Bestenliste und schreibt die neuen Daten in das Sheet
+     */
+
+    let year = new Date().getMonth() < 6 ? new Date().getFullYear() - 1 : new Date().getFullYear();
+    getNewData(year + '/' + (year + 1));
+}
+
+function getNewData(nameOfSheet) {
+    /**
+     * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
+     * @param {string} nameOfSheet - Name des Sheets
+     */
+
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Definiere das Sheet
+    if (!sheet) {
+        sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+        formatSheet(sheet); // Formatiere das Sheet
+    }
 
     let payload = {
         clubId: clubId,
@@ -55,12 +80,12 @@ function main() {
     let response = UrlFetchApp.fetch('https://script.google.com/macros/s/AKfycbwW9R5mT7j608cnJCKz0YtwnSaOWCOHOWkiFPNNoTBr1cI4DILwtoYvz3BvO0tR_15F/exec', options).getContentText();
     response = JSON.parse(response);
 
-    _writeDataToSheet(response.data);
+    _writeDataToSheet(response.data, sheet);
 
-    _writeNewRecordsToSheet(response.newResults);
+    _writeNewRecordsToSheet(response.newResults, sheet);
 }
 
-function formatSheet() {
+function formatSheet(sheet) {
     /**
      * Formatiert das Sheet
      * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
@@ -69,7 +94,7 @@ function formatSheet() {
      * Die Funktion setzt die Hintergrundfarben, Textfarben, Textausrichtungen, Zeilen- und Spaltenhöhen und verbindet Zellen
      */
 
-    if(!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(sheetName); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    if (!sheet) Logger.log('Sheet ist nicht vorhanden. Überprüfe den Namen des Sheets.');
 
     let colors = {
         // Farben für das Sheet
@@ -145,7 +170,7 @@ function formatSheet() {
     sheet.setColumnWidth(16, 800); // Setze die Breite der Reihe auf 400
 }
 
-function _writeDataToSheet(data) {
+function _writeDataToSheet(data, sheet) {
     /**
      * Schreibt die neuen Daten in das Sheet
      * Diese Funktion sollte nicht eigenständig aufgerufen werden!
@@ -158,7 +183,7 @@ function _writeDataToSheet(data) {
     range.setValues(data); // Schreibe die neuen Daten in die Range
 }
 
-function _writeNewRecordsToSheet(results) {
+function _writeNewRecordsToSheet(results, sheet) {
     /**
      * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
      * Diese Funktion sollte nicht eigenständig aufgerufen werden!
@@ -180,5 +205,3 @@ function _writeNewRecordsToSheet(results) {
         sheet.getRange(row + i, column).setValue(results[i]);
     }
 }
-
-let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName); // Definiere das Sheet
