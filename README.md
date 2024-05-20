@@ -16,7 +16,7 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 3. **Trigger für automatische Aktualisierung einrichten:**
    - In Google Apps Script, öffne das `main.js`-Skript.
    - Klicke auf das Uhrsymbol (Trigger-Symbol) in der Symbolleiste.
-   - Füge einen neuen Trigger hinzu, der die Funktion `main()` ausführt. Dies ermöglicht die automatische Aktualisierung der Bestenlisten.
+   - Füge einen neuen Trigger hinzu, der die Funktion `updateAllTime()` ausführt. Dies ermöglicht die automatische Aktualisierung der Bestenlisten.
 
 4. **Manuelle Hinzufügung von All-Time Bestenlisten:**
    - Da der DSV nur Zugriff auf die Bestenlisten des aktuellen Jahres bietet, müssen All-Time Bestenlisten einmalig manuell in Google Sheets hinzugefügt werden.
@@ -31,7 +31,8 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 
 ## Nutzung
 
-- Führe die Funktion `main()` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
+- Führe die Funktion `updateAllTime()` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
+- Das Skript enthält außerdem die Funktion `updateSeason()`, die die Bestenlisten des aktuellen Jahres aktualisiert.
 - Die Funktion `formatSheet()` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
 
 Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein! Ein Beispiel der Implementierung findet man auf https://www.wsg-wunstorf.de/bestenlisten
