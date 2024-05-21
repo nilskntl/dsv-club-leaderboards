@@ -140,7 +140,7 @@ function _writeNewDataToSheet(data, sheet) {
      * @param {Sheet} sheet - Sheet
      */
 
-    let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
+    let range = sheet.getRange(3, 1, data.length, data[0].length); // Definiere die Range
 
     range.clearContent(); // Lösche vorhandene Daten in der Range
     range.setValues(data); // Schreibe die neuen Daten in die Range
@@ -192,6 +192,9 @@ function formatSheet(sheet, numberOfEntries, format) {
     // Setze die Zeile für die Saison
     sheet.getRange(1, 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Saison).setFontColor(format.Farben.Textfarben.Saison).setFontWeight('bold'); // Verbinde die Zellen für die Saison und setze die Hintergrundfarbe und Textfarbe
     sheet.setRowHeight(1, format.Zeilen.Hoehen.Saison); // Setze die Höhe der Zeile mit der Saison
+    // Schreibe die aktuelle Saison in die erste Zelle
+    let season = sheet.getName()
+    sheet.getRange(1, 1).setValue(season);
 
     strokes.forEach(function (stroke) {
         sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Lage).setFontColor(format.Farben.Textfarben.Lage).setFontWeight('bold'); // Verbinde die Zellen für die Lage und setze die Hintergrundfarbe und Textfarbe
