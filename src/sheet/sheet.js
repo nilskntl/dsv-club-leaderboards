@@ -161,28 +161,51 @@ function formatSheet(sheet, numberOfEntries, format) {
      * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
      * Die Funktion setzt die Hintergrundfarben, Textfarben, Textausrichtungen, Zeilen- und Spaltenhöhen und verbindet Zellen
      * @param {Sheet} sheet - Sheet
-     * @param {object} colors - Farben für das Sheet
-     * @param {Array} columns - Breiten der Spalten
+     * @param {number} numberOfEntries - Anzahl der Einträge pro Disziplin
+     * @param {object} format - Format für das Sheet
      */
 
-    sheet.getRange('A:P').setHorizontalAlignment('center').setVerticalAlignment('middle').setNumberFormat('@'); // Textausrichtung auf zentriert für Reihe A bis N setzen und Format auf Text setzen
-    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung); // Textausrichtung  auf linksbündig für Reihe P setzen
+    if (!format) format = DEFAULT_FORMAT; // Setze das Standardformat, wenn kein Format übergeben wird
 
-    let strokes = [[1, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]] // Zeilen in denen eine neue Disziplin beginnt
+    // Um Konflikte mit verschiedenen Versionen zu vermeiden, überprüfe jeden Schlüssel in 'format' und ersetze ihn durch den Standardwert, wenn er nicht vorhanden ist
+    for (let key in DEFAULT_FORMAT) {
+        if (!format[key]) format[key] = DEFAULT_FORMAT[key];
+        if (typeof DEFAULT_FORMAT[key] === 'object') {
+            for (let subKey in DEFAULT_FORMAT[key]) {
+                if (!format[key][subKey]) format[key][subKey] = DEFAULT_FORMAT[key][subKey];
+                if (typeof DEFAULT_FORMAT[key][subKey] === 'object') {
+                    for (let subSubKey in DEFAULT_FORMAT[key][subKey]) {
+                        if (!format[key][subKey][subSubKey]) format[key][subKey][subSubKey] = DEFAULT_FORMAT[key][subKey][subSubKey];
+                    }
+                }
+            }
+        }
+    }
+
+    sheet.clearFormats(); // Lösche die Formatierung des gesamten Sheets
+
+    sheet.getRange('A:P').setHorizontalAlignment(format.Allgemein.Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@'); // Textausrichtung für Reihe A bis N setzen und Format auf Text setzen
+    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung); // Textausrichtung für Reihe P setzen
+
+    let strokes = [[3, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]] // Zeilen in denen eine neue Disziplin beginnt
+
+    // Setze die Zeile für die Saison
+    sheet.getRange(1, 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Saison).setFontColor(format.Farben.Textfarben.Saison).setFontWeight('bold'); // Verbinde die Zellen für die Saison und setze die Hintergrundfarbe und Textfarbe
+    sheet.setRowHeight(1, format.Zeilen.Hoehen.Saison); // Setze die Höhe der Zeile mit der Saison
 
     strokes.forEach(function (stroke) {
         sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Lage).setFontColor(format.Farben.Textfarben.Lage).setFontWeight('bold'); // Verbinde die Zellen für die Lage und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0], 34); // Setze die Höhe der Reihe auf 34
+        sheet.setRowHeight(stroke[0], format.Zeilen.Hoehen.Lage); // Setze die Höhe der Zeile mit der Lage
         sheet.getRange(stroke[0] + 1, 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Maennlich.Kopfzeile).setFontColor(format.Farben.Textfarben.Maennlich.Kopfzeile).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
         sheet.getRange(stroke[0] + 1, 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Weiblich.Kopfzeile).setFontColor(format.Farben.Textfarben.Weiblich.Kopfzeile).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0] + 1, 26); // Setze die Höhe der Reihe auf 26
+        sheet.setRowHeight(stroke[0] + 1, format.Zeilen.Hoehen.Geschlecht); // Setze die Höhe der Zeile mit den Geschlechtern
         sheet.getRange(stroke[0] + 2, 1, 1, 14).setBackground(format.Farben.Hintergrundfarben.Kopfzeile).setFontColor(format.Farben.Textfarben.Kopfzeile).setFontWeight('bold'); // Setze die Hintergrundfarbe und Textfarbe für die Kopfzeile
-        sheet.setRowHeight(stroke[0] + 2, 26); // Setze die Höhe der Reihe auf 26
+        sheet.setRowHeight(stroke[0] + 2, format.Zeilen.Hoehen.Kopfzeile); // Setze die Höhe der Kopfzeile
 
         for (let i = 0; i < stroke[1]; i++) {
             sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Maennlich).setFontColor(format.Farben.Textfarben.Streckenangabe.Maennlich).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
             sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Weiblich).setFontColor(format.Farben.Textfarben.Streckenangabe.Weiblich).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
-            sheet.setRowHeight(stroke[0] + 3 + i * (numberOfEntries + 1), 26); // Setze die Höhe der Reihe auf 26
+            sheet.setRowHeight(stroke[0] + 3 + i * (numberOfEntries + 1), format.Zeilen.Hoehen.Streckenangabe); // Setze die Höhe der Zeile mit der Streckenangabe
             for (let j = 0; j < numberOfEntries; j++) {
                 // Setze die Hintergrundfarbe und Textfarbe für ein einzelnes Ergebnis
                 if (j % 2 === 0) {
@@ -219,21 +242,21 @@ function formatSheet(sheet, numberOfEntries, format) {
 function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
     /**
      * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
-     * @param {string} nameOfSheet - Name des Sheets
+     * @param {string} version - Version des Skripts
+     * @param {Sheet} sheet - Sheet
+     * @param {object} format - Format für das Sheet
+     * @param {boolean} formatSheetEveryTime - Gibt an, ob das Sheet jedes Mal formatiert werden soll
      */
 
+    Logger.log('Version: ' + version);
     let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/web-app/version.txt').getContentText();
+
+    Logger.log('Aktualisiere Daten für die Saison: ' + sheet.getName() + '...');
 
     if (newestVersion !== version) {
         Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
-        Logger.log('Aktuelle Version: ' + version);
         Logger.log('Neueste Version: ' + newestVersion);
         Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
-    }
-
-    if (!sheet) {
-        sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
-        formatSheet(sheet); // Formatiere das Sheet
     }
 
     let payload = {
@@ -249,14 +272,27 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
     }
 
     let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/endpoint.txt').getContentText();
+
     let response = UrlFetchApp.fetch(endpoint, options).getContentText();
+
+    // Überprüfe, ob die Antwort erfolgreich war
+    if (response.startsWith('<!DOCTYPE html>')) {
+        Logger.log('Es ist ein Fehler aufgetreten. Bitte überprüfen Sie, ob Sie alles richtig eingegeben haben. Falls der Fehler weiterhin besteht, kontaktieren Sie den Entwickler.');
+        Logger.log('Antwort: ' + response);
+        return;
+    }
+
     response = JSON.parse(response);
 
     writeDataToSheet(response.data, response.newResults, sheet); // Schreibe die neuen Daten in das Sheet
-    if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
+    if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format); // Formatiere das Sheet, wenn 'formatSheetEveryTime' auf 'true' gesetzt ist
 }
 
 let DEFAULT_FORMAT = {
+    'Allgemein': {
+        'Textausrichtung': 'center',
+        'Vertikale Ausrichtung': 'middle',
+    },
     'Farben': {
         'Hintergrundfarben': {
             'Saison': '#252626',
@@ -307,6 +343,16 @@ let DEFAULT_FORMAT = {
             'F/M': 150,
             'G/N': 100,
             'Neue Ergebnisse': 800
+        }
+    },
+    'Zeilen': {
+        'Hoehen': {
+            'Saison': 34,
+            'Lage': 34,
+            'Geschlecht': 26,
+            'Kopfzeile': 26,
+            'Streckenangabe': 26,
+            'Ergebnis': 21,
         }
     },
     'Neue Ergebnisse': {
