@@ -1,3 +1,5 @@
+const version = '1.0.0';
+
 /**
  * Dieses Skript erstellt und aktualisiert die Bestenliste für einen deutschen Schwimmverein vollautomatisch.
  *
@@ -26,7 +28,6 @@
  * Die Struktur des Sheets sollte nicht geändert werden, da das Skript davon ausgeht, dass die Daten in einer bestimmten Struktur vorliegen.
  * Die Formatierung des Sheets kann sowohl manuell als auch per Skript beliebig oft geändert werden.
  */
-
 
 const clubId = '7985' // Setze hier die ID des Vereins
 const sheetName = 'Sheet' // Optional: Setze hier den Namen des Sheets, in dem die Bestenliste gespeichert wird
@@ -58,6 +59,14 @@ function getNewData(nameOfSheet) {
      * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
      * @param {string} nameOfSheet - Name des Sheets
      */
+
+    let newestVersion = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/version.txt').getContentText();
+    if(newestVersion !== version) {
+        Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
+        Logger.log('Aktuelle Version: ' + version);
+        Logger.log('Neueste Version: ' + newestVersion);
+        Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
+    }
 
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Definiere das Sheet
     if (!sheet) {
