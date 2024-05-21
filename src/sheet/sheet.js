@@ -216,18 +216,13 @@ function formatSheet(sheet, numberOfEntries, format) {
     sheet.getRange(1, 16).setValue(format['Neue Ergebnisse'].Text); // Schreibe in P:1 die Überschrift für die neuen Ergebnisse
 }
 
-function getNewSheetData(version, nameOfSheet, format, formatSheetEveryTime) {
+function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
     /**
      * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
      * @param {string} nameOfSheet - Name des Sheets
      */
 
-    if (nameOfSheet.toLowerCase() === 'Season'.toLowerCase()) {
-        let year = new Date().getMonth() < 6 ? new Date().getFullYear() - 1 : new Date().getFullYear();
-        nameOfSheet = year + '/' + (year + 1);
-    }
-
-    let newestVersion = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/version.txt').getContentText();
+    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/web-app/version.txt').getContentText();
 
     if (newestVersion !== version) {
         Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
@@ -236,18 +231,9 @@ function getNewSheetData(version, nameOfSheet, format, formatSheetEveryTime) {
         Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
     }
 
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Definiere das Sheet
     if (!sheet) {
         sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
         formatSheet(sheet); // Formatiere das Sheet
-        if(nameOfSheet === 'All-Time') {
-            let sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
-            for (let i = 0; i < sheets.length; i++) {
-                if (sheets[i].getName() !== 'All-Time' && sheets[i].getDataRange().getValues().length === 0) {
-                    SpreadsheetApp.getActiveSpreadsheet().deleteSheet(sheets[i]);
-                }
-            }
-        }
     }
 
     let payload = {
