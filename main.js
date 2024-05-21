@@ -1,4 +1,4 @@
-const version = '1.0.0';
+const version = '1.0.1';
 
 /**
  * Dieses Skript erstellt und aktualisiert die Bestenliste für einen deutschen Schwimmverein vollautomatisch.
