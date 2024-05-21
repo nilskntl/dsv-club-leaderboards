@@ -108,24 +108,12 @@ class Sheet {
 
 }
 
-function #writeDataToSheet(data, sheet) {
-    /**
-     * Schreibt die neuen Daten in das Sheet
-     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-     * @param {Array} data - Daten für das Sheet
-     */
-
-    let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
-
-    range.clearContent(); // Lösche vorhandene Daten in der Range
-    range.setValues(data); // Schreibe die neuen Daten in die Range
-}
-
-function #writeNewRecordsToSheet(results, sheet) {
+function _writeNewRecordsToSheet(results, sheet) {
     /**
      * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
      * Diese Funktion sollte nicht eigenständig aufgerufen werden!
      * @param {Array} results - Neue Ergebnisse
+     * @param {Sheet} sheet - Sheet
      */
 
     let column = 16; // Reihe P
@@ -144,12 +132,28 @@ function #writeNewRecordsToSheet(results, sheet) {
     }
 }
 
+function _writeNewDataToSheet(data, sheet) {
+    /**
+     * Schreibt die neuen Daten in das Sheet
+     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
+     * @param {Array} data - Daten für das Sheet
+     * @param {Sheet} sheet - Sheet
+     */
+
+    let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
+
+    range.clearContent(); // Lösche vorhandene Daten in der Range
+    range.setValues(data); // Schreibe die neuen Daten in die Range
+}
+
+
+
 function writeDataToSheet(data, results, sheet) {
     /**
      * Schreibt die neuen Daten in das Sheet
      * @param {Array} data - Daten für das Sheet
      * @param {Array} results - Neue Ergebnisse
      */
-    #writeDataToSheet(data, sheet);
-    #writeNewRecordsToSheet(results, sheet);
+    _writeNewDataToSheet(data, sheet);
+    _writeNewRecordsToSheet(results, sheet);
 }
