@@ -2,7 +2,7 @@ class Result {
     /**
      * Speichert ein Ergebnis einer Disziplin für eine Person
      * @param {Person} person - Person des Ergebnisses
-     * @param {string} time - Zeit des Ergebnisses
+     * @param {Time} time - Zeit des Ergebnisses
      * @param {string} location - Ort des Ergebnisses
      * @param {CalenderDate} date - Datum des Ergebnisses
      * @param {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
