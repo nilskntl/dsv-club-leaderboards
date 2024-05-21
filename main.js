@@ -11,9 +11,9 @@ const version = '1.0.0';
  * 1. Erstellen Sie ein neues Google Sheet.
  * 2. Navigieren Sie in Google Sheets zu Erweiterungen -> Apps Script, erstellen Sie ein neues Skript und fügen Sie diesen Code ein.
  * 3. Setzen Sie die `clubId` auf die ID Ihres Vereins.
- * 4. Optional: Passen Sie den Namen des Sheets und die Anzahl der Einträge pro Disziplin an. Falls Sie die Anzahl der Einträge ändern,
- *      ändern Sie bitte auch den Namen des Sheets, um sicherzustellen, dass die Daten korrekt angezeigt werden, und kopieren Sie die
- *      ursprünglichen Daten in das neue Sheet.
+ * 4. Optional: Passen Sie die Anzahl der Einträge pro Disziplin an. Standardmäßig sind es 5 Einträge pro Disziplin.
+ * 5. Optional: Unter FORMAT können Sie die Formatierung des Sheets anpassen. Dazu einfach die Werte unter dem jeweiligen Schlüssel anpassen.
+ * 6. Optional: Setzen Sie `formatSheetEveryTime` auf `true`, wenn das Sheet bei jedem Update formatiert werden soll.
  *
  * Um die Bestenliste automatisch zu aktualisieren, richten Sie einen Trigger ein, der die Funktion `updateAllTime()` regelmäßig ausführt.
  * @see https://developers.google.com/apps-script/guides/triggers/
@@ -27,11 +27,17 @@ const version = '1.0.0';
  * und zu formatieren, und aktualisieren Sie anschließend die Bestenliste manuell.
  * Die Struktur des Sheets sollte nicht geändert werden, da das Skript davon ausgeht, dass die Daten in einer bestimmten Struktur vorliegen.
  * Die Formatierung des Sheets kann sowohl manuell als auch per Skript beliebig oft geändert werden.
+ *
+ * Bei Fehlern:
+ * Wenn ein Fehler auftritt, versuchen Sie das Skript erneut auszuführen. Sollte der Fehler weiterhin bestehen, überprüfen Sie die Konfiguration
+ * und die Eingaben im Sheet. Bei weiteren Fragen oder Problemen können Sie sich gerne an mich wenden.
+ * Im unwahrscheinlichen Fall, dass die Daten im Sheet weg sein sollten, dann finden sie unter Google Sheets -> Datei -> Versionsverlauf
+ * einen ausführlichen Verlauf aller Änderungen und können eine frühere Version ohne Probleme wiederherstellen.
  */
 
 const clubId = '7985' // Setze hier die ID des Vereins
-const sheetName = 'Sheet' // Optional: Setze hier den Namen des Sheets, in dem die Bestenliste gespeichert wird
 const numberOfEntries = 5 // Optional: Anzahl der Einträge pro Disziplin
+const formatSheetEveryTime = true // Optional: Soll das Sheet bei jedem Update formatiert werden?
 
 function updateAllTime() {
     /**
@@ -41,117 +47,101 @@ function updateAllTime() {
      * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
      */
 
-    getNewData(sheetName);
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('All-Time'); // Hole das Sheet mit dem Namen 'All-Time'
+    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('All-Time'); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
+    eval(code); //Code des externen Skripts ausführen
+    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die All-Time
 }
 
 function updateSeason() {
     /**
      * Saison Bestenliste
      * Diese Funktion aktualisiert die Bestenliste und schreibt die neuen Daten in das Sheet
+     * In Google Apps Script kann man diese Funktion als Trigger einrichten, um sie regelmäßig auszuführen
+     * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
      */
 
     let year = new Date().getMonth() < 6 ? new Date().getFullYear() - 1 : new Date().getFullYear();
-    getNewData(year + '/' + (year + 1));
-}
-
-function getNewData(nameOfSheet) {
-    /**
-     * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
-     * @param {string} nameOfSheet - Name des Sheets
-     */
-
-    let newestVersion = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/version.txt').getContentText();
-    if(newestVersion !== version) {
-        Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
-        Logger.log('Aktuelle Version: ' + version);
-        Logger.log('Neueste Version: ' + newestVersion);
-        Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
-    }
-
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Definiere das Sheet
-    if (!sheet) {
-        sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
-        _formatSheet(sheet); // Formatiere das Sheet
-    }
-
-    let payload = {
-        clubId: clubId,
-        data: sheet.getDataRange().getValues(),
-        entriesPerDiscipline: numberOfEntries
-    };
-
-    let options = {
-        'method': 'post',
-        'contentType': 'application/json',
-        'payload': JSON.stringify(payload)
-    }
-
-    let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/endpoint.txt').getContentText();
-    let response = UrlFetchApp.fetch(endpoint, options).getContentText();
-    response = JSON.parse(response);
-
+    let nameOfSheet = year + '/' + (year + 1);
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen 'All-Time'
+    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
-    writeDataToSheet(response.data, response.newResults, sheet); // Schreibe die neuen Daten in das Sheet
+    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die aktuelle Saison
 }
 
-function format() {
-    let sheetToFormat = 'Sheet'; // Name des Sheets, das formatiert werden soll
-    _formatSheet(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetToFormat));
-}
-
-function _formatSheet(sheet) {
-    /**
-     * Formatiert das Sheet
-     * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
-     * In {colors} können die Farben für das Sheet definiert werden
-     * In {columns} können die Breiten der Spalten definiert werden
-     * Die Funktion setzt die Hintergrundfarben, Textfarben, Textausrichtungen, Zeilen- und Spaltenhöhen und verbindet Zellen
-     */
-
-    if (!sheet) Logger.log('Sheet ist nicht vorhanden. Überprüfe den Namen des Sheets.');
-
-    let colors = {
-        /**
-         * Farben für das Sheet
-         * Die Farben können beliebig angepasst werden
-         */
-        'Hintergrundfarbe': {
-            'Kopfzeile': {
-                'Primear': '#252626',
-                'Sekundaer': '#252626',
-                'Maennlich': '#25476a',
-                'Weiblich': '#652a5f'
+const FORMAT = {
+    'Allgemein': {
+        'Textausrichtung': 'center',
+        'Vertikale Ausrichtung': 'middle',
+    },
+    'Farben': {
+        'Hintergrundfarben': {
+            'Saison': '#252626',
+            'Lage': '#252626',
+            'Streckenangabe': {
+                'Weiblich': '#652a5f',
+                'Maennlich': '#25476a'
             },
-            'Koerper': {
-                'Primear': '#ffffff',
-            },
+            'Kopfzeile': '#252626',
             'Maennlich': {
+                'Kopfzeile': '#25476a',
                 'Gerade': '#d1e5ef',
                 'Ungerade': '#bbd5ea'
             },
             'Weiblich': {
+                'Kopfzeile': '#652a5f',
                 'Gerade': '#e6dfe5',
                 'Ungerade': '#dacbdd'
             }
         },
-        'Textfarbe': {
-            'Kopfzeile': {
-                'Primear': '#ffffff',
+        'Textfarben': {
+            'Saison': '#ffffff',
+            'Lage': '#ffffff',
+            'Streckenangabe': {
+                'Weiblich': '#ffffff',
+                'Maennlich': '#ffffff'
             },
-            'Koerper': {
-                'Primear': '#2E2727',
+            'Kopfzeile': '#ffffff',
+            'Maennlich': {
+                'Kopfzeile': '#ffffff',
+                'Gerade': '#2E2727',
+                'Ungerade': '#2E2727'
             },
+            'Weiblich': {
+                'Kopfzeile': '#ffffff',
+                'Gerade': '#2E2727',
+                'Ungerade': '#2E2727'
+            }
         }
+    },
+    'Spalten': {
+        'Breiten': {
+            'A/H': 75,
+            'B/I': 50,
+            'C/J': 200,
+            'D/K': 100,
+            'E/L': 100,
+            'F/M': 150,
+            'G/N': 100,
+            'Neue Ergebnisse': 800
+        }
+    },
+    'Zeilen': {
+        'Hoehen': {
+            'Saison': 34,
+            'Lage': 34,
+            'Geschlecht': 26,
+            'Kopfzeile': 26,
+            'Streckenangabe': 26,
+            'Ergebnis': 21,
+        }
+    },
+    'Neue Ergebnisse': {
+        'Textfarbe': '#2E2727',
+        'Hintergrundfarbe': '#ffffff',
+        'Textausrichtung': 'left',
+        'Text': 'Neue Ergebnisse'
     }
-
-    /**
-     * Spaltenbreiten
-     * Die Breiten der Spalten können beliebig angepasst werden
-     */
-    let columns = [75, 50, 200, 100, 100, 150, 100]
-
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
-    eval(code); //Code des externen Skripts ausführen
-    formatSheet(sheet, colors, columns); // Formatiere das Sheet
 }
