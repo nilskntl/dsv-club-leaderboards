@@ -106,50 +106,50 @@ class Sheet {
         return data;
     }
 
-    static #writeDataToSheet(data, sheet) {
-        /**
-         * Schreibt die neuen Daten in das Sheet
-         * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-         * @param {Array} data - Daten für das Sheet
-         */
+}
 
-        let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
+function #writeDataToSheet(data, sheet) {
+    /**
+     * Schreibt die neuen Daten in das Sheet
+     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
+     * @param {Array} data - Daten für das Sheet
+     */
 
-        range.clearContent(); // Lösche vorhandene Daten in der Range
-        range.setValues(data); // Schreibe die neuen Daten in die Range
-    }
+    let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
 
-    static #writeNewRecordsToSheet(results, sheet) {
-        /**
-         * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
-         * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-         * @param {Array} results - Neue Ergebnisse
-         */
+    range.clearContent(); // Lösche vorhandene Daten in der Range
+    range.setValues(data); // Schreibe die neuen Daten in die Range
+}
 
-        let column = 16; // Reihe P
-        let values = sheet.getRange(1, column, 1, sheet.getLastColumn()).getValues()[0];
+function #writeNewRecordsToSheet(results, sheet) {
+    /**
+     * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
+     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
+     * @param {Array} results - Neue Ergebnisse
+     */
 
-        let row = 1;
-        for (let i = 0; i < values.length; i++) {
-            if (values[i] === "") {
-                row = i + 1;
-                break;
-            }
-        }
+    let column = 16; // Reihe P
+    let values = sheet.getRange(1, column, 1, sheet.getLastColumn()).getValues()[0];
 
-        for (let i = 0; i < results.length; i++) {
-            sheet.getRange(row + i, column).setValue(results[i]);
+    let row = 1;
+    for (let i = 0; i < values.length; i++) {
+        if (values[i] === "") {
+            row = i + 1;
+            break;
         }
     }
 
-    static writeDataToSheet(data, results, sheet) {
-        /**
-         * Schreibt die neuen Daten in das Sheet
-         * @param {Array} data - Daten für das Sheet
-         * @param {Array} results - Neue Ergebnisse
-         */
-        Sheet.#writeDataToSheet(data, sheet);
-        Sheet.#writeNewRecordsToSheet(results, sheet);
+    for (let i = 0; i < results.length; i++) {
+        sheet.getRange(row + i, column).setValue(results[i]);
     }
+}
 
+function writeDataToSheet(data, results, sheet) {
+    /**
+     * Schreibt die neuen Daten in das Sheet
+     * @param {Array} data - Daten für das Sheet
+     * @param {Array} results - Neue Ergebnisse
+     */
+    #writeDataToSheet(data, sheet);
+    #writeNewRecordsToSheet(results, sheet);
 }
