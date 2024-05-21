@@ -62,7 +62,7 @@ function getNewData(nameOfSheet) {
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Definiere das Sheet
     if (!sheet) {
         sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
-        formatSheet(sheet); // Formatiere das Sheet
+        _formatSheet(sheet); // Formatiere das Sheet
     }
 
     let payload = {
@@ -81,12 +81,17 @@ function getNewData(nameOfSheet) {
     let response = UrlFetchApp.fetch(endpoint, options).getContentText();
     response = JSON.parse(response);
 
-    _writeDataToSheet(response.data, sheet);
-
-    _writeNewRecordsToSheet(response.newResults, sheet);
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
+    eval(code); //Code des externen Skripts ausführen
+    writeDataToSheet(response.data, response.newResults, sheet); // Schreibe die neuen Daten in das Sheet
 }
 
-function formatSheet(sheet) {
+function format() {
+    let sheetToFormat = 'Sheet'; // Name des Sheets, das formatiert werden soll
+    _formatSheet(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetToFormat));
+}
+
+function _formatSheet(sheet) {
     /**
      * Formatiert das Sheet
      * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
@@ -98,7 +103,10 @@ function formatSheet(sheet) {
     if (!sheet) Logger.log('Sheet ist nicht vorhanden. Überprüfe den Namen des Sheets.');
 
     let colors = {
-        // Farben für das Sheet
+        /**
+         * Farben für das Sheet
+         * Die Farben können beliebig angepasst werden
+         */
         'Hintergrundfarbe': {
             'Kopfzeile': {
                 'Primear': '#252626',
@@ -128,81 +136,13 @@ function formatSheet(sheet) {
         }
     }
 
-    let columns = [75, 50, 200, 100, 100, 150, 100] // Breite der Spalten
-
-    sheet.getRange('A:P').setHorizontalAlignment("center").setVerticalAlignment("middle").setNumberFormat('@'); // Textausrichtung auf zentriert für Reihe A bis N setzen und Format auf Text setzen
-    sheet.getRange("P:P").setHorizontalAlignment("left"); // Textausrichtung  auf linksbündig für Reihe P setzen
-
-    let strokes = [[1, 12], [((numberOfEntries + 1) * 12) + 5, 6], [((numberOfEntries + 1) * 18) + 9, 6], [((numberOfEntries + 1) * 24) + 13, 6], [((numberOfEntries + 1) * 30) + 17, 5]] // Zeilen in denen eine neue Disziplin beginnt
-
-    strokes.forEach(function (stroke) {
-        sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(colors.Hintergrundfarbe.Kopfzeile.Primear).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Verbinde die Zellen für die Lage und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0], 34); // Setze die Höhe der Reihe auf 34
-        sheet.getRange(stroke[0] + 1, 1, 1, 7).merge().setBackground(colors.Hintergrundfarbe.Kopfzeile.Maennlich).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
-        sheet.getRange(stroke[0] + 1, 8, 1, 7).merge().setBackground(colors.Hintergrundfarbe.Kopfzeile.Weiblich).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0] + 1, 26); // Setze die Höhe der Reihe auf 26
-        sheet.getRange(stroke[0] + 2, 1, 1, 14).setBackground(colors.Hintergrundfarbe.Kopfzeile.Primear).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Setze die Hintergrundfarbe und Textfarbe für die Kopfzeile
-        sheet.setRowHeight(stroke[0] + 2, 26); // Setze die Höhe der Reihe auf 26
-
-        for (let i = 0; i < stroke[1]; i++) {
-            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 1, 1, 7).merge().setBackground(colors.Hintergrundfarbe.Kopfzeile.Maennlich).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
-            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 8, 1, 7).merge().setBackground(colors.Hintergrundfarbe.Kopfzeile.Weiblich).setFontColor(colors.Textfarbe.Kopfzeile.Primear).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
-            sheet.setRowHeight(stroke[0] + 3 + i * (numberOfEntries + 1), 26); // Setze die Höhe der Reihe auf 26
-            for (let j = 0; j < numberOfEntries; j++) {
-                // Setze die Hintergrundfarbe und Textfarbe für ein einzelnes Ergebnis
-                if (j % 2 === 0) {
-                    sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 1, 1, 7).setBackground(colors.Hintergrundfarbe.Maennlich.Gerade).setFontColor(colors.Textfarbe.Koerper.Primear);
-                    sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 8, 1, 7).setBackground(colors.Hintergrundfarbe.Weiblich.Gerade).setFontColor(colors.Textfarbe.Koerper.Primear);
-                } else {
-                    sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 1, 1, 7).setBackground(colors.Hintergrundfarbe.Maennlich.Ungerade).setFontColor(colors.Textfarbe.Koerper.Primear);
-                    sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 8, 1, 7).setBackground(colors.Hintergrundfarbe.Weiblich.Ungerade).setFontColor(colors.Textfarbe.Koerper.Primear);
-                }
-            }
-        }
-    });
-
-    for (let i = 0; i < columns.length; i++) {
-        // Setze die Breite der Spalten
-        sheet.setColumnWidth(i + 1, columns[i]);
-        sheet.setColumnWidth(i + 8, columns[i]);
-    }
-
-    sheet.getRange(1, 16).setValue('Neue Ergebnisse'); // Schreibe in P:1 die Überschrift für die neuen Ergebnisse
-    sheet.setColumnWidth(16, 800); // Setze die Breite der Reihe auf 400
-}
-
-function _writeDataToSheet(data, sheet) {
     /**
-     * Schreibt die neuen Daten in das Sheet
-     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-     * @param {Array} data - Daten für das Sheet
+     * Spaltenbreiten
+     * Die Breiten der Spalten können beliebig angepasst werden
      */
+    let columns = [75, 50, 200, 100, 100, 150, 100]
 
-    let range = sheet.getRange(1, 1, data.length, data[0].length); // Definiere die Range
-
-    range.clearContent(); // Lösche vorhandene Daten in der Range
-    range.setValues(data); // Schreibe die neuen Daten in die Range
-}
-
-function _writeNewRecordsToSheet(results, sheet) {
-    /**
-     * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
-     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-     * @param {Array} results - Neue Ergebnisse
-     */
-
-    let column = 16; // Reihe P
-    let values = sheet.getRange(1, column, 1, sheet.getLastColumn()).getValues()[0];
-
-    let row = 1;
-    for (let i = 0; i < values.length; i++) {
-        if (values[i] === "") {
-            row = i + 1;
-            break;
-        }
-    }
-
-    for (let i = 0; i < results.length; i++) {
-        sheet.getRange(row + i, column).setValue(results[i]);
-    }
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
+    eval(code); //Code des externen Skripts ausführen
+    formatSheet(sheet, colors, columns); // Formatiere das Sheet
 }
