@@ -61,7 +61,7 @@ class RequestHandler {
             "__VIEWSTATE": viewState,
             "__EVENTVALIDATION": eventValidation,
             "ctl00$ContentSection$_genderRadioButtonList": discipline.gender.substring(0, 1),
-            "ctl00$ContentSection$_courseRadioButtonList": (discipline.lane === "Langbahn") ? "L" : "S",
+            "ctl00$ContentSection$_courseRadioButtonList": (discipline.lane === LANES.Lanbahn) ? "L" : "S",
             "ctl00$ContentSection$_eventDropDownList": `${discipline.distance + discipline.stroke.substring(0, 1)}|GL`,
             "ctl00$ContentSection$_timerangeDropDownList": `01.06.${this._year - 1}|31.05.${this._year}`
         };
