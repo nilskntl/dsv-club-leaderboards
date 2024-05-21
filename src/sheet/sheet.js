@@ -227,7 +227,9 @@ function getNewSheetData(version, nameOfSheet, format, formatSheetEveryTime) {
         nameOfSheet = year + '/' + (year + 1);
     }
 
-    if (UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/version.txt').getContentText() !== version) {
+    let newestVersion = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/version.txt').getContentText();
+
+    if (newestVersion !== version) {
         Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
         Logger.log('Aktuelle Version: ' + version);
         Logger.log('Neueste Version: ' + newestVersion);
@@ -268,7 +270,7 @@ function getNewSheetData(version, nameOfSheet, format, formatSheetEveryTime) {
     if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
 }
 
-let FORMAT = {
+let DEFAULT_FORMAT = {
     'Farben': {
         'Hintergrundfarben': {
             'Saison': '#252626',
