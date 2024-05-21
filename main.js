@@ -141,6 +141,7 @@ const FORMAT = {
     'Neue Ergebnisse': {
         'Textfarbe': '#2E2727',
         'Hintergrundfarbe': '#ffffff',
+        'Textgewicht': 'bold',
         'Textausrichtung': 'left',
         'Text': 'Neue Ergebnisse'
     }
