@@ -156,7 +156,7 @@ function writeDataToSheet(data, results, sheet) {
     _writeNewRecordsToSheet(results, sheet);
 }
 
-function formatSpreadsheet(sheet, colors, columns) {
+function formatSheet(sheet, colors, columns) {
     /** Formatiert das Sheet
      * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
      * Die Funktion setzt die Hintergrundfarben, Textfarben, Textausrichtungen, Zeilen- und Spaltenhöhen und verbindet Zellen
