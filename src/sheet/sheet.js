@@ -152,8 +152,13 @@ function writeDataToSheet(data, results, sheet) {
      * @param {Array} data - Daten für das Sheet
      * @param {Array} results - Neue Ergebnisse
      */
+
+    Logger.log('Übertrage neue Daten in das Tabellenblatt...');
+
     _writeNewDataToSheet(data, sheet);
     _writeNewRecordsToSheet(results, sheet);
+
+    Logger.log('Daten erfolgreich übertragen.');
 }
 
 function formatSheet(sheet, numberOfEntries, format) {
@@ -164,6 +169,8 @@ function formatSheet(sheet, numberOfEntries, format) {
      * @param {number} numberOfEntries - Anzahl der Einträge pro Disziplin
      * @param {object} format - Format für das Sheet
      */
+
+    Logger.log('Formatiere das Tabellenblatt...');
 
     if (!format) format = DEFAULT_FORMAT; // Setze das Standardformat, wenn kein Format übergeben wird
 
@@ -240,6 +247,8 @@ function formatSheet(sheet, numberOfEntries, format) {
     sheet.setColumnWidth(16, format.Spalten.Breiten['Neue Ergebnisse']);
     sheet.getRange(1, 16).setFontColor(format['Neue Ergebnisse'].Textfarbe).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe);
     sheet.getRange(1, 16).setValue(format['Neue Ergebnisse'].Text); // Schreibe in P:1 die Überschrift für die neuen Ergebnisse
+
+    Logger.log('Formatierung abgeschlossen.');
 }
 
 function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
@@ -254,7 +263,6 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
     Logger.log('Version: ' + version);
     let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/web-app/version.txt').getContentText();
 
-    Logger.log('Aktualisiere Daten für die Saison: ' + sheet.getName() + '...');
 
     if (newestVersion !== version) {
         Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
@@ -276,6 +284,8 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
 
     let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/endpoint.txt').getContentText();
 
+    Logger.log('Aktualisiere Daten für die Saison: ' + sheet.getName() + '...');
+
     let response = UrlFetchApp.fetch(endpoint, options).getContentText();
 
     // Überprüfe, ob die Antwort erfolgreich war
@@ -287,8 +297,12 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
 
     response = JSON.parse(response);
 
+    Logger.log('Daten erfolgreich aktualisiert.');
+
     writeDataToSheet(response.data, response.newResults, sheet); // Schreibe die neuen Daten in das Sheet
     if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format); // Formatiere das Sheet, wenn 'formatSheetEveryTime' auf 'true' gesetzt ist
+
+    Logger.log('Bestenliste wurde erfolgreich aktualisiert. Das Programm wurde beendet.');
 }
 
 let DEFAULT_FORMAT = {
@@ -301,8 +315,8 @@ let DEFAULT_FORMAT = {
             'Saison': '#252626',
             'Lage': '#252626',
             'Streckenangabe': {
-                'Weiblich': '#252626',
-                'Maennlich': '#252626'
+                'Weiblich': '#652a5f',
+                'Maennlich': '#25476a'
             },
             'Kopfzeile': '#252626',
             'Maennlich': {
