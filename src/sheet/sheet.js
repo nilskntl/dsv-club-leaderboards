@@ -147,7 +147,7 @@ function _writeNewDataToSheet(data, sheet) {
 
     let lastRow = sheet.getLastRow(); // Sollten sich unterhalb der Range noch Daten befinden, werden diese gelöscht (außer sie befinden sich in Reihe P)
     if (lastRow > data.length) {
-        let rangeToDelete = sheet.getRange(data.length + 1, 1, lastRow - data.length, data[0].length);
+        let rangeToDelete = sheet.getRange(data.length + 3, 1, lastRow - data.length, data[0].length);
         rangeToDelete.clearContent();
     }
 }
@@ -271,9 +271,11 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
 
 
     if (newestVersion !== version) {
+        Logger.log('--------------------------------------------------');
         Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
         Logger.log('Neueste Version: ' + newestVersion);
         Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
+        Logger.log('--------------------------------------------------');
     }
 
     let payload = {
