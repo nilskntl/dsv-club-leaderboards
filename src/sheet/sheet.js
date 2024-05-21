@@ -198,8 +198,7 @@ function formatSheet(sheet, numberOfEntries, format) {
     sheet.clearFormats(); // Lösche die Formatierung des gesamten Sheets
 
     sheet.getRange('A:P').setHorizontalAlignment(format.Allgemein.Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@'); // Textausrichtung für Reihe A bis N setzen und Format auf Text setzen
-    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung); // Textausrichtung für Reihe P setzen
-
+    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@').setFontWeight(format['Neue Ergebnisse'].Textgewicht).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe).setFontColor(format['Neue Ergebnisse'].Textfarbe); // Textausrichtung für Reihe P setzen und Format auf Text setzen
     let strokes = [[3, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]] // Zeilen in denen eine neue Disziplin beginnt
 
     // Setze die Zeile für die Saison
@@ -383,6 +382,7 @@ let DEFAULT_FORMAT = {
     'Neue Ergebnisse': {
         'Textfarbe': '#2E2727',
         'Hintergrundfarbe': '#ffffff',
+        'Textgewicht': 'bold',
         'Textausrichtung': 'left',
         'Text': 'Neue Ergebnisse'
     }
