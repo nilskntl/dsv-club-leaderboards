@@ -21,23 +21,23 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 4. **Manuelle Hinzufügung von All-Time Bestenlisten:**
    - Da der DSV nur Zugriff auf die Bestenlisten des aktuellen Jahres bietet, müssen All-Time Bestenlisten einmalig manuell in Google Sheets hinzugefügt werden.
 
-5. **Anpassung der Formatierung in:**
-   - Du kannst die Formatierung der Bestenlisten mit der Funktion `formatSheet()` anpassen. Diese Funktion kann beliebig oft ausgeführt werden und beeinflusst nur die Formatierung, nicht die Daten in den Zellen.
+5. **Anpassung der Formatierung:**
+   - Du kannst die Formatierung der Bestenlisten anpassen, indem du die Werte in `FORMAT` veränderst.
 
 ## Einbindung in Website
 
-1. **Kopiere deine Google Sheets URLs**
+1. **Kopiere deine Google Sheets URLs:**
    - Öffne deine Google Sheets Datei
    - Gehe auf Datei -> Freigebene -> Im Web veröffentlichen
    - Wähle das Tabellenblatt aus, dass du freigeben willst und wähle die Option "Tabulatorgetrennte Werte (TSV)"
    - Führe diesen Schritt mit jedem Tabellenblatt durch, dass du auf deiner Website einbinden willst (z.B. All-Time Bestenliste, Bestenliste 2023/2024, etc.)
 
-2. **Einrichtung der HTML**
+2. **Einrichtung der HTML:**
    - Kopiere den Code aus `index.html`
    - Ganz unten im Dokument befindet sich die Konstante "KEYS" in der du die Google Sheets URLs eintragen kannst
    - Hinweis: Für die All-Time Bestenliste ändere nicht den Namen 'All-Time'. Dieser muss so bleiben.
 
-3. **Einbindung in Website**
+3. **Einbindung in Website:**
    - Kopiere den HTML Code in deine Website
 
 ## Hinweise
@@ -49,6 +49,5 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 
 - Führe die Funktion `updateAllTime()` im `main.js`-Skript aus, um die Bestenlisten zu aktualisieren.
 - Das Skript enthält außerdem die Funktion `updateSeason()`, die die Bestenlisten des aktuellen Jahres aktualisiert.
-- Die Funktion `formatSheet()` in `main.js` ermöglicht es dir, die Formatierung der Bestenlisten jederzeit zu überarbeiten.
 
 Viel Spaß mit deinem automatisierten Bestenlisten-Aktualisierungsprogramm für deinen Schwimmverein! Ein Beispiel der Implementierung findet man auf https://www.wsg-wunstorf.de/bestenlisten
