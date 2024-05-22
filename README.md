@@ -24,6 +24,22 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 5. **Anpassung der Formatierung in:**
    - Du kannst die Formatierung der Bestenlisten mit der Funktion `formatSheet()` anpassen. Diese Funktion kann beliebig oft ausgeführt werden und beeinflusst nur die Formatierung, nicht die Daten in den Zellen.
 
+## Einbindung in Website
+
+1. **Kopiere deine Google Sheets URLs**
+   - Öffne deine Google Sheets Datei
+   - Gehe auf Datei -> Freigebene -> Im Web veröffentlichen
+   - Wähle das Tabellenblatt aus, dass du freigeben willst und wähle die Option "Tabulatorgetrennte Werte (TSV)"
+   - Führe diesen Schritt mit jedem Tabellenblatt durch, dass du auf deiner Website einbinden willst (z.B. All-Time Bestenliste, Bestenliste 2023/2024, etc.)
+
+2. **Einrichtung der HTML**
+   - Kopiere den Code aus `index.html`
+   - Ganz unten im Dokument befindet sich die Konstante "KEYS" in der du die Google Sheets URLs eintragen kannst
+   - Hinweis: Für die All-Time Bestenliste ändere nicht den Namen 'All-Time'. Dieser muss so bleiben.
+
+3. **Einbindung in Website**
+   - Kopiere den HTML Code in deine Website
+
 ## Hinweise
 
 - Stelle sicher, dass du die notwendigen Berechtigungen für den Zugriff auf Google Sheets und das Ausführen von Skripten erteilt hast.
