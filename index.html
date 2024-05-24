@@ -1,3 +1,20 @@
+<!--
+Beschreibung: HTML Dokument zum Einbinden der Bestenlisten in eine Webseite
+Die Bestenlisten werden aus Google Sheets importiert und in einer Tabelle mit Auswahlmöglichkeiten zum Filtern nach
+verschiedenen Saisons, Geschlecht, Bahnlänge und Lage angezeigt.
+Das eigentliche html Dokument wird dynamisch geladen und in einen iframe eingefügt.
+
+Einrichtung:
+1. Geben Sie Ihre Google Sheets als tsv Dateien frei und kopiere die Links. Mache das gleiche mit allen Sheets der Saisons, die Sie einbinden wollen
+2. Fügen Sie die Links in das KEYS Objekt ein. Der Schlüssel ist der Name der Saison und der Wert der Link zum Sheet
+Mehr Informationen, sowie den Source Code finden Sie unter: https://github.com/nilskntl/dsv-club-leaderboards
+
+Nutzung:
+1. Erstellen Sie eine neue HTML Datei oder binden Sie den folgenden Code in ein Element in ihre Website ein
+2. Kopieren Sie den folgenden Code in die Datei
+3. Speichern Sie die Datei und verlinken Sie sie ggf. auf Ihrer Webseite
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,14 +34,23 @@
 <iframe id="contentFrame" style="width: 100%; height: 100%; border: none"></iframe>
 <script>
 
+    /**
+     * Link Struktur
+     * https://docs.google.com/spreadsheets/d/e/ID_OF_YOUR_SPREADHSEET/pub?gid=ID_OF_SPECIFIC_SHEET&single=true&output=tsv
+     */
+
     const KEYS = {
         'All-Time': {
-            'name': 'All-Time',
-            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=1023752348&single=true&output=tsv'
+            'name': 'All-Time', /** Den Namen für die All-Time Bestenliste NICHT ändern! */
+            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
         },
         '2023/2024': {
             'name': '2023/2024',
-            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=339397320&single=true&output=tsv'
+            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
+        },
+        '2022/2023': {
+            'name': '2022/2023',
+            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
         }
     }
 
