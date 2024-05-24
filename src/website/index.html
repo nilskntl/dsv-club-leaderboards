@@ -143,27 +143,23 @@
 
         /* Definition der Breiten der Spalten */
         .col1 {
-            width: 8%;
-        }
-
-        .col2 {
-            width: 34%;
-        }
-
-        .col3 {
-            width: 14%;
-        }
-
-        .col4 {
             width: 10%;
         }
 
-        .col5 {
-            width: 22%;
+        .col2 {
+            width: 40%;
         }
 
-        .col6 {
+        .col3 {
             width: 12%;
+        }
+
+        .col4 {
+            width: 24%;
+        }
+
+        .col5 {
+            width: 14%;
         }
 
         /* Formatierungen für den Container, in dem sich einzelne Dropdowns befinden */
@@ -1577,7 +1573,7 @@
                  */
                 let row = document.createElement('div');
                 row.classList.add('leaderboard__table-header');
-                let headerCells = ['Platz', 'Name', 'Zeit', 'Jg.', 'Ort', 'Jahr'];
+                let headerCells = ['Platz', 'Name (Jg.)', 'Zeit', 'Ort', 'Jahr'];
 
                 for (let i = 0; i < headerCells.length; i++) {
                     let cell = document.createElement('div');
@@ -1625,7 +1621,7 @@
                     let rank = document.createElement('div'); // Erstelle eine Zelle für den Rang
                     let name = document.createElement('div'); // Erstelle eine Zelle für den Namen
                     let time = document.createElement('div'); // Erstelle eine Zelle für die Zeit
-                    let birth = document.createElement('div'); // Erstelle eine Zelle für das Geburtsjahr
+                    // let birth = document.createElement('div'); // Erstelle eine Zelle für das Geburtsjahr
                     let location = document.createElement('div'); // Erstelle eine Zelle für den Ort
                     let year = document.createElement('div'); // Erstelle eine Zelle für das Jahr
 
@@ -1641,7 +1637,7 @@
                     rank.classList.add('col1');
                     row.append(rank); // Füge die Zelle in die Zeile ein
 
-                    name.textContent = result.person.name; // Setze den Text der Zelle auf den Namen
+                    name.textContent = result.person.name + ' (' + result.person.birth.toString() + ')'; // Setze den Text der Zelle auf den Namen
                     name.classList.add('col2');
                     row.append(name); // Füge die Zelle in die Zeile ein
 
@@ -1649,12 +1645,14 @@
                     time.classList.add('col3');
                     row.append(time); // Füge die Zelle in die Zeile ein
 
+                    /*
                     birth.textContent = result.person.birth.toString(); // Setze den Text der Zelle auf das Geburtsjahr
                     birth.classList.add('col4');
                     row.append(birth); // Füge die Zelle in die Zeile ein
+                     */
 
                     location.textContent = result.location; // Setze den Text der Zelle auf den Ort
-                    location.classList.add('col5');
+                    location.classList.add('col4');
                     row.append(location); // Füge die Zelle in die Zeile ein
 
                     if (this._filter.season === 'All-Time') {
@@ -1666,7 +1664,7 @@
                     } else {
                         year.textContent = result.date; // Setze den Text der Zelle auf das Datum
                     }
-                    year.classList.add('col6');
+                    year.classList.add('col5');
                     row.append(year); // Füge die Zelle in die Zeile ein
 
                     table.appendChild(row);
