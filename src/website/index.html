@@ -329,6 +329,14 @@
             border-top-left-radius: var(--border-radius);
             padding: 16px;
             background-color: var(--primary-background);
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            transition: background-color var(--transition-short) linear;
+        }
+
+        .statistics__ranking-header:hover {
+            background-color: var(--light-grey);
         }
 
         .statistics__ranking-sub-header {
@@ -339,12 +347,6 @@
         .statistics__ranking-body {
             display: flex;
             justify-content: center;
-        }
-
-        .statistics__ranking-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
         }
 
         .statistics__ranking-list {
@@ -369,6 +371,11 @@
             padding: 8px;
             color: var(--primary-color);
             height: 32px;
+            transition: background-color var(--transition-short) linear;
+        }
+
+        .statistics__list-item:hover {
+            background-color: var(--light-grey);
         }
 
         .statistics__list-item-first-place {
@@ -381,16 +388,30 @@
 
         .statistics__rank {
             font-size: 20px;
+            transition: font-size var(--transition-short) linear;
         }
 
         .statistics__name {
             font-size: 14px;
+            transition: font-size var(--transition-short) linear;
         }
 
         .statistics__value {
             font-size: 20px;
-            /* Das value soll ganz nach rechts im list-item verschoben sein */
             margin-left: auto;
+            transition: font-size var(--transition-short) linear;
+        }
+
+        .statistics__list-item:hover .statistics__rank {
+            font-size: 22px;
+        }
+
+        .statistics__list-item:hover .statistics__value {
+            font-size: 22px;
+        }
+
+        .statistics__list-item:hover .statistics__name {
+            font-size: 16px;
         }
 
 
@@ -470,6 +491,7 @@
 
             .statistics__ranking-header {
                 padding: 12px;
+                font-size: 16px;
             }
 
             .statistics__ranking-sub-header {
@@ -480,10 +502,6 @@
             .statistics__ranking-body {
                 display: flex;
                 flex-direction: column;
-            }
-
-            .statistics__ranking-title {
-                font-size: 16px;
             }
 
             .statistics__ranking-list {
@@ -511,6 +529,18 @@
 
             .statistics__value {
                 font-size: 16px;
+            }
+
+            .statistics__list-item:hover .statistics__rank {
+                font-size: 16px;
+            }
+
+            .statistics__list-item:hover .statistics__value {
+                font-size: 16px;
+            }
+
+            .statistics__list-item:hover .statistics__name {
+                font-size: 12px;
             }
 
         }
@@ -1738,7 +1768,7 @@
                     let text4 = document.createElement('span');
                     text4.innerText = oldestRecord.discipline.distance + 'm ' + oldestRecord.discipline.stroke + ' ' + ' (' + oldestRecord.result.time + ')';
                     text4.style.fontWeight = 'bold';
-                    text4.style.lineHeight = '2';
+                    text4.style.marginBottom = '12px';
                     oldestRecordDiv.appendChild(text1);
                     oldestRecordDiv.appendChild(text2);
                     oldestRecordDiv.appendChild(text3);
