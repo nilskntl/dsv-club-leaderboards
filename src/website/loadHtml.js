@@ -17,14 +17,15 @@ async function loadHtmlContent() {
     }
 }
 
-function insertHtmlIntoContainer(container, htmlContent) {
+function insertHtmlIntoContainer(frameId, htmlContent) {
     /**
      * Fügt den HTML-Inhalt in ein Html Element ein
-     * @param {HTMLElement} container - Container
+     * @param {string} frameId - ID des iFrames
      * @param {string} htmlContent - HTML-Inhalt
      */
 
-    let doc = container.contentDocument || container.contentWindow.document;
+    let frame = document.getElementById(frameId);
+    let doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
     doc.write(htmlContent);
     doc.close();
