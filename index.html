@@ -13,7 +13,7 @@
         .then(code => {
             eval(code);
             loadHtmlContent().then(htmlContent => {
-                insertHtmlIntoContainer('leaderboardContainer', htmlContent);
+                insertHtmlIntoContainer(document.getElementById('leaderboardContainer'), htmlContent);
             });
         })
         .catch(error => console.error('Error loading external script:', error));

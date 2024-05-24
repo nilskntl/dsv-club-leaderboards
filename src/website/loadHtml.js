@@ -17,14 +17,13 @@ async function loadHtmlContent() {
     }
 }
 
-function insertHtmlIntoContainer(containerId, htmlContent) {
+function insertHtmlIntoContainer(container, htmlContent) {
     /**
      * Fügt den HTML-Inhalt in ein Html Element ein
-     * @param {string} containerId - ID des Containers
+     * @param {HTMLElement} container - Container
      * @param {string} htmlContent - HTML-Inhalt
      */
 
-    let container = document.getElementById(containerId);
     let doc = container.contentDocument || container.contentWindow.document;
     doc.open();
     doc.write(htmlContent);
