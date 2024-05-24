@@ -30,7 +30,8 @@ const version = '1.0.2';
  *
  * Bei Fehlern:
  * Wenn ein Fehler auftritt, versuchen Sie das Skript erneut auszuführen. Sollte der Fehler weiterhin bestehen, überprüfen Sie die Konfiguration
- * und die Eingaben im Sheet. Bei weiteren Fragen oder Problemen können Sie sich gerne an mich wenden.
+ * und die Eingaben im Sheet. Sollte der Fehler weiterhin bestehen, überprüfen Sie, ob eine neue Version des Skripts verfügbar ist.
+ * Bei weiteren Fragen oder Problemen können Sie sich gerne an mich wenden.
  * Im unwahrscheinlichen Fall, dass die Daten im Sheet weg sein sollten, dann finden sie unter Google Sheets -> Datei -> Versionsverlauf
  * einen ausführlichen Verlauf aller Änderungen und können eine frühere Version ohne Probleme wiederherstellen.
  */
