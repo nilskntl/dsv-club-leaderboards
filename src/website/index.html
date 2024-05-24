@@ -6,11 +6,12 @@
     <style>
         /* Definiere Variablen für die Farben */
         :root {
-            --primary-color: #31353e;
+            --primary-color: #31353E;
             --secondary-color: #424959;
-            --tertiary-color: #AFACFB;
+            --tertiary-color: #f2f4ef;
+            --quaternary-color: #c2e3f4;
+            --fifth-color: #efb730;
             --contrast-color: #ffffff;
-            --light-grey: #f0eef9;
             --primary-background: #f3f3f3;
             --primary-background-opacity: rgba(243, 243, 245, 0.5);
             --secondary-background: var(--contrast-color);
@@ -38,42 +39,6 @@
         html {
             scrollbar-width: none;
             scrollbar-color: transparent transparent;
-        }
-
-        /* Allgemeine Formatierungen für Tabelle */
-        table {
-            max-width: 100%;
-            width: 100%;
-            table-layout: fixed;
-            line-height: 1.3;
-            border-collapse: collapse;
-            text-align: center;
-            overflow: hidden;
-            white-space: break-spaces;
-            font-size: 12px;
-            color: var(--primary-color);
-        }
-
-        /* Allgemeine Formatierungen für Zellen */
-        th,
-        td {
-            height: 32px;
-            vertical-align: middle;
-            border-bottom: solid 8px var(--secondary-background);
-            opacity: 1;
-        }
-
-        /* Formatierungen für einzelne Zeilen */
-        tr {
-            width: 50%;
-            opacity: 1;
-            background-color: var(--primary-background);
-            transition: background-color var(--transition-short);
-        }
-
-        /* Formatierungen für einzelne Zeilen beim Hovern */
-        tr:hover {
-            background-color: var(--primary-background-opacity);
         }
 
         img {
@@ -107,13 +72,7 @@
 
         /* Formatierungen für die Header Zellen */
         .header-cells {
-            height: min-content;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            background-color: var(--secondary-background);
-            color: var(--primary-color);
             font-weight: bold;
-            border-bottom: solid 4px var(--secondary-background);
             vertical-align: bottom;
         }
 
@@ -129,6 +88,58 @@
             overflow: hidden;
             padding: 16px 8px 8px 8px;
         }
+
+        .leaderboard__table {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .leaderboard__table-header {
+            display: flex;
+            align-content: center;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: var(--secondary-background);
+        }
+
+        .leaderboard__table-header:hover {
+            background-color: var(--secondary-background);
+        }
+
+        .leaderboard__table-item {
+            display: flex;
+            align-content: center;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--tertiary-color);
+            padding: 8px;
+            color: var(--primary-color);
+            height: 32px;
+            transition: background-color var(--transition-short) linear, font-size var(--transition-short) linear;
+        }
+
+        .leaderboard__table-item:hover {
+            background-color: var(--tertiary-color);
+            font-size: 13px;
+        }
+
+        .leaderboard__table-item-first-place {
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            background-color: var(--tertiary-color);
+            border: 1px solid var(--tertiary-color);
+            transition: background-color var(--transition-short) linear;
+        }
+
+        .leaderboard__table-item-first-place:hover {
+            background-color: var(--contrast-color);
+        }
+
 
         /* Definition der Breiten der Spalten */
         .col1 {
@@ -336,7 +347,7 @@
         }
 
         .statistics__ranking-header:hover {
-            background-color: var(--light-grey);
+            background-color: var(--tertiary-color);
         }
 
         .statistics__ranking-sub-header {
@@ -357,7 +368,7 @@
             padding: 16px;
         }
 
-        .statistics__ranking-image {
+        .ranking-image {
             width: 24px;
             height: 24px;
         }
@@ -367,7 +378,7 @@
             align-content: center;
             align-items: center;
             gap: 8px;
-            border: 1px solid var(--light-grey);
+            border: 1px solid var(--tertiary-color);
             padding: 8px;
             color: var(--primary-color);
             height: 32px;
@@ -375,15 +386,19 @@
         }
 
         .statistics__list-item:hover {
-            background-color: var(--light-grey);
+            background-color: var(--tertiary-color);
         }
 
         .statistics__list-item-first-place {
             font-weight: bold;
-            border: 0;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             background-color: var(--tertiary-color);
-            color: var(--contrast-color);
+            border: 1px solid var(--tertiary-color);
+            transition: background-color var(--transition-short) linear;
+        }
+
+        .statistics__list-item-first-place:hover {
+            background-color: var(--contrast-color);
         }
 
         .statistics__rank {
@@ -403,15 +418,20 @@
         }
 
         .statistics__list-item:hover .statistics__rank {
-            font-size: 22px;
+            font-size: 21px;
         }
 
         .statistics__list-item:hover .statistics__value {
-            font-size: 22px;
+            font-size: 21px;
         }
 
         .statistics__list-item:hover .statistics__name {
-            font-size: 16px;
+            font-size: 15px;
+        }
+
+        .statistics__list-item:hover .ranking-image {
+            width: 25px;
+            height: 25px;
         }
 
 
@@ -419,6 +439,18 @@
         @media only screen and (max-width: 600px) {
             body {
                 padding: 8px 8px 8px 8px;
+            }
+
+            .leaderboard__table {
+                font-size: 10px;
+            }
+
+            .leaderboard__table-header {
+                font-size: 10px;
+            }
+
+            .leaderboard__table-item:hover {
+                font-size: 10px;
             }
 
             .dropdowns {
@@ -449,10 +481,6 @@
                 left: 0;
                 margin-bottom: 16px;
                 width: 100%;
-            }
-
-            table {
-                font-size: 8px;
             }
 
             .divider-container {
@@ -509,7 +537,7 @@
                 padding: 12px;
             }
 
-            .statistics__ranking-image {
+            .ranking-image {
                 width: 20px;
                 height: 20px;
             }
@@ -541,6 +569,11 @@
 
             .statistics__list-item:hover .statistics__name {
                 font-size: 12px;
+            }
+
+            .statistics__list-item:hover .ranking-image {
+                width: 20px;
+                height: 20px;
             }
 
         }
@@ -1508,6 +1541,26 @@
             loading.style.display = 'none'; // Ladekreis ausblenden
         }
 
+        static medalImage(place) {
+            let image = document.createElement('img');
+            image.className = 'ranking-image';
+            image.alt = 'Position' + (place + 1) + 'Medal';
+            switch (place) {
+                case 0:
+                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD+0lEQVR4nO1XX2xTVRw+El4WDA/T0HsTIDzMRB5MBF4kBkhJwPb2Khi553S6GGaEQQkQxu0gstE5XxR9NFFe9NkXNfEPPafoEolEOoQwyhY22MpCWwgkuAeLMMln7r3tVlxv/2y9t33ol/yeepvzfef35zs/QppooomKkPLLX6YVGcVD6iJVAj3KWujqDMIq5oWujiCyZSmpJTLbPCtSijxdTEBKke/e97Uur0qArv5UlLwZAYU4gbQi9dplIeWXP6qYfFjx2pLX1V+JU5jSVrak/dKtoiL8UjalyqvLko9ElkAP/FmcfOAJwup64iQyimd3iSx8XVZAj9ppf/uBrxwlbxKIkCVpv3zRRsCTdEDeYPvfI1oLwoEpm7rPonvHKuIGMorHWyILtjUMPdBn37jqAHETKb/8o52IjOIJzCN/9M0VCKvTNrd/Fwd9y90VoMovphR5xqahR7GFPDXHoaunS4zNva6Sr9bcXDetWpjblF+6N+ZrXVk301qsuSW2yhj2es7VzbQWY263fDLimyTEN0v4t1tJ1M20Fmpuw14ZFzZJGPWtQV1NayHmNvmaRd7IQDbkRd1Nq1pzu+KVTAE3Xm9Dw5hWpRjbJscN8kObJTw+vB0NY1qVIvluW8fEoXXInvYD32nAzxQ4w4DvNeCbXcDnO4FTO/pIowFRrRWcfgxOH0IwlA3OYohpL5FGADh9FZzeMYnFGHD+feBKNzB2ApiIAJP9wHgvkAgDf3QBZ9tzIuhjcNpVZ/LBXRDsH5PQufeA6x8AyYHScfMkcGFfYTY+qxN5bQME+9skMRQCJj8sT74who8CsWBORPCAy+Q7loGz2+bh8VB1xAsjoQMiaGRhBrHgOvcECHbSJP/b7upv/v8RD+V7YtAd8ue1Fgg6bR46eqw4qcGO4tNnvG/+txMR4Jd3rN9j2kbnBYjgG7O3b3er1QhIDgAXD+Sz8KnzAjj7wjzs8qHy5ZEXYkc8mYvR4/mJdM0NATHzsGvHaidgst9qZmMkgzzjrABBEyap6ydqJyA5UNAHO59zWAC76oyAt61vo1qrwwIoNw8a6alxCTGjiR86X0L5Jr5UwyYecbOJo0y1xmhn7cboUM7MBPvEHSPj7C+rjGpgZDcjc/Uv6CuOCzBFcNo7l4VFPiWG9ufLJ+oKeUtAxzIIOmU95vYvnPzV/GPO2A20l10TYIo4Q9cv7jndXfCcpiFXyc+KiNG3ql5obhgLTVfBQkOdf/+UFqFtBGeZ2ZXyd2OlPGIZXX6lHDNWSv3plVKwRxDaHtIIwKD2LDjrB2fZipZ6QX+AaH+BNBow2P48BO2EoN8apgTOHuREjYPTs+AsjKjWVm+eTTRB5vAf9gOBzJBOTw8AAAAASUVORK5CYII=';
+                    break;
+                case 1:
+                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD4klEQVR4nO1YTU8TURR9URcadWXUGUTjxo1GE3+AQDBKZ1qIiSEu3KkbxQ8S27hwAYkbdacrP2BaJOmMxbiAahGiYHQMoOJHEDqvClpoi3GlNW4Ar7kzHSDQKWVoZ2rSk9ykIUPnnPfuO+e+ElJEEUVkhTjHdMZ5FtJVzMlWkWUC3LwDPC4wqFDuBTiY3TGenUorgGc/QTlZkzX52trV4HZ9TE/eOQ2XuL05F6CK4Jgmw13g2ZNZC/C4Thmuvtt5l+QLk9VbtsY49ldaARw7+aNm08YlyTfUbgCPK25APgn1VSzJJ2Ic22i4CxzbuKQAj7PRePVdDSTfiNaWrovzzHhaERzzZ9yxrdSYfE0JeFy/DVY/BhcPrSdWAPvdaBfwnBgKcLuajZ3HecIS8iqRBrIqzjODBm00M+Eo2b+YfPU+1WHSk/+AzkSsRILbWpnBkZ4uEuBxPsnQ+4dJIYeb5aGVi3D75mAjY+VkrW2htdJwe1/BwlAl22JbaK0k3EYPs9B/gIE3ZQwe2oRtoWU23N5VMKqA0ZpdYGtomQm3z6nVf13GwFR9FdgeWssJtxjPwttybfXHj+6Bggit5YSbcpCJIvnBihL46+ahYEIrW/QfO3gtVFcHwZtt8NAnQ6t/SC383HW7HYavX4WvVy4fJ4UGX0DZJkj0tiAq016JQuZSZrySEvCKIztJIcArhY94RZpEcr77FB4ExyD0bAJ65Di86JtUCz/j39o6xtRnVCEi/eXzR2psJS+I9IK2olQl1ysnQB74nrHwGXx2djf8ynn7Vj5FPtgdXZL4wgp2RVO7ocxYvhN3Wmmp3jZmyM+K6I7OtlOTf6TEMgFeURH0tjFLXq+29lQ7idSauagl8GUHug1u/8KeX9qBtJr/P89fJdRWwu/Enc27ADx0SALdZuFqmhEgD3yHB/qh9ofr8i5AkJQQvqzz2YRhWywkakRcThV+V6qNHuVdgFdUIviyngyWuVwBPXJcFxC2QIDmPhhQuRLwom9SF5D8rwUIkvIz7wIEiSr4sl45nrsWeqm1kCDREcsOMc42uRIQemrhIRZE5axRiJm20aBmo80iPW2BgMh2Lcgii5zIjIBeWQsyr0inLAkyVYSkNOVqlAh0jOrtc4tYeYHBAUwd5rrMD3MdXdFZ92ltHbb2JxafGOb0mcjMRNoxb5wWJFpN7IA2F6UuNO1jGdN5LnXxQjM6/3p5jtgJvIzo7YQHGwcznG3Q2+eulAnVdtFt8Bm9bZpF6iKFgOYA3SxI9AY6STaXekFS7lne81nf1PzhOkGijzFV1bFDpMnU50eCRM9YZpVFFEGywj9c+pb6dWwGxwAAAABJRU5ErkJggg=='
+                    break;
+                case 2:
+                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD/UlEQVR4nO1Yz28TVxB+Kj1QQU8I2A0p6qUXflTqHwAJQRDv2omQUE4gDsClpRSqet8LIJQcYpG3IZEIEqEkxQQ4YbIvULXgIpqIqIekjlsQCBC/VFIbpJ5Cql6SMGjWXhcRr+043l0j+ZNG2sSW9vvmzcw3z4RUUEEFBSGpSNeTqgzZIuGX68k8AUHVB1oAbOJa6QX4pDUJVZ7OKkCV70EN+bBg8k1NiyAYuJOdvH8GmLK+5AJMEYrUZ3sKqrynYAFaYK9t9oP+XuIUXjasWJlQ5FdZBSjyy38al32cl3xL01LQAkkb8lNwsF4mTiKhyK22p6DIrXkFaP5W++wHWojTeN5U/VFSlSayilCk/yZ8q6rtyTdWgRb41yb7CfhuyxLiBrDe7U4B+8RWQDDwg/3k8e92hbxJpIV8kFSluE0Zzf7tq/piLvmGz80Jk538bZxMxE28UFbW5ZhIN+cI0PzRHLW/lZSzubluWqUwt7988qNnNWSxZ6a1UHP7s1aGu3Vyv2emtRBze7pVhtENEsQ2Sti0LzwzrWLN7Y9ayRTwtPEz8NS0ijG3x+ns/75RgumD9eC5ac3H3BKqDOM1qexPbF8LZWFa8zG3h5ul50g+XlsFr4MqlI1pFYrYtnX8112bYOjoXrhx7Fu4yjUz8Pm3tn3w5OguSBzZuYOUG37sPLxK6PR7wdmM0BnkDjordHpJHGOfknKA4No2odMpJDfY0QzRnhCMXDgJo5EzMC7CZuAz/g8/w+/gdw2dvRrkWqOn5A3ODqQyyiDa0wZjkT6IX+nPGWOXe+H6qbbMaQx00G+8zPys0JthONyVl/i7MRTugsG0CNdPYqCdVltlUwx5K4bDnW+XU5VrAgydnbXKpljyVkR7QmkR1J296Go7W43TBpsR6xlJ5J882SOe7gmzsTmbwZN1XAA2XSr7oUwWFyIgfqUffkmfwoDO9jkuQHB6DV82crF7Tjm8Syzf3/F03LrQbZXRT44LMHT6CF82GuktmYDRyBmrmR84LsCaPjERLpmAmAhbvjD1XgoYTwswOJ10XgCnD80SulzKEupNfcbp/feyiUfOn3Cxidvp16Ueo9GMmbEvHRcgjh/5xDQyvRnGIiUwskifaWSGTqddMTKEwVkfEsCtcmGrxLnMZmpwdpq4eYHBBQxfjFtlsQKGrGWO08mBrsPu/sRidFAlVUq4kXbOO/PDZ/9fp0UHayBeILUXWReaUKYncgWOzOhbFxqhs/3ES+BlxConbGxczHC3QaJodrHMlbI7daXU01dKTicNrgVIOeBS6NBywdkJnCT5pw+dNXR23vWaLwQ4BnElFpz9jK6aWjvoFD6jSQmufeXaqKygAlIQ3gA3Ks8HiF0lWwAAAABJRU5ErkJggg=='
+                    break;
+                default:
+                    break;
+            }
+            return image;
+        }
+
         #loadLeaderboardsIntoTable(disciplines) {
             /**
              * Funktion zum Laden der Bestenliste (eine Lage, ein Geschlecht, eine Bahnlänge) in die Tabelle
@@ -1522,13 +1575,15 @@
                  * Funktion zum Erstellen der Kopfzeile der Tabelle
                  * @returns {HTMLTableRowElement} - Kopfzeile der Tabelle
                  */
-                let row = document.createElement('tr');
+                let row = document.createElement('div');
+                row.classList.add('leaderboard__table-header');
                 let headerCells = ['Platz', 'Name', 'Zeit', 'Jg.', 'Ort', 'Jahr'];
 
                 for (let i = 0; i < headerCells.length; i++) {
-                    let cell = document.createElement('th');
-                    cell.textContent = headerCells[i];
+                    let cell = document.createElement('div');
                     cell.className = 'header-cells';
+                    cell.classList.add('col' + (i + 1));
+                    cell.textContent = headerCells[i];
                     row.appendChild(cell);
                 }
                 return row;
@@ -1541,10 +1596,12 @@
                 let dividerContainer = document.createElement('div'); // Erstelle ein neues Div-Element, in dem der Rest eingefügt wird
                 let leaderboard = disciplines[i]; // Bestenliste zu einer Disziplin
                 let disciplineDiv = document.createElement('div'); // Erstelle ein neues Div-Element
-                let table = document.createElement('table'); // Erstelle eine neue Tabelle
+                let table = document.createElement('div'); // Erstelle eine neue Tabelle
                 let distanceCell = document.createElement('div'); // Erstelle einen Div für die Distanz
 
-                table.innerHTML = '<colgroup><col class="col1"><col class="col2"><col class="col3"><col class="col4"><col class="col5"><col class="col6"></colgroup>'; // Übernehme die in col1 - col6 definierten Größen für die Spalten
+                table.classList.add('leaderboard__table');
+
+                disciplineDiv.className = 'discipline'; // Setze die Klasse des Div-Elements auf 'discipline'
 
                 distanceCell.className = 'distance'; // Setze die Klasse des Containers auf 'distance'
                 distanceCell.innerText = leaderboard.distance + 'm '; // Setze den Text des Containers auf die Distanz
@@ -1552,16 +1609,25 @@
                 table.appendChild(createHeader()); // Füge die Kopfzeile in den Body der Tabelle ein (Platz, Name, Zeit, Jg., Ort, Jahr
 
                 for (let j = 0; j < leaderboard.results.length; j++) {
-                    let row = document.createElement('tr'); // Erstelle eine neue Zeile
+                    let row = document.createElement('div'); // Erstelle eine neue Zeile
+
+                    row.classList.add('leaderboard__table-item');
+
+                    if (j === 0) {
+                        row.setAttribute('data-radius', 'top');
+                        row.classList.add('leaderboard__table-item-first-place');
+                    } else if (j === leaderboard.results.length - 1) {
+                        row.setAttribute('data-radius', 'bottom');
+                    }
 
                     let result = leaderboard.results[j]; // Ergebnis in der Bestenliste
 
-                    let rank = document.createElement('td'); // Erstelle eine Zelle für den Rang
-                    let name = document.createElement('td'); // Erstelle eine Zelle für den Namen
-                    let time = document.createElement('td'); // Erstelle eine Zelle für die Zeit
-                    let birth = document.createElement('td'); // Erstelle eine Zelle für das Geburtsjahr
-                    let location = document.createElement('td'); // Erstelle eine Zelle für den Ort
-                    let year = document.createElement('td'); // Erstelle eine Zelle für das Jahr
+                    let rank = document.createElement('div'); // Erstelle eine Zelle für den Rang
+                    let name = document.createElement('div'); // Erstelle eine Zelle für den Namen
+                    let time = document.createElement('div'); // Erstelle eine Zelle für die Zeit
+                    let birth = document.createElement('div'); // Erstelle eine Zelle für das Geburtsjahr
+                    let location = document.createElement('div'); // Erstelle eine Zelle für den Ort
+                    let year = document.createElement('div'); // Erstelle eine Zelle für das Jahr
 
                     // Setze die obere linke Ecke der ersten Zelle auf gerundet
                     let borderRadius = parseInt(document.documentElement.style.getPropertyValue('--border-radius')) * 2;
@@ -1571,29 +1637,36 @@
                     year.style.borderBottomRightRadius = borderRadius + 'px';
 
                     rank.textContent = (j + 1).toString() + '.'; // Setze den Text der Zelle auf den Rang
+
+                    rank.classList.add('col1');
                     row.append(rank); // Füge die Zelle in die Zeile ein
 
                     name.textContent = result.person.name; // Setze den Text der Zelle auf den Namen
+                    name.classList.add('col2');
                     row.append(name); // Füge die Zelle in die Zeile ein
 
                     time.textContent = result.time; // Setze den Text der Zelle auf die Zeit
+                    time.classList.add('col3');
                     row.append(time); // Füge die Zelle in die Zeile ein
 
                     birth.textContent = result.person.birth.toString(); // Setze den Text der Zelle auf das Geburtsjahr
+                    birth.classList.add('col4');
                     row.append(birth); // Füge die Zelle in die Zeile ein
 
                     location.textContent = result.location; // Setze den Text der Zelle auf den Ort
+                    location.classList.add('col5');
                     row.append(location); // Füge die Zelle in die Zeile ein
 
                     if (this._filter.season === 'All-Time') {
                         let currentYear = new Date().getFullYear(); // Get the current year (yyyy)
                         if (result.date.year.toString() === currentYear.toString()) { // Überprüfe, ob das Jahr dem aktuellen Jahr entspricht
-                            row.className = 'current-year'; // Setze die Klasse der Zelle auf 'current-year'
+                            row.classList.add('current-year'); // Setze die Klasse der Zelle auf 'current-year'
                         }
                         year.textContent = result.date.year; // Setze den Text der Zelle auf das Jahr
                     } else {
                         year.textContent = result.date; // Setze den Text der Zelle auf das Datum
                     }
+                    year.classList.add('col6');
                     row.append(year); // Füge die Zelle in die Zeile ein
 
                     table.appendChild(row);
@@ -1614,7 +1687,6 @@
                     dividerContainer.appendChild(distanceCell); // Füge die Zelle für die Distanz in das Div-Element ein
                 }
                 disciplineDiv.appendChild(table); // Füge die Tabelle in das Div-Element ein
-                disciplineDiv.className = 'discipline'; // Setze die Klasse des Div-Elements auf 'discipline'
                 dividerContainer.appendChild(disciplineDiv); // Füge das Div-Element in das Div-Element ein
                 leaderboardsDiv.appendChild(dividerContainer); // Füge das Div-Element in das Element mit der ID 'leaderboards' ein
             }
@@ -1694,22 +1766,9 @@
                     listItem.appendChild(value);
 
                     if (i <= 2) {
-                        let image = document.createElement('img');
-                        image.className = 'statistics__ranking-image';
-                        image.alt = 'Position' + (i + 1) + 'Medal';
-                        switch (i) {
-                            case 0:
-                                image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD+0lEQVR4nO1XX2xTVRw+El4WDA/T0HsTIDzMRB5MBF4kBkhJwPb2Khi553S6GGaEQQkQxu0gstE5XxR9NFFe9NkXNfEPPafoEolEOoQwyhY22MpCWwgkuAeLMMln7r3tVlxv/2y9t33ol/yeepvzfef35zs/QppooomKkPLLX6YVGcVD6iJVAj3KWujqDMIq5oWujiCyZSmpJTLbPCtSijxdTEBKke/e97Uur0qArv5UlLwZAYU4gbQi9dplIeWXP6qYfFjx2pLX1V+JU5jSVrak/dKtoiL8UjalyqvLko9ElkAP/FmcfOAJwup64iQyimd3iSx8XVZAj9ppf/uBrxwlbxKIkCVpv3zRRsCTdEDeYPvfI1oLwoEpm7rPonvHKuIGMorHWyILtjUMPdBn37jqAHETKb/8o52IjOIJzCN/9M0VCKvTNrd/Fwd9y90VoMovphR5xqahR7GFPDXHoaunS4zNva6Sr9bcXDetWpjblF+6N+ZrXVk301qsuSW2yhj2es7VzbQWY263fDLimyTEN0v4t1tJ1M20Fmpuw14ZFzZJGPWtQV1NayHmNvmaRd7IQDbkRd1Nq1pzu+KVTAE3Xm9Dw5hWpRjbJscN8kObJTw+vB0NY1qVIvluW8fEoXXInvYD32nAzxQ4w4DvNeCbXcDnO4FTO/pIowFRrRWcfgxOH0IwlA3OYohpL5FGADh9FZzeMYnFGHD+feBKNzB2ApiIAJP9wHgvkAgDf3QBZ9tzIuhjcNpVZ/LBXRDsH5PQufeA6x8AyYHScfMkcGFfYTY+qxN5bQME+9skMRQCJj8sT74who8CsWBORPCAy+Q7loGz2+bh8VB1xAsjoQMiaGRhBrHgOvcECHbSJP/b7upv/v8RD+V7YtAd8ue1Fgg6bR46eqw4qcGO4tNnvG/+txMR4Jd3rN9j2kbnBYjgG7O3b3er1QhIDgAXD+Sz8KnzAjj7wjzs8qHy5ZEXYkc8mYvR4/mJdM0NATHzsGvHaidgst9qZmMkgzzjrABBEyap6ydqJyA5UNAHO59zWAC76oyAt61vo1qrwwIoNw8a6alxCTGjiR86X0L5Jr5UwyYecbOJo0y1xmhn7cboUM7MBPvEHSPj7C+rjGpgZDcjc/Uv6CuOCzBFcNo7l4VFPiWG9ufLJ+oKeUtAxzIIOmU95vYvnPzV/GPO2A20l10TYIo4Q9cv7jndXfCcpiFXyc+KiNG3ql5obhgLTVfBQkOdf/+UFqFtBGeZ2ZXyd2OlPGIZXX6lHDNWSv3plVKwRxDaHtIIwKD2LDjrB2fZipZ6QX+AaH+BNBow2P48BO2EoN8apgTOHuREjYPTs+AsjKjWVm+eTTRB5vAf9gOBzJBOTw8AAAAASUVORK5CYII=';
-                                listItem.classList.add('statistics__list-item-first-place')
-                                break;
-                            case 1:
-                                image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD4klEQVR4nO1YTU8TURR9URcadWXUGUTjxo1GE3+AQDBKZ1qIiSEu3KkbxQ8S27hwAYkbdacrP2BaJOmMxbiAahGiYHQMoOJHEDqvClpoi3GlNW4Ar7kzHSDQKWVoZ2rSk9ykIUPnnPfuO+e+ElJEEUVkhTjHdMZ5FtJVzMlWkWUC3LwDPC4wqFDuBTiY3TGenUorgGc/QTlZkzX52trV4HZ9TE/eOQ2XuL05F6CK4Jgmw13g2ZNZC/C4Thmuvtt5l+QLk9VbtsY49ldaARw7+aNm08YlyTfUbgCPK25APgn1VSzJJ2Ic22i4CxzbuKQAj7PRePVdDSTfiNaWrovzzHhaERzzZ9yxrdSYfE0JeFy/DVY/BhcPrSdWAPvdaBfwnBgKcLuajZ3HecIS8iqRBrIqzjODBm00M+Eo2b+YfPU+1WHSk/+AzkSsRILbWpnBkZ4uEuBxPsnQ+4dJIYeb5aGVi3D75mAjY+VkrW2htdJwe1/BwlAl22JbaK0k3EYPs9B/gIE3ZQwe2oRtoWU23N5VMKqA0ZpdYGtomQm3z6nVf13GwFR9FdgeWssJtxjPwttybfXHj+6Bggit5YSbcpCJIvnBihL46+ahYEIrW/QfO3gtVFcHwZtt8NAnQ6t/SC383HW7HYavX4WvVy4fJ4UGX0DZJkj0tiAq016JQuZSZrySEvCKIztJIcArhY94RZpEcr77FB4ExyD0bAJ65Di86JtUCz/j39o6xtRnVCEi/eXzR2psJS+I9IK2olQl1ysnQB74nrHwGXx2djf8ynn7Vj5FPtgdXZL4wgp2RVO7ocxYvhN3Wmmp3jZmyM+K6I7OtlOTf6TEMgFeURH0tjFLXq+29lQ7idSauagl8GUHug1u/8KeX9qBtJr/P89fJdRWwu/Enc27ADx0SALdZuFqmhEgD3yHB/qh9ofr8i5AkJQQvqzz2YRhWywkakRcThV+V6qNHuVdgFdUIviyngyWuVwBPXJcFxC2QIDmPhhQuRLwom9SF5D8rwUIkvIz7wIEiSr4sl45nrsWeqm1kCDREcsOMc42uRIQemrhIRZE5axRiJm20aBmo80iPW2BgMh2Lcgii5zIjIBeWQsyr0inLAkyVYSkNOVqlAh0jOrtc4tYeYHBAUwd5rrMD3MdXdFZ92ltHbb2JxafGOb0mcjMRNoxb5wWJFpN7IA2F6UuNO1jGdN5LnXxQjM6/3p5jtgJvIzo7YQHGwcznG3Q2+eulAnVdtFt8Bm9bZpF6iKFgOYA3SxI9AY6STaXekFS7lne81nf1PzhOkGijzFV1bFDpMnU50eCRM9YZpVFFEGywj9c+pb6dWwGxwAAAABJRU5ErkJggg=='
-                                break;
-                            case 2:
-                                image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD/UlEQVR4nO1Yz28TVxB+Kj1QQU8I2A0p6qUXflTqHwAJQRDv2omQUE4gDsClpRSqet8LIJQcYpG3IZEIEqEkxQQ4YbIvULXgIpqIqIekjlsQCBC/VFIbpJ5Cql6SMGjWXhcRr+043l0j+ZNG2sSW9vvmzcw3z4RUUEEFBSGpSNeTqgzZIuGX68k8AUHVB1oAbOJa6QX4pDUJVZ7OKkCV70EN+bBg8k1NiyAYuJOdvH8GmLK+5AJMEYrUZ3sKqrynYAFaYK9t9oP+XuIUXjasWJlQ5FdZBSjyy38al32cl3xL01LQAkkb8lNwsF4mTiKhyK22p6DIrXkFaP5W++wHWojTeN5U/VFSlSayilCk/yZ8q6rtyTdWgRb41yb7CfhuyxLiBrDe7U4B+8RWQDDwg/3k8e92hbxJpIV8kFSluE0Zzf7tq/piLvmGz80Jk538bZxMxE28UFbW5ZhIN+cI0PzRHLW/lZSzubluWqUwt7988qNnNWSxZ6a1UHP7s1aGu3Vyv2emtRBze7pVhtENEsQ2Sti0LzwzrWLN7Y9ayRTwtPEz8NS0ijG3x+ns/75RgumD9eC5ac3H3BKqDOM1qexPbF8LZWFa8zG3h5ul50g+XlsFr4MqlI1pFYrYtnX8112bYOjoXrhx7Fu4yjUz8Pm3tn3w5OguSBzZuYOUG37sPLxK6PR7wdmM0BnkDjordHpJHGOfknKA4No2odMpJDfY0QzRnhCMXDgJo5EzMC7CZuAz/g8/w+/gdw2dvRrkWqOn5A3ODqQyyiDa0wZjkT6IX+nPGWOXe+H6qbbMaQx00G+8zPys0JthONyVl/i7MRTugsG0CNdPYqCdVltlUwx5K4bDnW+XU5VrAgydnbXKpljyVkR7QmkR1J296Go7W43TBpsR6xlJ5J882SOe7gmzsTmbwZN1XAA2XSr7oUwWFyIgfqUffkmfwoDO9jkuQHB6DV82crF7Tjm8Syzf3/F03LrQbZXRT44LMHT6CF82GuktmYDRyBmrmR84LsCaPjERLpmAmAhbvjD1XgoYTwswOJ10XgCnD80SulzKEupNfcbp/feyiUfOn3Cxidvp16Ueo9GMmbEvHRcgjh/5xDQyvRnGIiUwskifaWSGTqddMTKEwVkfEsCtcmGrxLnMZmpwdpq4eYHBBQxfjFtlsQKGrGWO08mBrsPu/sRidFAlVUq4kXbOO/PDZ/9fp0UHayBeILUXWReaUKYncgWOzOhbFxqhs/3ES+BlxConbGxczHC3QaJodrHMlbI7daXU01dKTicNrgVIOeBS6NBywdkJnCT5pw+dNXR23vWaLwQ4BnElFpz9jK6aWjvoFD6jSQmufeXaqKygAlIQ3gA3Ks8HiF0lWwAAAABJRU5ErkJggg=='
-                                break;
-                            default:
-                                break;
+                        let image = Leaderboards.medalImage(i);
+                        if (i === 0) {
+                            listItem.classList.add('statistics__list-item-first-place')
                         }
                         listItem.appendChild(image);
                     }
