@@ -1,4 +1,4 @@
-const version = '1.0.1';
+const version = '1.0.2';
 
 /**
  * Dieses Skript erstellt und aktualisiert die Bestenliste für einen deutschen Schwimmverein vollautomatisch.
@@ -49,7 +49,7 @@ function updateAllTime() {
 
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('All-Time'); // Hole das Sheet mit dem Namen 'All-Time'
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('All-Time'); // Erstelle ein neues Sheet, wenn keins vorhanden ist
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
+    let code = UrlFetchApp.fetch(externalScript).getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die All-Time
 }
@@ -66,7 +66,7 @@ function updateSeason() {
     let nameOfSheet = year + '/' + (year + 1);
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen 'All-Time'
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/sheet/sheet.js').getContentText(); // Externes Skript
+    let code = UrlFetchApp.fetch(externalScript).getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die aktuelle Saison
 }
@@ -146,3 +146,5 @@ const FORMAT = {
         'Text': 'Neue Ergebnisse'
     }
 }
+
+let externalScript = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js'; // Externes Skript (nicht ändern)

@@ -266,8 +266,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
      */
 
     Logger.log('Version: ' + version);
-    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/web-app/version.txt').getContentText();
-
+    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/version.txt').getContentText();
 
     if (newestVersion !== version) {
         Logger.log('--------------------------------------------------');
@@ -289,7 +288,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
         'payload': JSON.stringify(payload)
     }
 
-    let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/web-app/endpoint.txt').getContentText();
+    let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/src/app-script/endpoint.txt').getContentText();
 
     Logger.log('Aktualisiere Daten für die Saison: ' + sheet.getName() + '...');
 
