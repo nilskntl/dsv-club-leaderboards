@@ -3,20 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bestenliste</title>
+    <title>Bestenlisten</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-<div id="leaderboardContainer" style="width:100%; height: 100%"></div>
+<iframe id="contentFrame" style="width: 100%; height: 100%; border: none"></iframe>
 <script>
+
+    const KEYS = {
+        'All-Time': {
+            'name': 'All-Time',
+            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=1023752348&single=true&output=tsv'
+        },
+        '2023/2024': {
+            'name': '2023/2024',
+            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=339397320&single=true&output=tsv'
+        }
+    }
+
     fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/loadHtml.js')
         .then(response => response.text())
         .then(code => {
             eval(code);
-            loadHtmlContent().then(htmlContent => {
-                insertHtmlIntoContainer(document.getElementById('leaderboardContainer'), htmlContent);
+            loadHtmlContent(KEYS).then(htmlContent => {
+                insertHtmlIntoContainer('contentFrame', htmlContent);
             });
-        })
-        .catch(error => console.error('Error loading external script:', error));
+        });
 </script>
 </body>
 </html>
