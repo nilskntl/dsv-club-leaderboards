@@ -35,7 +35,6 @@ Dieses Programm ermöglicht eine mühelose Aktualisierung der Bestenlisten eines
 2. **Einrichtung der HTML:**
    - Kopiere den Code aus `index.html`
    - Ganz unten im Dokument befindet sich die Konstante "KEYS" in der du die Google Sheets URLs eintragen kannst
-   - Hinweis: Für die All-Time Bestenliste ändere nicht den Namen 'All-Time'. Dieser muss so bleiben.
 
 3. **Einbindung in Website:**
    - Kopiere den HTML Code in deine Website
