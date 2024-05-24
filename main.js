@@ -65,7 +65,7 @@ function updateSeason() {
 
     let year = new Date().getMonth() < 6 ? new Date().getFullYear() - 1 : new Date().getFullYear();
     let nameOfSheet = year + '/' + (year + 1);
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen 'All-Time'
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen der aktuellen Saison
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
     let code = UrlFetchApp.fetch(externalScript).getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
