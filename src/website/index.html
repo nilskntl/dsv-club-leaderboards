@@ -1875,9 +1875,17 @@
                 const rankingList = document.createElement('div');
                 rankingList.className = 'statistics__ranking-list';
 
+                let sameRankingCounter = 0;
+
                 for (let i = 0; i < arrValues.length && (i < rankingLength || arrValues[i - 1] === arrValues[i]); i++) {
                     let listItem = document.createElement('div');
                     listItem.className = 'statistics__list-item';
+
+                    if(i > 0 && arrValues[i - 1] === arrValues[i]) {
+                        sameRankingCounter++;
+                    } else {
+                        sameRankingCounter = 0;
+                    }
 
                     if (i === 0) {
                         listItem.setAttribute('data-radius', 'top');
@@ -1887,7 +1895,7 @@
 
                     let rank = document.createElement('div');
                     rank.className = 'statistics__rank';
-                    rank.innerText = (i + 1).toString() + '.';
+                    rank.innerText = (i + 1 - sameRankingCounter).toString() + '.';
                     listItem.appendChild(rank);
                     let name = document.createElement('div');
                     name.className = 'statistics__name';
