@@ -1883,7 +1883,7 @@
 
                     if (i === 0) {
                         listItem.setAttribute('data-radius', 'top');
-                    } else if (i === arrNames.length - 1 || (i >= rankingLength && arrValues[i] !== arrValues[i + 1])) {
+                    } else if (i === arrNames.length - 1 || (i >= rankingLength - 1 && arrValues[i] !== arrValues[i + 1])) {
                         listItem.setAttribute('data-radius', 'bottom');
                     }
 
