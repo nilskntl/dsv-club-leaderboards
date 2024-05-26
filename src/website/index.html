@@ -1865,7 +1865,7 @@
                 return ranking;
             }
 
-            function createRanking(arrNames, arrValues) {
+            function createRanking(arrNames, arrValues, rankingLength) {
                 /**
                  * Erstellt eine Liste mit den Rankings
                  * @param {string[]} arrNames - Liste mit den Namen
@@ -1874,8 +1874,6 @@
 
                 const rankingList = document.createElement('div');
                 rankingList.className = 'statistics__ranking-list';
-
-                const rankingLength = 3;
 
                 for (let i = 0; i < arrValues.length && (i < rankingLength || arrValues[i - 1] === arrValues[i]); i++) {
                     let listItem = document.createElement('div');
@@ -1934,13 +1932,13 @@
                 let occurrencesAthletesFemale = statistics.occurrenceOfEachAthleteByGender(Discipline.GENDERS.Weiblich);
                 let namesFemale = occurrencesAthletesFemale.map(entry => entry.person.name);
                 let valuesFemale = occurrencesAthletesFemale.map(entry => entry.occurrences);
-                let rankingFemale = createRanking(namesFemale, valuesFemale);
+                let rankingFemale = createRanking(namesFemale, valuesFemale, 3);
                 rankingOccurrencesAthletes.lastChild.appendChild(rankingFemale);
 
                 let occurrencesAthletesMale = statistics.occurrenceOfEachAthleteByGender(Discipline.GENDERS.Maennlich);
                 let namesMale = occurrencesAthletesMale.map(entry => entry.person.name);
                 let valuesMale = occurrencesAthletesMale.map(entry => entry.occurrences);
-                let rankingMale = createRanking(namesMale, valuesMale);
+                let rankingMale = createRanking(namesMale, valuesMale, 3);
                 rankingOccurrencesAthletes.lastChild.appendChild(rankingMale);
 
                 statisticsDiv.appendChild(rankingOccurrencesAthletes);
@@ -1995,13 +1993,13 @@
                 let occurrencesRecordHoldersFemale = statistics.occurrenceOfEachAthleteOnFirstPlaceByGender(Discipline.GENDERS.Weiblich);
                 let namesRecordHoldersFemale = occurrencesRecordHoldersFemale.map(entry => entry.person.name);
                 let valuesRecordHoldersFemale = occurrencesRecordHoldersFemale.map(entry => entry.occurrences);
-                let rankingRecordHoldersFemale = createRanking(namesRecordHoldersFemale, valuesRecordHoldersFemale);
+                let rankingRecordHoldersFemale = createRanking(namesRecordHoldersFemale, valuesRecordHoldersFemale, 3);
                 rankingMostRecords.lastChild.appendChild(rankingRecordHoldersFemale);
 
                 let occurrencesRecordHoldersMale = statistics.occurrenceOfEachAthleteOnFirstPlaceByGender(Discipline.GENDERS.Maennlich);
                 let namesRecordHoldersMale = occurrencesRecordHoldersMale.map(entry => entry.person.name);
                 let valuesRecordHoldersMale = occurrencesRecordHoldersMale.map(entry => entry.occurrences);
-                let rankingRecordHoldersMale = createRanking(namesRecordHoldersMale, valuesRecordHoldersMale);
+                let rankingRecordHoldersMale = createRanking(namesRecordHoldersMale, valuesRecordHoldersMale, 3);
                 rankingMostRecords.lastChild.appendChild(rankingRecordHoldersMale);
 
                 statisticsDiv.appendChild(rankingMostRecords);
@@ -2015,7 +2013,7 @@
                 let occurrencesLocations = statistics.occurrenceOfLocation;
                 let namesLocations = occurrencesLocations.map(entry => entry.location);
                 let valuesLocations = occurrencesLocations.map(entry => entry.occurrences);
-                let rankingLocations = createRanking(namesLocations, valuesLocations);
+                let rankingLocations = createRanking(namesLocations, valuesLocations, 5);
 
                 let mobileSize = getComputedStyle(document.documentElement).getPropertyValue('--mobile-size');
                 if (window.innerWidth > parseInt(mobileSize)) {
