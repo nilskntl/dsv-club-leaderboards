@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress CssUnusedSymbol, JSUnusedGlobalSymbols -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,7 +22,7 @@
             --transition-long: 0.5s;
         }
 
-        /* Einstelungen für den gesamten Body */
+        /* Einstellungen für den gesamten Body */
         body {
             max-width: 100%;
             font-family: "Questrial", sans-serif;
@@ -45,7 +46,7 @@
             pointer-events: none;
         }
 
-        /* Formatierunge für Einträge aus diesem Jahr */
+        /* Formatierung für Einträge aus diesem Jahr */
         .current-year {
             color: var(--primary-color);
             font-weight: bold;
@@ -226,7 +227,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             border-radius: var(--border-radius);
             position: absolute;
-            top: 76px; /* TODO: Set to 144 */
+            top: 144px;
             opacity: 0;
             visibility: hidden;
             transition: opacity var(--transition-short) linear, visibility var(--transition-short) linear, height var(--transition-short) ease;
@@ -263,7 +264,7 @@
 
         /* Formatierungen für die Liste der Auswahl-Buttons */
         #selection-button-list {
-            display: none; /* TODO: Set to flex */
+            display: flex;
             gap: 16px;
             justify-content: right;
             margin-bottom: 16px;
@@ -434,6 +435,53 @@
             height: 25px;
         }
 
+        #page-selector {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 16px;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            padding-top: 8px;
+            transform: translate(-50%, -50%);
+        }
+
+        .page-button {
+            background-color: var(--primary-color);
+            color: var(--contrast-color);
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--primary-color);
+            transition: background-color var(--transition-short) linear, visibility var(--transition-short) linear, opacity var(--transition-short) linear;
+        }
+
+        .page-button-img {
+            width: 65%;
+            height: 65%;
+            transition: width var(--transition-short) linear, height var(--transition-short) linear, filter var(--transition-short) linear;
+        }
+
+        .page-button:hover {
+            background-color: var(--contrast-color);
+        }
+
+        .page-button:hover .page-button-img {
+            width: 50%;
+            height: 50%;
+            filter: invert(100%) brightness(0%);
+        }
+
+        #current-page {
+            font-size: 16px;
+            text-align: center;
+            color: var(--primary-color);
+            width: 64px;
+        }
 
         /* Einstellungen für Handy */
         @media only screen and (max-width: 600px) {
@@ -507,7 +555,7 @@
             }
 
             #selection-button-list {
-                display: none; /* TODO: Set to flex */
+                display: flex;
                 gap: 8px;
                 margin-bottom: 8px;
             }
@@ -594,7 +642,7 @@
 </div>
 
 <!-- Dropdowns für die Filterung der Bestenlisten -->
-<div class="dropdowns">
+<div class="dropdowns" id="dropdown-list">
     <!-- Dropdowns für die Saison -->
     <div class="dropdown" id="dropdown__season">
         <!-- Button für die Auswahl der Saison -->
@@ -678,9 +726,22 @@
 </div>
 <!-- Container, in dem per JavaScript die Bestenlisten eingefügt werden -->
 <div id="leaderboards"></div>
-<!-- Text, der anzeigt wann die Liste zuletzt aktualisiert wurde -->
+<!-- Text, der anzeigt, wann die Liste zuletzt aktualisiert wurde -->
 <div id="last-updated">
     Zuletzt aktualisiert: <span id="current-date"></span>
+</div>
+<div id="page-selector">
+    <button id="previous-page" class="page-button">
+        <!-- img mit Pfeil nach links -->
+        <img alt="Vorherige Seite" class="page-button-img"
+             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3ElEQVR4nO3aS4vPYRQH8FNyKyRj4ZZcRoYsJjYTws51SS6pSaLxAmy8jVnY20k2Uizddm4r14VbbkXJJUR89K/5lzDmrKQzz+cdfE/9fs95znkimqZpmqZpmqb5n6AHx3EP13EUE2I8wDI88bsTUR1W4LnR9UdVWIWX/m4wKkI/XhnbxqgGq/E6Ef4GJkYlGMCbRPjOT3FpVIJ1eJsI/6hi+A14lwj/EIujEmzC+0T4u5gflWALPiXC38G8qATbk+FvYU5Ugp34kjzqZkcl2I2vifDXMCsqwd5k+CuYEZXgIL4lwl/C9KgEh5PhL2BaVIIj+J4Ifw5ToxIMyTmDyVEJFuJjIvxpTIpqMJgIf7LclbYL+xMFOIspUREW4EOyCLW+/y4cSJ4A58udAF04lOwBLpZrgLqwL9kCXy7XAndhT7IIV8tdgrqwK3kN7qy/eqIi7MDnRBFulpsFdGFrchp0G3OjImxOtsr1hqG/jMMzE+H7ncYqKsL65E6gsxBZEhVhbXIr9Bi9URHWJJeiL7AyKpLfDHceTfTFOH0V8vPCpOxVug/PjG1bVIXleDpGAYaiMvSO/PlHMxDVYREe/CH8qRgvMBPDI21xZ2F6rOwwtWmapmmapmnin/sBUm/6r6PLSuUAAAAASUVORK5CYII=">
+    </button>
+    <span id="current-page">Seite 1</span>
+    <button id="next-page" class="page-button">
+        <!-- img mit Pfeil nach rechts -->
+        <img alt="Nächste Seite" class="page-button-img"
+             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB1ElEQVR4nO3aS4vPURgH8Kfccikkl9Kg3AtFiazcshthOxrDRk2Slc28CxsvwFIWZCHCzmUWYlDkUi5JEguXKHw0NQthZp6FUs//fF7B//vt1/mf85wT0TRN0zRN0zTNv4CJOI5beIiTmBOdAqf86TmWR3VYb3SvsDoqw0Fje401URV2GN87bIzCC+BgooT32BQVYenIopcpYXNUhMV4nCjhI7ZFRejCo0QJn7AzKsIC3EuU8Bm7oiLMw1CihK/YHRVhLm4nS9gbFWE2biZK+IaeqAgzcT1ZQm9UhBm4miyhLyrCdFxOlPAD/VERpuFisoSjURGm4GyyhGNRuIRzcg5HRZiMM8kdY1dUhAmjjNN+19vpX0FPFF0HzifCf8DCqARTcSH5T9BXcS9wKRn+SBTcDV5JhP+OQ1HwUHQteR44EJVgFm4kw++PgjOBweRgZF8UHI3dSYbfE5VgPu4mwn9BdxScDN/vyPE4FiXvBoYvSLZHwduhJ8nt7daoBCvwoiPvB7Fq5DHEeN5iQxQ81Q0lwr/BuqgG3Ynww69E1kZF6B8n/EusjKqwZYzwz7AsqsPpv4R/iiXRCTAJAyMPJR/gxPAJ8H//rqZpmqZpmqZp4lc/ATJm+sU92n3XAAAAAElFTkSuQmCC">
+    </button>
 </div>
 <!-- Container für die Statistiken -->
 <div id="statistics">
@@ -1364,14 +1425,223 @@
         }
     }
 
+    class LeaderboardPage {
+        constructor(leaderboards) {
+            this._leaderboards = leaderboards;
+            this._htmlElements = [];
+            this._elementsPerPage = [];
+            this._currentPage = 1;
+            this._pointer = -1;
+            this.#createPageListeners();
+        }
+
+        #createPageListeners() {
+            document.getElementById('previous-page').addEventListener('click', () => {
+                if (this._currentPage > 1) {
+                    this.#setPage(--this._currentPage);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                let counter = 0;
+                for (let i = 0; i < this._elementsPerPage.length && i < this._currentPage; i++) {
+                    counter += this._elementsPerPage[i];
+                }
+                if (counter < this._htmlElements.length) {
+                    this.#setPage(++this._currentPage);
+                }
+            });
+        }
+
+        loadLeaderboards(disciplines) {
+            /**
+             * Funktion zum Laden der Bestenliste (eine Lage, ein Geschlecht, eine Bahnlänge) in die Tabelle
+             * @param {Discipline[]} disciplines - Liste von Disziplinen
+             */
+
+            this._htmlElements = []; // Leere die gespeicherten HTML-Elemente
+
+            const createHeader = () => {
+                /**
+                 * Funktion zum Erstellen der Kopfzeile der Tabelle
+                 * @returns {HTMLTableRowElement} - Kopfzeile der Tabelle
+                 */
+                const row = document.createElement('div');
+                row.classList.add('leaderboard__table-header');
+                ['Platz', 'Name', 'Zeit', 'Jg.', 'Ort', 'Jahr'].forEach((header, i) => {
+                    const cell = document.createElement('div');
+                    cell.className = `header-cells col${i + 1}`;
+                    cell.textContent = header;
+                    row.appendChild(cell);
+                });
+                return row;
+            };
+
+            const createRow = (result, index, isCurrentYear) => {
+                /**
+                 * Erstellt eine Zeile in der Tabelle
+                 * @param {Result} result - Ergebnis
+                 * @param {number} index - Index des Ergebnisses
+                 * @param {boolean} isCurrentYear - Gibt an, ob das Ergebnis im aktuellen Jahr liegt
+                 */
+                const row = document.createElement('div');
+                row.className = 'leaderboard__table-item';
+                if (index === 0) row.classList.add('leaderboard__table-item-first-place');
+                if (index === result.length - 1) row.setAttribute('data-radius', 'bottom');
+
+                const createCell = (content, col) => {
+                    const cell = document.createElement('div');
+                    cell.className = `col${col}`;
+                    cell.textContent = content;
+                    return cell;
+                };
+
+                row.appendChild(createCell(`${index + 1}.`, 1));
+                row.appendChild(createCell(result.person.name, 2));
+                row.appendChild(createCell(result.time, 3));
+                row.appendChild(createCell(result.person.birth.toString(), 4));
+                row.appendChild(createCell(result.location, 5));
+
+                const yearCell = createCell(this._leaderboards.filter.season === 'All-Time' ? result.date.year : result.date, 6);
+                if (isCurrentYear) row.classList.add('current-year');
+                row.appendChild(yearCell);
+
+                return row;
+            };
+
+            const createDisciplineTable = (leaderboard) => {
+                /**
+                 * Erstellt eine Tabelle für eine Disziplin
+                 * @param {Leaderboard} leaderboard - Bestenliste der Disziplin
+                 */
+                const table = document.createElement('div');
+                table.classList.add('leaderboard__table');
+                table.appendChild(createHeader());
+
+                const currentYear = new Date().getFullYear().toString();
+                leaderboard.results.forEach((result, index) => {
+                    const isCurrentYear = this._leaderboards.filter.season === 'All-Time' && result.date.year.toString() === currentYear;
+                    table.appendChild(createRow(result, index, isCurrentYear));
+                });
+
+                return table;
+            };
+
+            disciplines.forEach(leaderboard => {
+                /**
+                 * Erstelle für jede Disziplin eine Tabelle
+                 */
+
+                const disciplineDiv = document.createElement('div');
+                disciplineDiv.className = 'discipline';
+
+                const distanceCell = document.createElement('div');
+                distanceCell.className = 'distance';
+                distanceCell.innerText = `${leaderboard.distance}m`;
+
+                const dividerContainer = document.createElement('div');
+                dividerContainer.className = 'divider-container';
+
+                const mobileSize = getComputedStyle(document.documentElement).getPropertyValue('--mobile-size');
+                if (window.innerWidth <= parseInt(mobileSize)) {
+                    disciplineDiv.appendChild(distanceCell);
+                    const hr = document.createElement('hr');
+                    hr.style.cssText = 'width: 100%; margin: 8px 0; border: 0; border-top: 1px solid #ccc';
+                    disciplineDiv.appendChild(hr);
+                } else {
+                    dividerContainer.appendChild(distanceCell);
+                }
+
+                disciplineDiv.appendChild(createDisciplineTable(leaderboard));
+                dividerContainer.appendChild(disciplineDiv);
+                this._htmlElements.push(dividerContainer);
+            });
+
+            this.#setPage(this._currentPage); // Lade die Tabellen in die Seite
+        }
+
+        #setPage(page) {
+            /**
+             * Funktion zum Anzeigen der Tabellen auf einer bestimmten Seite
+             * @param {number} page - Nummer der Seite
+             */
+
+            const leaderboardsDiv = document.getElementById('leaderboards');
+            leaderboardsDiv.innerHTML = '';
+
+            const elementHeights = ['selection-button-list', 'dropdown-list', 'last-updated'].map(id => document.getElementById(id).offsetHeight);
+            const overAllHeight = 24 + elementHeights.reduce((sum, height) => sum + height, 0);
+            let leftSpace = window.innerHeight - overAllHeight;
+
+            const getElementHeight = (element) => {
+                const container = document.createElement('div');
+                Object.assign(container.style, {
+                    visibility: 'hidden',
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%'
+                });
+                container.appendChild(element);
+                document.body.appendChild(container);
+                const height = element.offsetHeight;
+                document.body.removeChild(container);
+                return height;
+            };
+
+            let startElement = this._elementsPerPage.slice(0, page - 1).reduce((sum, num) => sum + num, 0);
+            for (let i = startElement; i < this._htmlElements.length; i++) {
+                const elementHeight = getElementHeight(this._htmlElements[i]);
+                leftSpace -= (i !== this._htmlElements.length - 1) ? elementHeight : elementHeight + 44;
+
+                if (leftSpace > 0) {
+                    if (i === startElement) this._elementsPerPage[page - 1] = 1;
+                    else this._elementsPerPage[page - 1]++;
+                    leaderboardsDiv.appendChild(this._htmlElements[i]);
+                } else {
+                    break;
+                }
+            }
+
+            const toggleVisibility = (id, visible) => {
+                const element = document.getElementById(id);
+                element.style.visibility = visible ? 'visible' : 'hidden';
+                element.style.opacity = visible ? '1' : '0';
+            };
+
+            toggleVisibility('previous-page', page !== 1);
+            document.getElementById('current-page').innerText = `Seite ${page}`;
+
+            const totalElementsShown = this._elementsPerPage.slice(0, page).reduce((sum, num) => sum + num, 0);
+            toggleVisibility('next-page', totalElementsShown < this._htmlElements.length);
+            if (page === 1 && this._elementsPerPage[0] < this._htmlElements.length) {
+                document.getElementById('page-selector').style.display = 'flex';
+            }
+        }
+    }
+
     class Leaderboards {
+        /**
+         * Klasse für die Bestenlisten
+         * @property {LeaderboardPage} page - Seite für die Bestenlisten
+         * @property {Leaderboard[]} leaderboards - Liste von Bestenlisten
+         * @property {Filter} filter - Filter für die Bestenlisten
+         * @method getData - Lädt die Daten von der TSV-Datei
+         * @method updateTable - Aktualisiert die Tabelle basierend auf den Filterkriterien
+         *
+         */
         constructor() {
+            this._page = new LeaderboardPage(this);
             this._leaderboards = []; // Liste von Bestenlisten
             this._filter = new Filter(); // Filter für die Bestenlisten
             this.#createLeaderboards(); // Erstelle die Bestenlisten für die Saisons
             this._filter.createDropdownListeners(); // Erstelle die Listener für die Dropdown-Menüs
             this.#setLastUpdated();
             this.updateTable(); // Lade die Bestenlisten in die Tabelle
+        }
+
+        get page() {
+            return this._page;
         }
 
         get leaderboards() {
@@ -1382,11 +1652,7 @@
             return this._filter;
         }
 
-        addLeaderboard(leaderboard) {
-            this._leaderboards.push(leaderboard);
-        }
-
-        filterDisciplines(filter) {
+        #filterLeaderboards(filter) {
             /**
              * Funktion zum Filtern der Bestenlisten nach Disziplin und Geschlecht
              * @param {Filter} filter - Filterkriterien
@@ -1416,9 +1682,13 @@
              * Erstellt die Bestenlisten für die Saisons
              */
 
+            const addLeaderboard = (leaderboard) => {
+                this._leaderboards.push(leaderboard);
+            }
+
             for (let key in KEYS) {
                 let leaderboard = new Leaderboard(KEYS[key].name);
-                this.addLeaderboard(leaderboard);
+                addLeaderboard(leaderboard);
             }
         }
 
@@ -1432,6 +1702,42 @@
         }
 
         async #getData(season) {
+            /**
+             * Lädt die Daten der angegebenen Saison und fügt sie zu den Bestenlisten hinzu
+             * @param tsvUrl
+             * @returns {Promise<unknown>}
+             */
+
+            function fetchData(tsvUrl) {
+                /**
+                 * Lade die Daten von der angegebenen TSV-URL und speichere sie im LocalStorage.
+                 * @param {string} tsvUrl - Die URL des TSV-Dokuments
+                 * @returns {Promise} - Ein Promise-Objekt, das den Status des Fetch-Vorgangs angibt
+                 * @throws {Error} - Ein Fehler wird geworfen, wenn der Fetch-Vorgang fehlschlägt
+                 */
+
+                return new Promise((resolve, reject) => {
+                    fetch(tsvUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            let rows = data.split('\n');
+                            let result = [];
+                            for (let i = 0; i < rows.length; i++) {
+                                result.push(rows[i].split('\t'));
+                            }
+                            resolve(result); // Erfolgreiches Auflösen des Promise mit den Daten
+                        })
+                        .catch(error => {
+                            console.error('Fehler beim Laden der TSV-Daten:', error);
+                            reject(error); // Ablehnen des Promise bei einem Fehler
+                        });
+                });
+            }
 
             if (season === '') season = 'All-Time';
             let link = KEYS[season].link;
@@ -1447,42 +1753,9 @@
                 }
             }
 
-            let data = await this.#fetchData(link);
+            let data = await fetchData(link);
 
             this.leaderboards[index].addRawData(data);
-        }
-
-        #fetchData(tsvUrl) {
-            /**
-             * Lade die Daten von der angegebenen TSV-URL und speichere sie im LocalStorage.
-             * @param {string} tsvUrl - Die URL des TSV-Dokuments
-             * @param {string} range - Der Bereich der Daten, der geladen werden soll
-             * @param {string} storageKey - Der Schlüssel, unter dem die Daten im LocalStorage gespeichert werden sollen
-             * @returns {Promise} - Ein Promise-Objekt, das den Status des Fetch-Vorgangs angibt
-             * @throws {Error} - Ein Fehler wird geworfen, wenn der Fetch-Vorgang fehlschlägt
-             */
-
-            return new Promise((resolve, reject) => {
-                fetch(tsvUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        let rows = data.split('\n');
-                        let result = [];
-                        for (let i = 0; i < rows.length; i++) {
-                            result.push(rows[i].split('\t'));
-                        }
-                        resolve(result); // Erfolgreiches Auflösen des Promise mit den Daten
-                    })
-                    .catch(error => {
-                        console.error('Fehler beim Laden der TSV-Daten:', error);
-                        reject(error); // Ablehnen des Promise bei einem Fehler
-                    });
-            });
         }
 
         async updateTable() {
@@ -1491,205 +1764,45 @@
              * @param {Filter} filter - Filterkriterien
              */
 
-            let filteredDisciplines = this.filterDisciplines(this._filter); // Filtere die Disziplinen basierend auf den Filterkriterien
+            const filteredDisciplines = this.#filterLeaderboards(this._filter); // Filtere die Disziplinen basierend auf den Filterkriterien
+            const numResults = filteredDisciplines.reduce((acc, discipline) => acc + discipline.results.length, 0);
 
-            let numResults = 0;
-            for (let discipline of filteredDisciplines) {
-                numResults += discipline.results.length;
-            }
+            const elements = {
+                loading: document.getElementById('loading'),
+                leaderboards: document.getElementById('leaderboards'),
+                lastUpdated: document.getElementById('last-updated'),
+                statistics: document.getElementById('statistics'),
+                pageSelector: document.getElementById('page-selector'),
+                genderDropdown: document.getElementById('dropdown__gender'),
+                strokeDropdown: document.getElementById('dropdown__stroke'),
+                laneDropdown: document.getElementById('dropdown__lane')
+            };
 
-            let loading = document.getElementById('loading');
-            let leaderboards = document.getElementById('leaderboards');
-            let lastUpdated = document.getElementById('last-updated');
-            let statistics = document.getElementById('statistics');
+            const toggleDisplay = (showLeaderboards) => {
+                const displayStyle = showLeaderboards ? 'flex' : 'none';
+                elements.pageSelector.style.display = 'none';
+                elements.statistics.style.display = showLeaderboards ? 'none' : 'block';
+                elements.leaderboards.style.display = elements.lastUpdated.style.display = showLeaderboards ? 'block' : 'none';
+                elements.laneDropdown.style.display = elements.strokeDropdown.style.display = elements.genderDropdown.style.display = displayStyle;
+            };
 
-            let genderDropdown = document.getElementById('dropdown__gender');
-            let strokeDropdown = document.getElementById('dropdown__stroke');
-            let laneDropdown = document.getElementById('dropdown__lane');
-
-            if (this._filter.showLeaderboards) {
-                statistics.style.display = 'none'; // Statistiken ausblenden
-                laneDropdown.style.display = 'flex'; // Bahnlänge anzeigen
-                strokeDropdown.style.display = 'flex'; // Schwimmstil anzeigen
-                genderDropdown.style.display = 'flex'; // Geschlecht anzeigen
-            } else {
-                leaderboards.style.display = 'none'; // Tabelle ausblenden
-                lastUpdated.style.display = 'none'; // Letztes Update ausblenden
-                laneDropdown.style.display = 'none'; // Bahnlänge ausblenden
-                strokeDropdown.style.display = 'none'; // Schwimmstil ausblenden
-                genderDropdown.style.display = 'none'; // Geschlecht ausblenden
-            }
+            toggleDisplay(this._filter.showLeaderboards);
 
             if (numResults === 0) {
-                loading.style.display = 'block'; // Ladekreis anzeigen
-                leaderboards.style.display = 'none'; // Tabelle ausblenden
-                lastUpdated.style.display = 'none'; // Letztes Update ausblenden
-                statistics.style.display = 'none'; // Statistiken ausblenden
+                elements.loading.style.display = 'block'; // Ladekreis anzeigen
+                elements.leaderboards.style.display = elements.lastUpdated.style.display = elements.statistics.style.display = 'none';
                 await this.#getData(this._filter.season); // Lade die Daten für die Saison
-                filteredDisciplines = this.filterDisciplines(this._filter); // Filtere die Disziplinen basierend auf den Filterkriterien
             }
 
             if (this._filter.showLeaderboards) {
-                this.#loadLeaderboardsIntoTable(filteredDisciplines); // Lade die Bestenlisten in die Tabelle
-                leaderboards.style.display = 'block'; // Tabelle anzeigen
-                lastUpdated.style.display = 'block'; // Letztes Update anzeigen
+                this._page.loadLeaderboards(this.#filterLeaderboards(this._filter)); // Lade die Bestenlisten in die Tabelle
+                elements.leaderboards.style.display = elements.lastUpdated.style.display = 'block'; // Tabelle anzeigen
             } else {
                 let currentLeaderboard = this.leaderboards.find(leaderboard => leaderboard.season === this._filter.season);
                 this.#loadStatistics(currentLeaderboard);
-                statistics.style.display = 'block'; // Statistiken anzeigen
+                elements.statistics.style.display = 'block'; // Statistiken anzeigen
             }
-            loading.style.display = 'none'; // Ladekreis ausblenden
-        }
-
-        static medalImage(place) {
-            let image = document.createElement('img');
-            image.className = 'ranking-image';
-            image.alt = 'Position' + (place + 1) + 'Medal';
-            switch (place) {
-                case 0:
-                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD+0lEQVR4nO1XX2xTVRw+El4WDA/T0HsTIDzMRB5MBF4kBkhJwPb2Khi553S6GGaEQQkQxu0gstE5XxR9NFFe9NkXNfEPPafoEolEOoQwyhY22MpCWwgkuAeLMMln7r3tVlxv/2y9t33ol/yeepvzfef35zs/QppooomKkPLLX6YVGcVD6iJVAj3KWujqDMIq5oWujiCyZSmpJTLbPCtSijxdTEBKke/e97Uur0qArv5UlLwZAYU4gbQi9dplIeWXP6qYfFjx2pLX1V+JU5jSVrak/dKtoiL8UjalyqvLko9ElkAP/FmcfOAJwup64iQyimd3iSx8XVZAj9ppf/uBrxwlbxKIkCVpv3zRRsCTdEDeYPvfI1oLwoEpm7rPonvHKuIGMorHWyILtjUMPdBn37jqAHETKb/8o52IjOIJzCN/9M0VCKvTNrd/Fwd9y90VoMovphR5xqahR7GFPDXHoaunS4zNva6Sr9bcXDetWpjblF+6N+ZrXVk301qsuSW2yhj2es7VzbQWY263fDLimyTEN0v4t1tJ1M20Fmpuw14ZFzZJGPWtQV1NayHmNvmaRd7IQDbkRd1Nq1pzu+KVTAE3Xm9Dw5hWpRjbJscN8kObJTw+vB0NY1qVIvluW8fEoXXInvYD32nAzxQ4w4DvNeCbXcDnO4FTO/pIowFRrRWcfgxOH0IwlA3OYohpL5FGADh9FZzeMYnFGHD+feBKNzB2ApiIAJP9wHgvkAgDf3QBZ9tzIuhjcNpVZ/LBXRDsH5PQufeA6x8AyYHScfMkcGFfYTY+qxN5bQME+9skMRQCJj8sT74who8CsWBORPCAy+Q7loGz2+bh8VB1xAsjoQMiaGRhBrHgOvcECHbSJP/b7upv/v8RD+V7YtAd8ue1Fgg6bR46eqw4qcGO4tNnvG/+txMR4Jd3rN9j2kbnBYjgG7O3b3er1QhIDgAXD+Sz8KnzAjj7wjzs8qHy5ZEXYkc8mYvR4/mJdM0NATHzsGvHaidgst9qZmMkgzzjrABBEyap6ydqJyA5UNAHO59zWAC76oyAt61vo1qrwwIoNw8a6alxCTGjiR86X0L5Jr5UwyYecbOJo0y1xmhn7cboUM7MBPvEHSPj7C+rjGpgZDcjc/Uv6CuOCzBFcNo7l4VFPiWG9ufLJ+oKeUtAxzIIOmU95vYvnPzV/GPO2A20l10TYIo4Q9cv7jndXfCcpiFXyc+KiNG3ql5obhgLTVfBQkOdf/+UFqFtBGeZ2ZXyd2OlPGIZXX6lHDNWSv3plVKwRxDaHtIIwKD2LDjrB2fZipZ6QX+AaH+BNBow2P48BO2EoN8apgTOHuREjYPTs+AsjKjWVm+eTTRB5vAf9gOBzJBOTw8AAAAASUVORK5CYII=';
-                    break;
-                case 1:
-                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD4klEQVR4nO1YTU8TURR9URcadWXUGUTjxo1GE3+AQDBKZ1qIiSEu3KkbxQ8S27hwAYkbdacrP2BaJOmMxbiAahGiYHQMoOJHEDqvClpoi3GlNW4Ar7kzHSDQKWVoZ2rSk9ykIUPnnPfuO+e+ElJEEUVkhTjHdMZ5FtJVzMlWkWUC3LwDPC4wqFDuBTiY3TGenUorgGc/QTlZkzX52trV4HZ9TE/eOQ2XuL05F6CK4Jgmw13g2ZNZC/C4Thmuvtt5l+QLk9VbtsY49ldaARw7+aNm08YlyTfUbgCPK25APgn1VSzJJ2Ic22i4CxzbuKQAj7PRePVdDSTfiNaWrovzzHhaERzzZ9yxrdSYfE0JeFy/DVY/BhcPrSdWAPvdaBfwnBgKcLuajZ3HecIS8iqRBrIqzjODBm00M+Eo2b+YfPU+1WHSk/+AzkSsRILbWpnBkZ4uEuBxPsnQ+4dJIYeb5aGVi3D75mAjY+VkrW2htdJwe1/BwlAl22JbaK0k3EYPs9B/gIE3ZQwe2oRtoWU23N5VMKqA0ZpdYGtomQm3z6nVf13GwFR9FdgeWssJtxjPwttybfXHj+6Bggit5YSbcpCJIvnBihL46+ahYEIrW/QfO3gtVFcHwZtt8NAnQ6t/SC383HW7HYavX4WvVy4fJ4UGX0DZJkj0tiAq016JQuZSZrySEvCKIztJIcArhY94RZpEcr77FB4ExyD0bAJ65Di86JtUCz/j39o6xtRnVCEi/eXzR2psJS+I9IK2olQl1ysnQB74nrHwGXx2djf8ynn7Vj5FPtgdXZL4wgp2RVO7ocxYvhN3Wmmp3jZmyM+K6I7OtlOTf6TEMgFeURH0tjFLXq+29lQ7idSauagl8GUHug1u/8KeX9qBtJr/P89fJdRWwu/Enc27ADx0SALdZuFqmhEgD3yHB/qh9ofr8i5AkJQQvqzz2YRhWywkakRcThV+V6qNHuVdgFdUIviyngyWuVwBPXJcFxC2QIDmPhhQuRLwom9SF5D8rwUIkvIz7wIEiSr4sl45nrsWeqm1kCDREcsOMc42uRIQemrhIRZE5axRiJm20aBmo80iPW2BgMh2Lcgii5zIjIBeWQsyr0inLAkyVYSkNOVqlAh0jOrtc4tYeYHBAUwd5rrMD3MdXdFZ92ltHbb2JxafGOb0mcjMRNoxb5wWJFpN7IA2F6UuNO1jGdN5LnXxQjM6/3p5jtgJvIzo7YQHGwcznG3Q2+eulAnVdtFt8Bm9bZpF6iKFgOYA3SxI9AY6STaXekFS7lne81nf1PzhOkGijzFV1bFDpMnU50eCRM9YZpVFFEGywj9c+pb6dWwGxwAAAABJRU5ErkJggg=='
-                    break;
-                case 2:
-                    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD/UlEQVR4nO1Yz28TVxB+Kj1QQU8I2A0p6qUXflTqHwAJQRDv2omQUE4gDsClpRSqet8LIJQcYpG3IZEIEqEkxQQ4YbIvULXgIpqIqIekjlsQCBC/VFIbpJ5Cql6SMGjWXhcRr+043l0j+ZNG2sSW9vvmzcw3z4RUUEEFBSGpSNeTqgzZIuGX68k8AUHVB1oAbOJa6QX4pDUJVZ7OKkCV70EN+bBg8k1NiyAYuJOdvH8GmLK+5AJMEYrUZ3sKqrynYAFaYK9t9oP+XuIUXjasWJlQ5FdZBSjyy38al32cl3xL01LQAkkb8lNwsF4mTiKhyK22p6DIrXkFaP5W++wHWojTeN5U/VFSlSayilCk/yZ8q6rtyTdWgRb41yb7CfhuyxLiBrDe7U4B+8RWQDDwg/3k8e92hbxJpIV8kFSluE0Zzf7tq/piLvmGz80Jk538bZxMxE28UFbW5ZhIN+cI0PzRHLW/lZSzubluWqUwt7988qNnNWSxZ6a1UHP7s1aGu3Vyv2emtRBze7pVhtENEsQ2Sti0LzwzrWLN7Y9ayRTwtPEz8NS0ijG3x+ns/75RgumD9eC5ac3H3BKqDOM1qexPbF8LZWFa8zG3h5ul50g+XlsFr4MqlI1pFYrYtnX8112bYOjoXrhx7Fu4yjUz8Pm3tn3w5OguSBzZuYOUG37sPLxK6PR7wdmM0BnkDjordHpJHGOfknKA4No2odMpJDfY0QzRnhCMXDgJo5EzMC7CZuAz/g8/w+/gdw2dvRrkWqOn5A3ODqQyyiDa0wZjkT6IX+nPGWOXe+H6qbbMaQx00G+8zPys0JthONyVl/i7MRTugsG0CNdPYqCdVltlUwx5K4bDnW+XU5VrAgydnbXKpljyVkR7QmkR1J296Go7W43TBpsR6xlJ5J882SOe7gmzsTmbwZN1XAA2XSr7oUwWFyIgfqUffkmfwoDO9jkuQHB6DV82crF7Tjm8Syzf3/F03LrQbZXRT44LMHT6CF82GuktmYDRyBmrmR84LsCaPjERLpmAmAhbvjD1XgoYTwswOJ10XgCnD80SulzKEupNfcbp/feyiUfOn3Cxidvp16Ueo9GMmbEvHRcgjh/5xDQyvRnGIiUwskifaWSGTqddMTKEwVkfEsCtcmGrxLnMZmpwdpq4eYHBBQxfjFtlsQKGrGWO08mBrsPu/sRidFAlVUq4kXbOO/PDZ/9fp0UHayBeILUXWReaUKYncgWOzOhbFxqhs/3ES+BlxConbGxczHC3QaJodrHMlbI7daXU01dKTicNrgVIOeBS6NBywdkJnCT5pw+dNXR23vWaLwQ4BnElFpz9jK6aWjvoFD6jSQmufeXaqKygAlIQ3gA3Ks8HiF0lWwAAAABJRU5ErkJggg=='
-                    break;
-                default:
-                    break;
-            }
-            return image;
-        }
-
-        #loadLeaderboardsIntoTable(disciplines) {
-            /**
-             * Funktion zum Laden der Bestenliste (eine Lage, ein Geschlecht, eine Bahnlänge) in die Tabelle
-             * @param {Leaderboards[]} leaderboards - Bestenlisten, die in die Tabelle geladen werden sollen
-             */
-
-            let leaderboardsDiv = document.getElementById('leaderboards'); // Hole das Element mit der ID 'leaderboards'
-            leaderboardsDiv.innerHTML = ''; // Setze den Inhalt des Elements auf leer
-
-            function createHeader() {
-                /**
-                 * Funktion zum Erstellen der Kopfzeile der Tabelle
-                 * @returns {HTMLTableRowElement} - Kopfzeile der Tabelle
-                 */
-                let row = document.createElement('div');
-                row.classList.add('leaderboard__table-header');
-                let headerCells = ['Platz', 'Name', 'Zeit', 'Jg.', 'Ort', 'Jahr'];
-
-                for (let i = 0; i < headerCells.length; i++) {
-                    let cell = document.createElement('div');
-                    cell.className = 'header-cells';
-                    cell.classList.add('col' + (i + 1));
-                    cell.textContent = headerCells[i];
-                    row.appendChild(cell);
-                }
-                return row;
-            }
-
-            for (let i = 0; i < disciplines.length; i++) {
-                /**
-                 * Gehe jede Bestenliste zu einer Disziplin durch und füge die Ergebnisse in die Tabelle ein
-                 */
-                let dividerContainer = document.createElement('div'); // Erstelle ein neues Div-Element, in dem der Rest eingefügt wird
-                let leaderboard = disciplines[i]; // Bestenliste zu einer Disziplin
-                let disciplineDiv = document.createElement('div'); // Erstelle ein neues Div-Element
-                let table = document.createElement('div'); // Erstelle eine neue Tabelle
-                let distanceCell = document.createElement('div'); // Erstelle einen Div für die Distanz
-
-                table.classList.add('leaderboard__table');
-
-                disciplineDiv.className = 'discipline'; // Setze die Klasse des Div-Elements auf 'discipline'
-
-                distanceCell.className = 'distance'; // Setze die Klasse des Containers auf 'distance'
-                distanceCell.innerText = leaderboard.distance + 'm '; // Setze den Text des Containers auf die Distanz
-
-                table.appendChild(createHeader()); // Füge die Kopfzeile in den Body der Tabelle ein (Platz, Name, Zeit, Jg., Ort, Jahr
-
-                for (let j = 0; j < leaderboard.results.length; j++) {
-                    let row = document.createElement('div'); // Erstelle eine neue Zeile
-
-                    row.classList.add('leaderboard__table-item');
-
-                    if (j === 0) {
-                        row.setAttribute('data-radius', 'top');
-                        row.classList.add('leaderboard__table-item-first-place');
-                    } else if (j === leaderboard.results.length - 1) {
-                        row.setAttribute('data-radius', 'bottom');
-                    }
-
-                    let result = leaderboard.results[j]; // Ergebnis in der Bestenliste
-
-                    let rank = document.createElement('div'); // Erstelle eine Zelle für den Rang
-                    let name = document.createElement('div'); // Erstelle eine Zelle für den Namen
-                    let time = document.createElement('div'); // Erstelle eine Zelle für die Zeit
-                    let birth = document.createElement('div'); // Erstelle eine Zelle für das Geburtsjahr
-                    let location = document.createElement('div'); // Erstelle eine Zelle für den Ort
-                    let year = document.createElement('div'); // Erstelle eine Zelle für das Jahr
-
-                    // Setze die obere linke Ecke der ersten Zelle auf gerundet
-                    let borderRadius = parseInt(document.documentElement.style.getPropertyValue('--border-radius')) * 2;
-                    rank.style.borderTopLeftRadius = borderRadius + 'px';
-                    rank.style.borderBottomLeftRadius = borderRadius + 'px';
-                    year.style.borderTopRightRadius = borderRadius + 'px';
-                    year.style.borderBottomRightRadius = borderRadius + 'px';
-
-                    rank.textContent = (j + 1).toString() + '.'; // Setze den Text der Zelle auf den Rang
-
-                    rank.classList.add('col1');
-                    row.append(rank); // Füge die Zelle in die Zeile ein
-
-                    name.textContent = result.person.name; // Setze den Text der Zelle auf den Namen
-                    name.classList.add('col2');
-                    row.append(name); // Füge die Zelle in die Zeile ein
-
-                    time.textContent = result.time; // Setze den Text der Zelle auf die Zeit
-                    time.classList.add('col3');
-                    row.append(time); // Füge die Zelle in die Zeile ein
-
-                    birth.textContent = result.person.birth.toString(); // Setze den Text der Zelle auf das Geburtsjahr
-                    birth.classList.add('col4');
-                    row.append(birth); // Füge die Zelle in die Zeile ein
-
-                    location.textContent = result.location; // Setze den Text der Zelle auf den Ort
-                    location.classList.add('col5');
-                    row.append(location); // Füge die Zelle in die Zeile ein
-
-                    if (this._filter.season === 'All-Time') {
-                        let currentYear = new Date().getFullYear(); // Get the current year (yyyy)
-                        if (result.date.year.toString() === currentYear.toString()) { // Überprüfe, ob das Jahr dem aktuellen Jahr entspricht
-                            row.classList.add('current-year'); // Setze die Klasse der Zelle auf 'current-year'
-                        }
-                        year.textContent = result.date.year; // Setze den Text der Zelle auf das Jahr
-                    } else {
-                        year.textContent = result.date; // Setze den Text der Zelle auf das Datum
-                    }
-                    year.classList.add('col6');
-                    row.append(year); // Füge die Zelle in die Zeile ein
-
-                    table.appendChild(row);
-                }
-
-                dividerContainer.className = 'divider-container'; // Setze die Klasse des Div-Elements auf 'divider-container'
-                let mobileSize = getComputedStyle(document.documentElement).getPropertyValue('--mobile-size');
-                if (window.innerWidth <= parseInt(mobileSize.slice(0, -2))) {
-                    disciplineDiv.appendChild(distanceCell); // Füge die Zelle für die Distanz in das Div-Element ein
-                    // Füge eine horizontale Linie ein
-                    let hr = document.createElement('hr');
-                    hr.style.width = '100%';
-                    hr.style.margin = '8px 0';
-                    hr.style.border = '0';
-                    hr.style.borderTop = '1px solid #ccc';
-                    disciplineDiv.appendChild(hr);
-                } else {
-                    dividerContainer.appendChild(distanceCell); // Füge die Zelle für die Distanz in das Div-Element ein
-                }
-                disciplineDiv.appendChild(table); // Füge die Tabelle in das Div-Element ein
-                dividerContainer.appendChild(disciplineDiv); // Füge das Div-Element in das Div-Element ein
-                leaderboardsDiv.appendChild(dividerContainer); // Füge das Div-Element in das Element mit der ID 'leaderboards' ein
-            }
+            elements.loading.style.display = 'none'; // Ladekreis ausblenden
         }
 
         #loadStatistics(leaderboard) {
@@ -1699,6 +1812,26 @@
              */
 
             let statistics = leaderboard.statistics;
+
+            const getMedalImage = (place) => {
+                const image = document.createElement('img');
+                image.className = 'ranking-image';
+                image.alt = `Position${place + 1}Medal`;
+                switch (place) {
+                    case 0:
+                        image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD+0lEQVR4nO1XX2xTVRw+El4WDA/T0HsTIDzMRB5MBF4kBkhJwPb2Khi553S6GGaEQQkQxu0gstE5XxR9NFFe9NkXNfEPPafoEolEOoQwyhY22MpCWwgkuAeLMMln7r3tVlxv/2y9t33ol/yeepvzfef35zs/QppooomKkPLLX6YVGcVD6iJVAj3KWujqDMIq5oWujiCyZSmpJTLbPCtSijxdTEBKke/e97Uur0qArv5UlLwZAYU4gbQi9dplIeWXP6qYfFjx2pLX1V+JU5jSVrak/dKtoiL8UjalyqvLko9ElkAP/FmcfOAJwup64iQyimd3iSx8XVZAj9ppf/uBrxwlbxKIkCVpv3zRRsCTdEDeYPvfI1oLwoEpm7rPonvHKuIGMorHWyILtjUMPdBn37jqAHETKb/8o52IjOIJzCN/9M0VCKvTNrd/Fwd9y90VoMovphR5xqahR7GFPDXHoaunS4zNva6Sr9bcXDetWpjblF+6N+ZrXVk301qsuSW2yhj2es7VzbQWY263fDLimyTEN0v4t1tJ1M20Fmpuw14ZFzZJGPWtQV1NayHmNvmaRd7IQDbkRd1Nq1pzu+KVTAE3Xm9Dw5hWpRjbJscN8kObJTw+vB0NY1qVIvluW8fEoXXInvYD32nAzxQ4w4DvNeCbXcDnO4FTO/pIowFRrRWcfgxOH0IwlA3OYohpL5FGADh9FZzeMYnFGHD+feBKNzB2ApiIAJP9wHgvkAgDf3QBZ9tzIuhjcNpVZ/LBXRDsH5PQufeA6x8AyYHScfMkcGFfYTY+qxN5bQME+9skMRQCJj8sT74who8CsWBORPCAy+Q7loGz2+bh8VB1xAsjoQMiaGRhBrHgOvcECHbSJP/b7upv/v8RD+V7YtAd8ue1Fgg6bR46eqw4qcGO4tNnvG/+txMR4Jd3rN9j2kbnBYjgG7O3b3er1QhIDgAXD+Sz8KnzAjj7wjzs8qHy5ZEXYkc8mYvR4/mJdM0NATHzsGvHaidgst9qZmMkgzzjrABBEyap6ydqJyA5UNAHO59zWAC76oyAt61vo1qrwwIoNw8a6alxCTGjiR86X0L5Jr5UwyYecbOJo0y1xmhn7cboUM7MBPvEHSPj7C+rjGpgZDcjc/Uv6CuOCzBFcNo7l4VFPiWG9ufLJ+oKeUtAxzIIOmU95vYvnPzV/GPO2A20l10TYIo4Q9cv7jndXfCcpiFXyc+KiNG3ql5obhgLTVfBQkOdf/+UFqFtBGeZ2ZXyd2OlPGIZXX6lHDNWSv3plVKwRxDaHtIIwKD2LDjrB2fZipZ6QX+AaH+BNBow2P48BO2EoN8apgTOHuREjYPTs+AsjKjWVm+eTTRB5vAf9gOBzJBOTw8AAAAASUVORK5CYII=';
+                        break;
+                    case 1:
+                        image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD4klEQVR4nO1YTU8TURR9URcadWXUGUTjxo1GE3+AQDBKZ1qIiSEu3KkbxQ8S27hwAYkbdacrP2BaJOmMxbiAahGiYHQMoOJHEDqvClpoi3GlNW4Ar7kzHSDQKWVoZ2rSk9ykIUPnnPfuO+e+ElJEEUVkhTjHdMZ5FtJVzMlWkWUC3LwDPC4wqFDuBTiY3TGenUorgGc/QTlZkzX52trV4HZ9TE/eOQ2XuL05F6CK4Jgmw13g2ZNZC/C4Thmuvtt5l+QLk9VbtsY49ldaARw7+aNm08YlyTfUbgCPK25APgn1VSzJJ2Ic22i4CxzbuKQAj7PRePVdDSTfiNaWrovzzHhaERzzZ9yxrdSYfE0JeFy/DVY/BhcPrSdWAPvdaBfwnBgKcLuajZ3HecIS8iqRBrIqzjODBm00M+Eo2b+YfPU+1WHSk/+AzkSsRILbWpnBkZ4uEuBxPsnQ+4dJIYeb5aGVi3D75mAjY+VkrW2htdJwe1/BwlAl22JbaK0k3EYPs9B/gIE3ZQwe2oRtoWU23N5VMKqA0ZpdYGtomQm3z6nVf13GwFR9FdgeWssJtxjPwttybfXHj+6Bggit5YSbcpCJIvnBihL46+ahYEIrW/QfO3gtVFcHwZtt8NAnQ6t/SC383HW7HYavX4WvVy4fJ4UGX0DZJkj0tiAq016JQuZSZrySEvCKIztJIcArhY94RZpEcr77FB4ExyD0bAJ65Di86JtUCz/j39o6xtRnVCEi/eXzR2psJS+I9IK2olQl1ysnQB74nrHwGXx2djf8ynn7Vj5FPtgdXZL4wgp2RVO7ocxYvhN3Wmmp3jZmyM+K6I7OtlOTf6TEMgFeURH0tjFLXq+29lQ7idSauagl8GUHug1u/8KeX9qBtJr/P89fJdRWwu/Enc27ADx0SALdZuFqmhEgD3yHB/qh9ofr8i5AkJQQvqzz2YRhWywkakRcThV+V6qNHuVdgFdUIviyngyWuVwBPXJcFxC2QIDmPhhQuRLwom9SF5D8rwUIkvIz7wIEiSr4sl45nrsWeqm1kCDREcsOMc42uRIQemrhIRZE5axRiJm20aBmo80iPW2BgMh2Lcgii5zIjIBeWQsyr0inLAkyVYSkNOVqlAh0jOrtc4tYeYHBAUwd5rrMD3MdXdFZ92ltHbb2JxafGOb0mcjMRNoxb5wWJFpN7IA2F6UuNO1jGdN5LnXxQjM6/3p5jtgJvIzo7YQHGwcznG3Q2+eulAnVdtFt8Bm9bZpF6iKFgOYA3SxI9AY6STaXekFS7lne81nf1PzhOkGijzFV1bFDpMnU50eCRM9YZpVFFEGywj9c+pb6dWwGxwAAAABJRU5ErkJggg=='
+                        break;
+                    case 2:
+                        image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAD/UlEQVR4nO1Yz28TVxB+Kj1QQU8I2A0p6qUXflTqHwAJQRDv2omQUE4gDsClpRSqet8LIJQcYpG3IZEIEqEkxQQ4YbIvULXgIpqIqIekjlsQCBC/VFIbpJ5Cql6SMGjWXhcRr+043l0j+ZNG2sSW9vvmzcw3z4RUUEEFBSGpSNeTqgzZIuGX68k8AUHVB1oAbOJa6QX4pDUJVZ7OKkCV70EN+bBg8k1NiyAYuJOdvH8GmLK+5AJMEYrUZ3sKqrynYAFaYK9t9oP+XuIUXjasWJlQ5FdZBSjyy38al32cl3xL01LQAkkb8lNwsF4mTiKhyK22p6DIrXkFaP5W++wHWojTeN5U/VFSlSayilCk/yZ8q6rtyTdWgRb41yb7CfhuyxLiBrDe7U4B+8RWQDDwg/3k8e92hbxJpIV8kFSluE0Zzf7tq/piLvmGz80Jk538bZxMxE28UFbW5ZhIN+cI0PzRHLW/lZSzubluWqUwt7988qNnNWSxZ6a1UHP7s1aGu3Vyv2emtRBze7pVhtENEsQ2Sti0LzwzrWLN7Y9ayRTwtPEz8NS0ijG3x+ns/75RgumD9eC5ac3H3BKqDOM1qexPbF8LZWFa8zG3h5ul50g+XlsFr4MqlI1pFYrYtnX8112bYOjoXrhx7Fu4yjUz8Pm3tn3w5OguSBzZuYOUG37sPLxK6PR7wdmM0BnkDjordHpJHGOfknKA4No2odMpJDfY0QzRnhCMXDgJo5EzMC7CZuAz/g8/w+/gdw2dvRrkWqOn5A3ODqQyyiDa0wZjkT6IX+nPGWOXe+H6qbbMaQx00G+8zPys0JthONyVl/i7MRTugsG0CNdPYqCdVltlUwx5K4bDnW+XU5VrAgydnbXKpljyVkR7QmkR1J296Go7W43TBpsR6xlJ5J882SOe7gmzsTmbwZN1XAA2XSr7oUwWFyIgfqUffkmfwoDO9jkuQHB6DV82crF7Tjm8Syzf3/F03LrQbZXRT44LMHT6CF82GuktmYDRyBmrmR84LsCaPjERLpmAmAhbvjD1XgoYTwswOJ10XgCnD80SulzKEupNfcbp/feyiUfOn3Cxidvp16Ueo9GMmbEvHRcgjh/5xDQyvRnGIiUwskifaWSGTqddMTKEwVkfEsCtcmGrxLnMZmpwdpq4eYHBBQxfjFtlsQKGrGWO08mBrsPu/sRidFAlVUq4kXbOO/PDZ/9fp0UHayBeILUXWReaUKYncgWOzOhbFxqhs/3ES+BlxConbGxczHC3QaJodrHMlbI7daXU01dKTicNrgVIOeBS6NBywdkJnCT5pw+dNXR23vWaLwQ4BnElFpz9jK6aWjvoFD6jSQmufeXaqKygAlIQ3gA3Ks8HiF0lWwAAAABJRU5ErkJggg=='
+                        break;
+                    default:
+                        break;
+                }
+                return image;
+            };
 
             function createRankingContainer(title) {
                 /**
@@ -1739,16 +1872,18 @@
                  * @param {string[]} arrValues - Liste mit den Werten
                  */
 
-                let rankingList = document.createElement('div');
+                const rankingList = document.createElement('div');
                 rankingList.className = 'statistics__ranking-list';
 
-                for (let i = 0; i < arrValues.length && (i < 5 || arrValues[i - 1] === arrValues[i]); i++) {
+                const rankingLength = 3;
+
+                for (let i = 0; i < arrValues.length && (i < rankingLength || arrValues[i - 1] === arrValues[i]); i++) {
                     let listItem = document.createElement('div');
                     listItem.className = 'statistics__list-item';
 
                     if (i === 0) {
                         listItem.setAttribute('data-radius', 'top');
-                    } else if (i === arrNames.length - 1 || (i >= 5 && arrValues[i] !== arrValues[i + 1])) {
+                    } else if (i === arrNames.length - 1 || (i >= rankingLength && arrValues[i] !== arrValues[i + 1])) {
                         listItem.setAttribute('data-radius', 'bottom');
                     }
 
@@ -1766,7 +1901,7 @@
                     listItem.appendChild(value);
 
                     if (i <= 2) {
-                        let image = Leaderboards.medalImage(i);
+                        let image = getMedalImage(i);
                         if (i === 0) {
                             listItem.classList.add('statistics__list-item-first-place')
                         }
@@ -1778,7 +1913,7 @@
                 return rankingList;
             }
 
-            let statisticsDiv = document.getElementById('statistics'); // Hole den Statistik Container
+            let statisticsDiv = document.getElementById('statistics'); // Hole den Statistik-Container
             statisticsDiv.innerHTML = ''; // Lösche alte Werte
 
             function createOccurrenceOfAthletes() {
@@ -1994,7 +2129,7 @@
             // Event Listener für jedes dropdown-select Element
             document.querySelectorAll('.dropdown-select').forEach(item => {
 
-                if (window.innerWidth <= mobileSize) item.addEventListener('click', event => {
+                if (window.innerWidth <= mobileSize) item.addEventListener('click', ignore => {
 
                     let dropdownList = item.nextElementSibling;
                     if (dropdownList.style.visibility === 'visible') {
@@ -2008,7 +2143,7 @@
                         dropdownList.style.visibility = 'hidden';
                         dropdownList.style.opacity = '0';
                         dropdownList.style.display = 'block';
-                        // Warte 10ms, um den Browser Zeit zu geben, das Display-Attribut zu setzen
+                        // Warte 10ms, um den Browser Zeit zu geben, um das Display-Attribut zu setzen
                         setTimeout(() => {
                             dropdownList.style.visibility = 'visible';
                             dropdownList.style.opacity = '1';
@@ -2017,7 +2152,7 @@
                     }
                 });
 
-                if (window.innerWidth > mobileSize) item.addEventListener('mouseenter', event => {
+                if (window.innerWidth > mobileSize) item.addEventListener('mouseenter', ignore => {
 
                     let dropdownList = item.nextElementSibling;
                     // Verberge alle anderen Dropdown-Listen
@@ -2048,7 +2183,7 @@
 
             // Event Listener für jeden election-button
             document.querySelectorAll('.selection-button').forEach(button => {
-                button.addEventListener('click', event => {
+                button.addEventListener('click', ignore => {
                     let otherButton;
                     if (button.id === 'statistics-button') {
                         otherButton = document.getElementById('leaderboards-button');
@@ -2084,7 +2219,19 @@
         }
     }
 
-    const KEYS = <!-- KEYS_PLACEHOLDER -->;
+    const KEYS = {
+        'All-Time': {
+            'name': 'All-Time', /** Den Namen für die All-Time Bestenliste NICHT ändern! */
+            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=1023752348&single=true&output=tsv'
+        },
+        '2023/2024': {
+            'name': '2023/2024',
+            'link': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMwxC7Lt2jmPudP3caTAR2tkKAwFXB_YTa4t-TxGX61cYzvaysZiX_4NoTAsDLaRsE85TZ4MfkUtmQ/pub?gid=339397320&single=true&output=tsv'
+        }
+    }
+
+    // noinspection JSAnnotator
+    //const KEYS = <!-- KEYS_PLACEHOLDER -->;
 
     let LEADERBOARDS = new Leaderboards();
 
