@@ -1932,13 +1932,13 @@
                 let occurrencesAthletesFemale = statistics.occurrenceOfEachAthleteByGender(Discipline.GENDERS.Weiblich);
                 let namesFemale = occurrencesAthletesFemale.map(entry => entry.person.name);
                 let valuesFemale = occurrencesAthletesFemale.map(entry => entry.occurrences);
-                let rankingFemale = createRanking(namesFemale, valuesFemale, 3);
+                let rankingFemale = createRanking(namesFemale, valuesFemale, 5);
                 rankingOccurrencesAthletes.lastChild.appendChild(rankingFemale);
 
                 let occurrencesAthletesMale = statistics.occurrenceOfEachAthleteByGender(Discipline.GENDERS.Maennlich);
                 let namesMale = occurrencesAthletesMale.map(entry => entry.person.name);
                 let valuesMale = occurrencesAthletesMale.map(entry => entry.occurrences);
-                let rankingMale = createRanking(namesMale, valuesMale, 3);
+                let rankingMale = createRanking(namesMale, valuesMale, 5);
                 rankingOccurrencesAthletes.lastChild.appendChild(rankingMale);
 
                 statisticsDiv.appendChild(rankingOccurrencesAthletes);
