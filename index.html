@@ -54,11 +54,13 @@ Nutzung:
         }
     }
 
+    const SHOW_STATISTICS = true;
+
     fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/loadHtml.js')
         .then(response => response.text())
         .then(code => {
             eval(code);
-            loadHtmlContent(KEYS).then(htmlContent => {
+            loadHtmlContent(KEYS, SHOW_STATISTICS).then(htmlContent => {
                 insertHtmlIntoContainer('contentFrame', htmlContent);
             });
         });
