@@ -1,4 +1,4 @@
-const DEFAULT_SETTINGS = {
+let DEFAULT_SETTINGS = {
     SHOW_STATISTICS: true,
     PRIMARY_COLOR: '#31353E',
     SECONDARY_COLOR: '#424959',
@@ -38,13 +38,7 @@ async function loadHtmlContent(keys, settings) {
      * @throws {Error} - Fehlermeldung, wenn es ein Problem mit dem Fetch-Vorgang gab
      */
 
-    for (const key in DEFAULT_SETTINGS) {
-        try {
-            let element = settings[key];
-        } catch (ignore) {
-            settings[key] = DEFAULT_SETTINGS[key];
-        }
-    }
+    settings = Object.assign({}, DEFAULT_SETTINGS, settings);
 
     try {
         let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/index.html');
