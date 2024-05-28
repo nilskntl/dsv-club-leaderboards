@@ -39,8 +39,9 @@ async function loadHtmlContent(keys, settings) {
      */
 
     for (const key in DEFAULT_SETTINGS) {
-        let element = settings[key];
-        if (!element) {
+        try {
+            let element = settings[key];
+        } catch (ignore) {
             settings[key] = DEFAULT_SETTINGS[key];
         }
     }
