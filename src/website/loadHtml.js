@@ -39,7 +39,8 @@ async function loadHtmlContent(keys, settings) {
      */
 
     for (const key in DEFAULT_SETTINGS) {
-        if (!settings.hasOwnProperty(key)) {
+        let element = settings[key];
+        if (!element) {
             settings[key] = DEFAULT_SETTINGS[key];
         }
     }
