@@ -10,7 +10,7 @@ Einrichtung:
 Mehr Informationen, sowie den Source Code finden Sie unter: https://github.com/nilskntl/dsv-club-leaderboards
 
 Nutzung:
-1. Erstellen Sie eine neue HTML Datei oder binden Sie den folgenden Code in ein Element in ihre Website ein
+1. Erstellen Sie eine neue HTML-Datei oder binden Sie den folgenden Code in ein Element in ihre Website ein
 2. Kopieren Sie den folgenden Code in die Datei
 3. Speichern Sie die Datei und verlinken Sie sie ggf. auf Ihrer Webseite
 -->
@@ -35,11 +35,28 @@ Nutzung:
 <script>
 
     /**
-     * Link Struktur
-     * https://docs.google.com/spreadsheets/d/e/ID_OF_YOUR_SPREADHSEET/pub?gid=ID_OF_SPECIFIC_SHEET&single=true&output=tsv
+     * Hier kannst du die Einstellungen für die Bestenlisten anpassen.
+     * Einfach die Werte ändern und die Seite neu laden.
      */
+    const SETTINGS = {
+        SHOW_STATISTICS: true,
+        PRIMARY_COLOR: '#31353E',
+        SECONDARY_COLOR: '#424959',
+        TERTIARY_COLOR: '#f2f4ef',
+        CONTRAST_COLOR: '#ffffff',
+        PRIMARY_BACKGROUND: '#f3f3f3',
+        SECONDARY_BACKGROUND: '#ffffff'
+    }
 
+    /**
+     * Hier kannst du die Links zu deinen Google Sheets einfügen.
+     * Für andere Saisons einfach ein weiteres Objekt hinzufügen nach dem gleichen Schema.
+     * */
     const KEYS = {
+        /**
+         * Link Struktur
+         * https://docs.google.com/spreadsheets/d/e/ID_OF_YOUR_SPREADHSEET/pub?gid=ID_OF_SPECIFIC_SHEET&single=true&output=tsv
+         */
         'All-Time': {
             'name': 'All-Time', /** Den Namen für die All-Time Bestenliste NICHT ändern! */
             'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
@@ -54,13 +71,14 @@ Nutzung:
         }
     }
 
-    const SHOW_STATISTICS = true;
-
+    /**
+     * Lädt den HTML-Code zum Einbinden der Bestenlisten in die Website.
+     */
     fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/loadHtml.js')
         .then(response => response.text())
         .then(code => {
             eval(code);
-            loadHtmlContent(KEYS, SHOW_STATISTICS).then(htmlContent => {
+            loadHtmlContent(KEYS, SETTINGS).then(htmlContent => {
                 insertHtmlIntoContainer('contentFrame', htmlContent);
             });
         });
