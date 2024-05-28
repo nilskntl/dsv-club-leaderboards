@@ -1568,8 +1568,6 @@
 
             this.#resetPage();
 
-            console.log('Reset page');
-
             let statistics = leaderboard.statistics;
 
             const getMedalImage = (place) => {
@@ -1791,8 +1789,6 @@
             this._htmlElements.push(createOccurrencesLocations());
             this._htmlElements.push(createMostRecords());
 
-            console.log(this._htmlElements.length);
-
             this.#setPage(this._currentPage); // Lade die Statistiken in die Seite
         }
 
@@ -1804,8 +1800,6 @@
 
             const content = document.getElementById('content');
             content.innerHTML = '';
-
-            console.log('Content wurde gelöscht');
 
             const elementHeights = ['selection-button-list', 'dropdown-list', 'last-updated'].map(id => document.getElementById(id).offsetHeight);
             const overAllHeight = 60 + elementHeights.reduce((sum, height) => sum + height, 0);
