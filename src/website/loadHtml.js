@@ -1,5 +1,7 @@
 let DEFAULT_SETTINGS = {
     SHOW_STATISTICS: true,
+    ROUNDED_CORNERS: true,
+    TRANSITION_DURATION: '0.3s',
     PRIMARY_COLOR: '#31353E',
     SECONDARY_COLOR: '#424959',
     TERTIARY_COLOR: '#f2f4ef',
@@ -25,6 +27,11 @@ function replaceHtmlContent(htmlContent, keys, settings) {
     htmlContent = htmlContent.replace('<!-- CONTRAST_COLOR_PLACEHOLDER -->', settings.CONTRAST_COLOR);
     htmlContent = htmlContent.replace('<!-- PRIMARY_BACKGROUND_PLACEHOLDER -->', settings.PRIMARY_BACKGROUND);
     htmlContent = htmlContent.replace('<!-- SECONDARY_BACKGROUND_PLACEHOLDER -->', settings.SECONDARY_BACKGROUND);
+    // Replace den Platzhalter für die abgerundeten Ecken
+    htmlContent = htmlContent.replace('<!--ROUNDED_CORNERS_PLACEHOLDER -->', settings.ROUNDED_CORNERS ? '8px' : '0');
+    // Replace den Platzhalter für die Animationsdauer
+    htmlContent = htmlContent.replace('<!-- TRANSITION_DURATION_PLACEHOLDER -->', settings.TRANSITION_DURATION);
+
 
     return htmlContent; // Gib den HTML-Code zurück
 }

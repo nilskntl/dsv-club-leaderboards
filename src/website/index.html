@@ -14,9 +14,8 @@
             --primary-background: <!-- PRIMARY_BACKGROUND_PLACEHOLDER -->;
             --secondary-background: <!-- SECONDARY_BACKGROUND_PLACEHOLDER -->;
             --mobile-size: 600px;
-            --border-radius: 8px;
-            --transition-short: 0.3s;
-            --transition-long: 0.5s;
+            --border-radius: <!-- ROUNDED_CORNERS_PLACEHOLDER -->;
+            --transition-duration: <!-- TRANSITION_DURATION_PLACEHOLDER -->;
         }
 
         /* Einstellungen für den gesamten Body */
@@ -118,7 +117,7 @@
             padding: 8px;
             color: var(--primary-color);
             height: 32px;
-            transition: background-color var(--transition-short) linear, font-size var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear, font-size var(--transition-duration) linear;
         }
 
         .leaderboard__table-item:hover {
@@ -131,7 +130,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             background-color: var(--tertiary-color);
             border: 1px solid var(--tertiary-color);
-            transition: background-color var(--transition-short) linear, font-size var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear, font-size var(--transition-duration) linear;
         }
 
         .leaderboard__table-item-first-place:hover {
@@ -192,7 +191,7 @@
             width: 20px;
             height: 20px;
             fill: var(--contrast-color);
-            transition: transform var(--transition-short);
+            transition: transform var(--transition-duration);
         }
 
         /* Formatierungen für den Dropdown Button */
@@ -208,7 +207,7 @@
             align-content: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: background-color var(--transition-short) linear, box-shadow var(--transition-short) linear, color var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear, box-shadow var(--transition-duration) linear, color var(--transition-duration) linear;
         }
 
         /* Formatierungen für den Dropdown Button beim Hovern */
@@ -227,7 +226,7 @@
             top: <!-- DROPDOWN_LIST_TOP_PLACEHOLDER -->;
             opacity: 0;
             visibility: hidden;
-            transition: opacity var(--transition-short) linear, visibility var(--transition-short) linear, height var(--transition-short) ease;
+            transition: opacity var(--transition-duration) linear, visibility var(--transition-duration) linear, height var(--transition-duration) ease;
         }
 
         .expanded {
@@ -239,7 +238,7 @@
         .dropdown-list__item {
             padding: 16px 64px 16px 16px;
             cursor: pointer;
-            transition: background-color var(--transition-short);
+            transition: background-color var(--transition-duration);
         }
 
         /* Formatierungen für ein Element in der Dropdown Liste beim Hovern */
@@ -280,7 +279,7 @@
             align-content: center;
             justify-content: center;
             align-items: center;
-            transition: background-color var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear;
         }
 
         .selection-button-selected {
@@ -299,7 +298,7 @@
         .selection-button-image {
             width: 100%;
             height: 100%;
-            transition: width var(--transition-short) linear, height var(--transition-short) linear;
+            transition: width var(--transition-duration) linear, height var(--transition-duration) linear;
         }
 
         /* Formatierungen für das Zeitstempel-Element */
@@ -341,7 +340,7 @@
             font-size: 24px;
             font-weight: bold;
             color: var(--primary-color);
-            transition: background-color var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear;
         }
 
         .statistics__ranking-header:hover {
@@ -380,7 +379,7 @@
             padding: 8px;
             color: var(--primary-color);
             height: 32px;
-            transition: background-color var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear;
         }
 
         .statistics__list-item:hover {
@@ -392,7 +391,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             background-color: var(--tertiary-color);
             border: 1px solid var(--tertiary-color);
-            transition: background-color var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear;
         }
 
         .statistics__list-item-first-place:hover {
@@ -401,18 +400,18 @@
 
         .statistics__rank {
             font-size: 20px;
-            transition: font-size var(--transition-short) linear;
+            transition: font-size var(--transition-duration) linear;
         }
 
         .statistics__name {
             font-size: 14px;
-            transition: font-size var(--transition-short) linear;
+            transition: font-size var(--transition-duration) linear;
         }
 
         .statistics__value {
             font-size: 20px;
             margin-left: auto;
-            transition: font-size var(--transition-short) linear;
+            transition: font-size var(--transition-duration) linear;
         }
 
         .statistics__list-item:hover .statistics__rank {
@@ -454,13 +453,13 @@
             width: 36px;
             height: 36px;
             border: 1px solid var(--primary-color);
-            transition: background-color var(--transition-short) linear, visibility var(--transition-short) linear, opacity var(--transition-short) linear;
+            transition: background-color var(--transition-duration) linear, visibility var(--transition-duration) linear, opacity var(--transition-duration) linear;
         }
 
         .page-button-img {
             width: 65%;
             height: 65%;
-            transition: width var(--transition-short) linear, height var(--transition-short) linear, filter var(--transition-short) linear;
+            transition: width var(--transition-duration) linear, height var(--transition-duration) linear, filter var(--transition-duration) linear;
         }
 
         .page-button:hover {
