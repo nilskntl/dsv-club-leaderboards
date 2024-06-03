@@ -18,7 +18,7 @@ class RequestHandler {
         this._clubId = leaderboard.clubId;
         this._url = `https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=${this._clubId}`;
         this._year = new Date().getFullYear();
-        if (new Date().getUTCMonth() >= 6) {
+        if (new Date().getUTCMonth() >= 5) {
             this._year += 1; // A new season has started, so the year is incremented
         }
     }
