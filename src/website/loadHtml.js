@@ -45,7 +45,13 @@ async function loadHtmlContent(keys, settings) {
      * @throws {Error} - Fehlermeldung, wenn es ein Problem mit dem Fetch-Vorgang gab
      */
 
-    settings = Object.assign({}, DEFAULT_SETTINGS, settings);
+    for (let key in settings) {
+        try {
+            DEFAULT_SETTINGS[key] = settings[key];
+        } catch (ignore) {
+        }
+    }
+    settings = DEFAULT_SETTINGS;
 
     try {
         let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/index.html');
