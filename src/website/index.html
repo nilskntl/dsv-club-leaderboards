@@ -1523,6 +1523,9 @@
                     table.appendChild(createRow(result, index, isCurrentYear));
                 });
 
+                table.lastElementChild.setAttribute('data-radius', 'bottom');
+                table.children[1].setAttribute('data-radius', 'top');
+
                 return table;
             };
 
