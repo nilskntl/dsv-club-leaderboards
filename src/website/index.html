@@ -2002,6 +2002,7 @@
             const numResults = filteredDisciplines.reduce((acc, discipline) => acc + discipline.results.length, 0);
 
             const elements = {
+                content: document.getElementById('content'),
                 loading: document.getElementById('loading'),
                 lastUpdated: document.getElementById('last-updated'),
                 pageSelector: document.getElementById('page-selector'),
@@ -2022,7 +2023,9 @@
             if (numResults === 0) {
                 elements.loading.style.display = 'block'; // Ladekreis anzeigen
                 elements.lastUpdated.style.display = 'none';
+                elements.content.display = 'none';
                 await this.#getData(this._filter.season); // Lade die Daten für die Saison
+                elements.content.display = 'block';
             }
 
             if (this._filter.showLeaderboards) {
