@@ -28,7 +28,7 @@ function replaceHtmlContent(htmlContent, keys, settings) {
     htmlContent = htmlContent.replace('<!-- PRIMARY_BACKGROUND_PLACEHOLDER -->', settings.PRIMARY_BACKGROUND);
     htmlContent = htmlContent.replace('<!-- SECONDARY_BACKGROUND_PLACEHOLDER -->', settings.SECONDARY_BACKGROUND);
     // Replace den Platzhalter für die abgerundeten Ecken
-    htmlContent = htmlContent.replace('<!--ROUNDED_CORNERS_PLACEHOLDER -->', settings.ROUNDED_CORNERS ? '8px' : '0');
+    htmlContent = htmlContent.replace('<!-- ROUNDED_CORNERS_PLACEHOLDER -->', settings.ROUNDED_CORNERS ? '8px' : '0');
     // Replace den Platzhalter für die Animationsdauer
     htmlContent = htmlContent.replace('<!-- TRANSITION_DURATION_PLACEHOLDER -->', settings.TRANSITION_DURATION);
 
