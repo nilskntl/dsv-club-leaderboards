@@ -55,10 +55,11 @@ async function loadHtmlContent(keys, settings) {
 
     try {
         let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/index.html');
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+        if (response.ok) {
+            return replaceHtmlContent(await response.text(), keys, settings);
+        } else {
+            return new Error('Network response was not ok');
         }
-        return replaceHtmlContent(await response.text(), keys, settings);
     } catch (error) {
         console.error('There has been a problem with your fetch operation:', error);
     }
