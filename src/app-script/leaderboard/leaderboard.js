@@ -1,7 +1,7 @@
 class Leaderboard {
     /**
      * Klasse für die Bestenliste
-     * @param {string} clubId - ID des Vereins
+     * @param {any} clubId - ID des Vereins
      * @param {Array} data - Daten des Google Sheets
      * @param {number} entriesPerDiscipline - Anzahl der Einträge pro Disziplin
      * @property {Discipline[]} disciplines - Disziplinen der Bestenliste
@@ -20,7 +20,7 @@ class Leaderboard {
      */
 
     constructor(clubId, data, entriesPerDiscipline = 10) {
-        this._clubId = clubId;
+        this._clubId = clubId.toString();
         this._oldData = data;
         this._disciplines = [];
         this._requestHandler = new RequestHandler(this);
