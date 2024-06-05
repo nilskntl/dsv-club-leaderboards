@@ -36,7 +36,7 @@ const version = '1.0.3';
  * einen ausführlichen Verlauf aller Änderungen und können eine frühere Version ohne Probleme wiederherstellen.
  */
 
-const clubId = '7985' // Setze hier die ID des Vereins
+const clubId = 7985 // Setze hier die ID des Vereins
 const numberOfEntries = 5 // Optional: Anzahl der Einträge pro Disziplin
 const formatSheetEveryTime = true // Optional: Soll das Sheet bei jedem Update formatiert werden?
 
