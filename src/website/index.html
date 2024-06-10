@@ -2022,10 +2022,9 @@
 
             if (numResults === 0) {
                 elements.loading.style.display = 'block'; // Ladekreis anzeigen
-                elements.lastUpdated.style.display = 'none';
-                elements.content.display = 'none';
+                elements.lastUpdated.style.display = 'none'; // Zuletzt aktualisiert verbergen
+                elements.content.style.display = 'none'; // Tabelle verbergen
                 await this.#getData(this._filter.season); // Lade die Daten für die Saison
-                elements.content.display = 'block';
             }
 
             if (this._filter.showLeaderboards) {
@@ -2036,6 +2035,7 @@
                 this._page.loadStatistics(currentLeaderboard);
             }
             elements.loading.style.display = 'none'; // Ladekreis ausblenden
+            elements.content.style.display = 'block'; // Tabelle anzeigen
         }
     }
 
