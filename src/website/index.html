@@ -1522,7 +1522,7 @@
                     table.appendChild(createRow(result, index, isCurrentYear));
                 });
 
-                if(table.children.length > 2) {
+                if (table.children.length > 2) {
                     table.lastElementChild.setAttribute('data-radius', 'bottom');
                     table.children[1].setAttribute('data-radius', 'top');
                 }
@@ -2073,6 +2073,8 @@
                     if (parseInt(split[0]).toString().length === 4 && parseInt(split[1]).toString().length === 4) {
                         this.season = filter;
                     }
+                } else if (split.length === 1 && parseInt(split[0]).toString().length === 4) {
+                    this.season = filter;
                 }
             }
             if (filter === 'Weiblich' || filter === 'Männlich') {
