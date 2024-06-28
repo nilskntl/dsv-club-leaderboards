@@ -63,8 +63,8 @@ function updateSeason() {
      * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
      */
 
-    let year = new Date().getFullYear() - 1;
-    let nameOfSheet = year;
+    let year = new Date().getFullYear();
+    let nameOfSheet = year.toString();
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen der aktuellen Saison
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText(); // Externes Skript
