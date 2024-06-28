@@ -18,9 +18,6 @@ class RequestHandler {
         this._clubId = leaderboard.clubId;
         this._url = `https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=${this._clubId}`;
         this._year = new Date().getFullYear();
-        if (new Date().getUTCMonth() >= 5) {
-            this._year += 1; // A new season has started, so the year is incremented
-        }
     }
 
     requestResults() {
@@ -61,9 +58,9 @@ class RequestHandler {
             "__VIEWSTATE": viewState,
             "__EVENTVALIDATION": eventValidation,
             "ctl00$ContentSection$_genderRadioButtonList": discipline.gender.substring(0, 1),
-            "ctl00$ContentSection$_courseRadioButtonList": (discipline.lane === LANES.Lanbahn) ? "L" : "S",
+            "ctl00$ContentSection$_courseRadioButtonList": (discipline.lane === LANES.Langbahn) ? "L" : "S",
             "ctl00$ContentSection$_eventDropDownList": `${discipline.distance + discipline.stroke.substring(0, 1)}|GL`,
-            "ctl00$ContentSection$_timerangeDropDownList": `01.06.${this._year - 1}|31.05.${this._year}`
+            "ctl00$ContentSection$_timerangeDropDownList": `01.01.${this._year}|31.12.${this._year}`
         };
 
         // Configure Fetch call
@@ -122,5 +119,4 @@ class RequestHandler {
             return {name, time, birthYear, location, date: date};
         });
     }
-
 }

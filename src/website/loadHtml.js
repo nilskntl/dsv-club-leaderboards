@@ -32,7 +32,6 @@ function replaceHtmlContent(htmlContent, keys, settings) {
     // Replace den Platzhalter für die Animationsdauer
     htmlContent = htmlContent.replace('<!-- TRANSITION_DURATION_PLACEHOLDER -->', settings.TRANSITION_DURATION);
 
-
     return htmlContent; // Gib den HTML-Code zurück
 }
 
