@@ -119,7 +119,7 @@ const GENDERS = {
 }
 
 const LANES = {
-    'Lanbahn': 50,
+    'Langbahn': 50,
     'Kurzbahn': 25
 }
 

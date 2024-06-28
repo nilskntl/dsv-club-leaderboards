@@ -74,8 +74,8 @@ class Leaderboard {
             let longCourse = DISCIPLINES[discipline].Langbahn;
             let shortCourse = DISCIPLINES[discipline].Kurzbahn;
             for (let distance of longCourse) {
-                this._disciplines.push(new Discipline(distance, LANES.Lanbahn, stroke, GENDERS.Weiblich));
-                this._disciplines.push(new Discipline(distance, LANES.Lanbahn, stroke, GENDERS.Maennlich));
+                this._disciplines.push(new Discipline(distance, LANES.Langbahn, stroke, GENDERS.Weiblich));
+                this._disciplines.push(new Discipline(distance, LANES.Langbahn, stroke, GENDERS.Maennlich));
             }
             for (let distance of shortCourse) {
                 this._disciplines.push(new Discipline(distance, LANES.Kurzbahn, stroke, GENDERS.Weiblich));
