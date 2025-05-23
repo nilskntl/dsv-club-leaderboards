@@ -116,6 +116,9 @@ function _writeNewRecordsToSheet(results, sheet) {
      * @param {Sheet} sheet - Sheet
      */
 
+    Logger.log('Übertrage neue Rekorde in das Tabellenblatt...');
+    Logger.log('Neue Rekorde: ' + JSON.stringify(results));
+
     let column = 16; // Reihe P
     let values = sheet.getRange(1, column, 1, sheet.getLastColumn()).getValues()[0];
 
@@ -139,6 +142,9 @@ function _writeNewDataToSheet(data, sheet) {
      * @param {Array} data - Daten für das Sheet
      * @param {Sheet} sheet - Sheet
      */
+
+    Logger.log('Übertrage neue Daten in das Tabellenblatt...');
+    Logger.log('Neue Daten: ' + JSON.stringify(data));
 
     let range = sheet.getRange(3, 1, data.length, data[0].length); // Definiere die Range
 
