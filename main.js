@@ -48,8 +48,12 @@ function updateAllTime() {
      * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
      */
 
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('All-Time'); // Hole das Sheet mit dem Namen 'All-Time'
-    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('All-Time'); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    let nameOfSheet = 'All-Time';
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen 'All-Time'
+    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    if (sheet.getName() !== nameOfSheet) {
+        Logger.log("Something went wrong. Sheet Name doesn't match '" + nameOfSheet + "'");
+    }
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die All-Time
@@ -67,6 +71,9 @@ function updateSeason() {
     let nameOfSheet = year.toString();
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen der aktuellen Saison
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    if (sheet.getName() !== nameOfSheet) {
+        Logger.log("Something went wrong. Sheet Name doesn't match '" + nameOfSheet + "'");
+    }
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText(); // Externes Skript
     eval(code); //Code des externen Skripts ausführen
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die aktuelle Saison
