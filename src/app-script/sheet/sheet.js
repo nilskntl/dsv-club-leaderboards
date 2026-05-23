@@ -153,8 +153,8 @@ function _writeNewDataToSheet(data, sheet) {
     range.setValues(data); // Schreibe die neuen Daten in die Range
 
     let lastRow = sheet.getLastRow(); // Sollten sich unterhalb der Range noch Daten befinden, werden diese gelöscht (außer sie befinden sich in Reihe P)
-    if (lastRow > data.length) {
-        let rangeToDelete = sheet.getRange(data.length + 3, 1, lastRow - data.length, data[0].length);
+    if (lastRow > data.length + 2) {
+        let rangeToDelete = sheet.getRange(data.length + 3, 1, lastRow - data.length - 2, data[0].length);
         rangeToDelete.clearContent();
     }
 }
