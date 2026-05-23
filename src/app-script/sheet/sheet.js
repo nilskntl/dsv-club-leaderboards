@@ -119,13 +119,14 @@ function _writeNewRecordsToSheet(results, sheet) {
     Logger.log('Übertrage neue Rekorde in das Tabellenblatt...');
     Logger.log('Neue Rekorde: ' + JSON.stringify(results));
 
-    let column = 16; // Reihe P
-    let values = sheet.getRange(1, column, 1, sheet.getLastColumn()).getValues()[0];
+    let column = 16; // Spalte P
+    let lastRow = sheet.getLastRow();
+    let values = sheet.getRange(2, column, lastRow, 1).getValues();
 
-    let row = 1;
+    let row = lastRow + 1;
     for (let i = 0; i < values.length; i++) {
-        if (values[i] === "") {
-            row = i + 1;
+        if (values[i][0] === '') {
+            row = i + 2;
             break;
         }
     }
