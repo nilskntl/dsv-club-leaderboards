@@ -8,6 +8,12 @@ class RequestHandler {
      * those tokens. Both User-Agent and Referer headers are required — the server
      * rejects requests that omit them.
      *
+     * To avoid the DSV server's rate limiter (HTTP 429), the GET is performed only once
+     * at the start of a full update run. Each POST response contains fresh VIEWSTATE and
+     * EVENTVALIDATION values that are reused for the next POST, halving the total number
+     * of HTTP requests. A fixed delay is inserted between POST requests, and a single
+     * retry with a longer pause is attempted on a 429 response.
+     *
      * Results are always scoped to the current calendar year because the DSV club page
      * does not expose multi-year filtering.
      *
@@ -19,41 +25,54 @@ class RequestHandler {
         this._clubId = leaderboard.clubId;
         this._url = `https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=${this._clubId}`;
         this._year = new Date().getFullYear();
+        this._requestDelayMs = 1200; // pause between POST requests to stay under the DSV rate limit
     }
 
     /**
      * Fetches results for every discipline in the leaderboard and adds them.
-     * All results created here carry newRecord=true so they can be identified as
-     * new entries after adjustResults() trims each discipline to the top N.
+     *
+     * One GET is performed at the start to obtain the initial session tokens. The VIEWSTATE
+     * and EVENTVALIDATION returned by each POST are immediately reused for the next POST,
+     * so no further GET requests are needed. A fixed delay between POSTs prevents the
+     * rate limiter from triggering.
+     *
+     * All results carry newRecord=true so they can be identified after adjustResults()
+     * trims each discipline to the top N.
      */
     requestResults() {
+        let pageHtml = this._getPage();
+        let viewState = this._extractData(pageHtml, '__VIEWSTATE" value="', '" />');
+        let eventValidation = this._extractData(pageHtml, '__EVENTVALIDATION" value="', '" />');
+
         for (let discipline of this._leaderboard.disciplines) {
-            let data = this._fetchNewData(discipline);
-            for (let i = 0; i < data.length; i++) {
-                let result = data[i];
+            Logger.log(discipline.gender + ' ' + (discipline.lane === 50 ? 'Langbahn' : 'Kurzbahn') + ' ' + discipline.distance + 'm ' + discipline.stroke);
+
+            let { data, nextViewState, nextEventValidation } = this._fetchNewData(discipline, viewState, eventValidation);
+
+            // Fresh tokens from each POST response are valid for the next POST
+            if (nextViewState) viewState = nextViewState;
+            if (nextEventValidation) eventValidation = nextEventValidation;
+
+            for (let result of data) {
                 let person = new Person(result.name, result.birthYear);
                 let time = new Time(result.time);
                 let date = new CalendarDate(result.date);
-                let location = result.location;
-                let newResult = new Result(person, time, location, date, true);
+                let newResult = new Result(person, time, result.location, date, true);
                 this._leaderboard.addResult(newResult, discipline.uid);
             }
+
+            Utilities.sleep(this._requestDelayMs);
         }
     }
 
     /**
-     * Performs the two-step HTTP scrape for one discipline:
-     *   1. GET the club page to extract __VIEWSTATE and __EVENTVALIDATION tokens.
-     *   2. POST the filter form with discipline parameters to receive the results table.
+     * Loads the club page with a GET request and returns the raw HTML.
+     * Used once per update run to obtain the initial VIEWSTATE and EVENTVALIDATION tokens.
      *
-     * The event dropdown value encodes distance and the first letter of the stroke name
-     * (e.g. "50F|GL" for 50m Freestyle). The time range is fixed to the full current year.
-     *
-     * @param {Discipline} discipline - The discipline to fetch results for.
-     * @returns {Array<{name: string, time: string, birthYear: string, location: string, date: string}>}
+     * @returns {string} Raw HTML of the club page.
      */
-    _fetchNewData(discipline) {
-        let loginResponse = UrlFetchApp.fetch(this._url, {
+    _getPage() {
+        let response = UrlFetchApp.fetch(this._url, {
             method: "get",
             headers: {
                 "User-Agent": "Mozilla/5.0", // required — server rejects requests without a browser UA
@@ -63,12 +82,26 @@ class RequestHandler {
             followRedirects: false,
             muteHttpExceptions: true
         });
+        return response.getContentText();
+    }
 
-        let loginContext = loginResponse.getContentText();
-
-        let viewState = this._extractData(loginContext, '__VIEWSTATE" value="', '" />');
-        let eventValidation = this._extractData(loginContext, '__EVENTVALIDATION" value="', '" />');
-
+    /**
+     * POSTs the filter form for one discipline and returns the parsed results alongside
+     * fresh session tokens extracted from the response.
+     *
+     * The VIEWSTATE and EVENTVALIDATION embedded in every ASP.NET WebForms response are
+     * returned so that requestResults() can pass them directly to the next call, avoiding
+     * a GET round-trip per discipline.
+     *
+     * If the server responds with HTTP 429 (rate limit exceeded), the request is retried
+     * once after a 5-second pause before propagating the failure.
+     *
+     * @param {Discipline} discipline
+     * @param {string} viewState - Token from the previous GET or POST response.
+     * @param {string} eventValidation - Token from the previous GET or POST response.
+     * @returns {{ data: Array, nextViewState: string, nextEventValidation: string }}
+     */
+    _fetchNewData(discipline, viewState, eventValidation) {
         let payload = {
             "ClubID": this._clubId,
             "__EVENTTARGET": "ctl00$ContentSection$_rankingsButton",
@@ -80,22 +113,35 @@ class RequestHandler {
             "ctl00$ContentSection$_timerangeDropDownList": `01.01.${this._year}|31.12.${this._year}`
         };
 
-        let options = {
+        let response = UrlFetchApp.fetch(this._url, {
             method: "post",
-            payload: payload
+            payload: payload,
+            muteHttpExceptions: true
+        });
+
+        if (response.getResponseCode() === 429) {
+            Logger.log('Rate limited (429) — waiting 5s before retry');
+            Utilities.sleep(5000);
+            response = UrlFetchApp.fetch(this._url, {
+                method: "post",
+                payload: payload,
+                muteHttpExceptions: true
+            });
+        }
+
+        let responseText = response.getContentText();
+        let content = this._extractData(responseText, 'class="table table-sm table-stripe"', '</table>');
+
+        let rows = this._splitElement(content, '<tr>', '</tr>');
+        rows.shift(); // remove the empty fragment before the first <tr>
+        rows.shift(); // remove the table header row
+
+        return {
+            data: this._convertToArray(rows),
+            // ASP.NET WebForms embeds fresh tokens in every response page
+            nextViewState: this._extractData(responseText, '__VIEWSTATE" value="', '" />'),
+            nextEventValidation: this._extractData(responseText, '__EVENTVALIDATION" value="', '" />')
         };
-
-        Logger.log(discipline.gender + " " + (discipline.lane === 50 ? "Langbahn" : "Kurzbahn") + " " + discipline.distance + "m " + discipline.stroke);
-
-        let response = UrlFetchApp.fetch(this._url, options);
-
-        let content = this._extractData(response.getContentText(), 'class="table table-sm table-stripe"', '</table>');
-
-        let contentArray = this._splitElement(content, '<tr>', '</tr>');
-        contentArray.shift(); // remove the empty fragment before the first <tr>
-        contentArray.shift(); // remove the table header row
-
-        return this._convertToArray(contentArray);
     }
 
     /**

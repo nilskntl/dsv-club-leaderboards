@@ -5,6 +5,7 @@
  * Run with: npm run test:integration
  *
  * Set CLUB_ID to your club's DSV ID to test against real data.
+ * Set VERBOSE=1 to print Logger output.
  */
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
@@ -12,14 +13,23 @@ const { createContext } = require('../setup');
 
 const CLUB_ID = process.env.CLUB_ID || '7985';
 
+// Pause between tests to stay under the DSV rate limit.
+// The DSV server rate-limits by session, so back-to-back test runs can trigger 429.
+const pause = (ms) => new Promise(r => setTimeout(r, ms));
+const INTER_TEST_DELAY_MS = 4000;
+
 describe(`DSV pipeline — club ${CLUB_ID} (real HTTP)`, () => {
 
-    it('_fetchNewData returns correctly shaped objects for freestyle 50m short course male', () => {
+    it('_fetchNewData returns correctly shaped objects for freestyle 50m short course male', async () => {
         const ctx = createContext();
         const lb = new ctx.Leaderboard(CLUB_ID, [], 5);
+        const handler = lb._requestHandler;
         const discipline = lb.disciplines.find(d => d.uid === '#f502m');
 
-        const data = lb._requestHandler._fetchNewData(discipline);
+        const pageHtml = handler._getPage();
+        const viewState = handler._extractData(pageHtml, '__VIEWSTATE" value="', '" />');
+        const eventValidation = handler._extractData(pageHtml, '__EVENTVALIDATION" value="', '" />');
+        const { data } = handler._fetchNewData(discipline, viewState, eventValidation);
 
         assert.ok(Array.isArray(data), 'response must be an array');
         if (data.length > 0) {
@@ -33,11 +43,13 @@ describe(`DSV pipeline — club ${CLUB_ID} (real HTTP)`, () => {
         }
     });
 
-    it('single-discipline pipeline: results are sorted and capped at entriesPerDiscipline', () => {
+    it('single-discipline pipeline: results are sorted and capped at entriesPerDiscipline', async () => {
+        await pause(INTER_TEST_DELAY_MS);
+
         const ctx = createContext();
         const lb = new ctx.Leaderboard(CLUB_ID, [], 3);
 
-        // Restrict to one discipline so we make only 2 HTTP requests (GET + POST), not ~80
+        // Restrict to one discipline so we make only 1 GET + 1 POST, not ~140 requests
         const target = lb.disciplines.find(d => d.uid === '#f502m');
         lb._disciplines = [target];
 
@@ -59,7 +71,9 @@ describe(`DSV pipeline — club ${CLUB_ID} (real HTTP)`, () => {
         }
     });
 
-    it('merging sheet data with DSV data does not produce duplicates', () => {
+    it('merging sheet data with DSV data does not produce duplicates', async () => {
+        await pause(INTER_TEST_DELAY_MS);
+
         const ctx = createContext();
 
         // Seed the leaderboard with one existing result from the sheet

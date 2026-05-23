@@ -53,6 +53,11 @@ function createContext({ verbose = !!process.env.VERBOSE } = {}) {
             }
         },
 
+        // Utilities.sleep is a no-op in tests — callers must add their own delays if needed
+        Utilities: {
+            sleep(_ms) {}
+        },
+
         // Synchronous HTTP adapter that mirrors the Apps Script UrlFetchApp API.
         // Apps Script's fetch is blocking; sync-request replicates that behaviour.
         UrlFetchApp: {
@@ -75,7 +80,9 @@ function createContext({ verbose = !!process.env.VERBOSE } = {}) {
                 try {
                     const res = request(method, url, reqOptions);
                     return {
-                        getContentText: () => res.getBody('utf8'),
+                        // getBody() throws for non-2xx; access body directly so callers
+                        // can inspect getResponseCode() and handle errors themselves
+                        getContentText: () => res.body ? res.body.toString('utf8') : '',
                         getResponseCode: () => res.statusCode,
                     };
                 } catch (e) {
