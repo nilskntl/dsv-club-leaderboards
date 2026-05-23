@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Bestenliste</title>
     <style>
-        /* Definiere Variablen für die Farben */
+        /* Theme color custom properties */
         :root {
             --primary-color: <!-- PRIMARY_COLOR_PLACEHOLDER -->;
             --secondary-color: <!-- SECONDARY_COLOR_PLACEHOLDER -->;
@@ -18,7 +18,7 @@
             --transition-duration: <!-- TRANSITION_DURATION_PLACEHOLDER -->;
         }
 
-        /* Einstellungen für den gesamten Body */
+        /* Global body styles */
         body {
             max-width: 100%;
             font-family: "Questrial", sans-serif;
@@ -27,12 +27,12 @@
             cursor: default;
         }
 
-        /* Verberge den Scrollbalken auf der rechten Seite */
+        /* Hide the scrollbar */
         ::-webkit-scrollbar {
             width: 0; /* Breite auf null setzen */
         }
 
-        /* Optional: Verberge den Scrollbalken in anderen Browsern */
+        /* Hide scrollbar in non-WebKit browsers */
         html {
             scrollbar-width: none;
             scrollbar-color: transparent transparent;
@@ -42,13 +42,13 @@
             pointer-events: none;
         }
 
-        /* Formatierung für Einträge aus diesem Jahr */
+        /* Highlight entries from the current year */
         .current-year {
             color: var(--primary-color);
             font-weight: bold;
         }
 
-        /* Formatierung für den Dividierer Container */
+        /* Layout container placing the distance label beside the table */
         .divider-container {
             display: flex;
             align-items: center;
@@ -56,7 +56,7 @@
             gap: 12px;
         }
 
-        /* Formatierungen für spezielle Zellen (z.B. für die Distanz) */
+        /* Distance label cell */
         .distance {
             width: 7%;
             height: min-content;
@@ -67,13 +67,13 @@
             color: var(--primary-color);
         }
 
-        /* Formatierungen für die Header Zellen */
+        /* Table header cells */
         .header-cells {
             font-weight: bold;
             vertical-align: bottom;
         }
 
-        /* Formatierungen für den Container einer Disziplin */
+        /* Per-discipline result card */
         .discipline {
             width: 93%;
             margin-top: 12px;
@@ -137,7 +137,7 @@
         }
 
 
-        /* Definition der Breiten der Spalten */
+        /* Column width definitions */
         .col1 {
             width: 8%;
         }
@@ -162,14 +162,14 @@
             width: 12%;
         }
 
-        /* Formatierungen für den Container, in dem sich einzelne Dropdowns befinden */
+        /* Container holding all dropdown filters */
         .dropdowns {
             display: flex;
             gap: 16px;
             justify-content: right;
         }
 
-        /* Formatierungen für einen Dropdown Container */
+        /* Individual dropdown filter */
         .dropdown {
             display: flex;
             width: 20%;
@@ -180,12 +180,12 @@
             z-index: 1000;
         }
 
-        /* Formatierungen für den Dropdown Container beim Hovern */
+        /* Rotate arrow icon when dropdown is hovered */
         .dropdown:hover .dropdown-svg {
             transform: rotate(180deg);
         }
 
-        /* Formatierungen für das Dropdown SVG (Pfeil auf dem Button) */
+        /* Dropdown arrow icon */
         .dropdown-svg {
             width: 20px;
             height: 20px;
@@ -193,7 +193,7 @@
             transition: transform var(--transition-duration);
         }
 
-        /* Formatierungen für den Dropdown Button */
+        /* Dropdown toggle button */
         .dropdown-select {
             width: 100%;
             padding: 8px 8px 8px 16px;
@@ -209,14 +209,14 @@
             transition: background-color var(--transition-duration) linear, box-shadow var(--transition-duration) linear, color var(--transition-duration) linear;
         }
 
-        /* Formatierungen für den Dropdown Button beim Hovern */
+        /* Dropdown button hover state */
         .dropdown-select:hover {
             background-color: rgba(0, 0, 0, 0);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0);
             color: var(--primary-color);
         }
 
-        /* Formatierungen für die Dropdown Liste */
+        /* Dropdown option list */
         .dropdown-list {
             background-color: var(--primary-color);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -233,31 +233,31 @@
             height: auto;
         }
 
-        /* Formatierungen für ein Element in der Dropdown Liste */
+        /* Dropdown list item */
         .dropdown-list__item {
             padding: 16px 64px 16px 16px;
             cursor: pointer;
             transition: background-color var(--transition-duration);
         }
 
-        /* Formatierungen für ein Element in der Dropdown Liste beim Hovern */
+        /* Dropdown item hover state */
         .dropdown-list__item:hover {
             background-color: var(--secondary-color);
         }
 
-        /* Formatierungen für ein Overlay, dass die Eckpunkte der Dropdown Liste verdeckt */
+        /* Rounded corner override for dropdown list edge */
         div[data-radius="top"] {
             border-top-left-radius: var(--border-radius);
             border-top-right-radius: var(--border-radius);
         }
 
-        /* Formatierungen für ein Overlay, dass die Eckpunkte der Dropdown Liste verdeckt */
+        /* Rounded corner override for dropdown list edge */
         div[data-radius="bottom"] {
             border-bottom-left-radius: var(--border-radius);
             border-bottom-right-radius: var(--border-radius);
         }
 
-        /* Formatierungen für die Liste der Auswahl-Buttons */
+        /* Selection button row (statistics / leaderboards toggle) */
         #selection-button-list {
             display: <!-- SELECTION_BUTTON_LIST_DISPLAY_PLACEHOLDER -->;
             gap: 16px;
@@ -265,7 +265,7 @@
             margin-bottom: 16px;
         }
 
-        /* Formatierungen für die Auswahl-Buttons */
+        /* Individual selection button */
         .selection-button {
             display: flex;
             padding: 8px;
@@ -300,7 +300,7 @@
             transition: width var(--transition-duration) linear, height var(--transition-duration) linear;
         }
 
-        /* Formatierungen für das Zeitstempel-Element */
+        /* Last-updated timestamp */
         #last-updated {
             font-size: 14px;
             text-align: right;
@@ -308,7 +308,7 @@
             color: var(--primary-color);
         }
 
-        /* Stil für den Ladekreis */
+        /* Loading spinner */
         #loading {
             display: none;
             text-align: center;
@@ -478,7 +478,7 @@
             width: 64px;
         }
 
-        /* Einstellungen für Handy */
+        /* Mobile styles */
         @media only screen and (max-width: 600px) {
             body {
                 padding: 8px 8px 8px 8px;
@@ -621,9 +621,8 @@
         }
     </style>
 </head>
-<!-- Body des Dokuments -->
 <body>
-<!-- Buttons für die Auswahl, was angezeigt werden soll (Bestenlisten oder Statistiken) -->
+<!-- Toggle buttons: statistics or leaderboards view -->
 <div id="selection-button-list">
     <div id="statistics-button" class="selection-button">
         <img class="selection-button-image" alt="Bestenlisten"
@@ -635,11 +634,11 @@
     </div>
 </div>
 
-<!-- Dropdowns für die Filterung der Bestenlisten -->
+<!-- Dropdown filters -->
 <div class="dropdowns" id="dropdown-list">
-    <!-- Dropdowns für die Saison -->
+    <!-- Season dropdown -->
     <div class="dropdown" id="dropdown__season">
-        <!-- Button für die Auswahl der Saison -->
+        <!-- Season selector button -->
         <div class="dropdown-select" id="dropdown-select__season">
             <span>All-Time</span>
             <svg class="dropdown-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
@@ -648,13 +647,13 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
         </div>
-        <!-- Liste der Saisons wird per js hinzugefügt -->
+        <!-- Season list populated dynamically by JS -->
         <div class="dropdown-list" id="dropdown-list__season">
         </div>
     </div>
-    <!-- Dropdowns für Geschlecht -->
+    <!-- Gender dropdown -->
     <div class="dropdown" id="dropdown__gender">
-        <!-- Button für die Auswahl des Geschlechts -->
+        <!-- Gender selector button -->
         <div class="dropdown-select" id="dropdown-select__gender">
             <span>Weiblich</span>
             <svg class="dropdown-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
@@ -663,15 +662,15 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
         </div>
-        <!-- Liste der Geschlechter -->
+        <!-- Gender options -->
         <div class="dropdown-list" id="dropdown-list__gender">
             <div class="dropdown-list__item" id="dropdown-list__item__female" data-radius="top">Weiblich</div>
             <div class="dropdown-list__item" id="dropdown-list__item__male" data-radius="bottom">Männlich</div>
         </div>
     </div>
-    <!-- Dropdowns für Schwimmstil -->
+    <!-- Stroke dropdown -->
     <div class="dropdown" id="dropdown__stroke">
-        <!-- Button für die Auswahl des Schwimmstils -->
+        <!-- Stroke selector button -->
         <div class="dropdown-select" id="dropdown-select__stroke">
             <span>Freistil</span>
             <svg class="dropdown-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
@@ -680,7 +679,7 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
         </div>
-        <!-- Liste der Schwimmstile -->
+        <!-- Stroke options -->
         <div class="dropdown-list" id="dropdown-list__stroke">
             <div class="dropdown-list__item" id="dropdown-list__item__butterfly" data-radius="top">Schmetterling</div>
             <div class="dropdown-list__item" id="dropdown-list__item__backstroke">Rücken</div>
@@ -689,9 +688,9 @@
             <div class="dropdown-list__item" id="dropdown-list__item__individual" data-radius="bottom">Lagen</div>
         </div>
     </div>
-    <!-- Dropdowns für Bahnlänge -->
+    <!-- Course dropdown -->
     <div class="dropdown" id="dropdown__lane">
-        <!-- Button für die Auswahl der Bahnlänge -->
+        <!-- Course selector button -->
         <div class="dropdown-select" id="dropdown-select__lane">
             <span>Kurzbahn</span>
             <svg class="dropdown-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
@@ -700,14 +699,14 @@
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
         </div>
-        <!-- Liste der Bahnlängen -->
+        <!-- Course options -->
         <div class="dropdown-list" id="dropdown-list__lane">
             <div class="dropdown-list__item" id="dropdown-list__item__short" data-radius="top">Kurzbahn</div>
             <div class="dropdown-list__item" id="dropdown-list__item__long" data-radius="bottom">Langbahn</div>
         </div>
     </div>
 </div>
-<!-- Ladekreis -->
+<!-- Loading spinner -->
 <div id="loading">
     <svg width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
         <circle cx="50" cy="50" fill="none" stroke="#007bff" stroke-width="8" r="35"
@@ -718,29 +717,27 @@
     </svg>
     <div>Bitte warten...</div>
 </div>
-<!-- Container, in dem per JavaScript die Bestenlisten und Statistiken eingefügt werden -->
+<!-- Content area: populated by JS with leaderboards or statistics -->
 <div id="content"></div>
-<!-- Text, der anzeigt, wann die Liste zuletzt aktualisiert wurde -->
+<!-- Last-updated label -->
 <div id="last-updated">
     Zuletzt aktualisiert: <span id="current-date"></span>
 </div>
 <div id="page-selector">
     <button id="previous-page" class="page-button">
-        <!-- img mit Pfeil nach links -->
+        <!-- arrow left -->
         <img alt="Vorherige Seite" class="page-button-img"
              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3ElEQVR4nO3aS4vPYRQH8FNyKyRj4ZZcRoYsJjYTws51SS6pSaLxAmy8jVnY20k2Uizddm4r14VbbkXJJUR89K/5lzDmrKQzz+cdfE/9fs95znkimqZpmqZpmqb5n6AHx3EP13EUE2I8wDI88bsTUR1W4LnR9UdVWIWX/m4wKkI/XhnbxqgGq/E6Ef4GJkYlGMCbRPjOT3FpVIJ1eJsI/6hi+A14lwj/EIujEmzC+0T4u5gflWALPiXC38G8qATbk+FvYU5Ugp34kjzqZkcl2I2vifDXMCsqwd5k+CuYEZXgIL4lwl/C9KgEh5PhL2BaVIIj+J4Ifw5ToxIMyTmDyVEJFuJjIvxpTIpqMJgIf7LclbYL+xMFOIspUREW4EOyCLW+/y4cSJ4A58udAF04lOwBLpZrgLqwL9kCXy7XAndhT7IIV8tdgrqwK3kN7qy/eqIi7MDnRBFulpsFdGFrchp0G3OjImxOtsr1hqG/jMMzE+H7ncYqKsL65E6gsxBZEhVhbXIr9Bi9URHWJJeiL7AyKpLfDHceTfTFOH0V8vPCpOxVug/PjG1bVIXleDpGAYaiMvSO/PlHMxDVYREe/CH8qRgvMBPDI21xZ2F6rOwwtWmapmmapmnin/sBUm/6r6PLSuUAAAAASUVORK5CYII=">
     </button>
     <span id="current-page">Seite 1</span>
     <button id="next-page" class="page-button">
-        <!-- img mit Pfeil nach rechts -->
+        <!-- arrow right -->
         <img alt="Nächste Seite" class="page-button-img"
              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB1ElEQVR4nO3aS4vPURgH8Kfccikkl9Kg3AtFiazcshthOxrDRk2Slc28CxsvwFIWZCHCzmUWYlDkUi5JEguXKHw0NQthZp6FUs//fF7B//vt1/mf85wT0TRN0zRN0zTNv4CJOI5beIiTmBOdAqf86TmWR3VYb3SvsDoqw0Fje401URV2GN87bIzCC+BgooT32BQVYenIopcpYXNUhMV4nCjhI7ZFRejCo0QJn7AzKsIC3EuU8Bm7oiLMw1CihK/YHRVhLm4nS9gbFWE2biZK+IaeqAgzcT1ZQm9UhBm4miyhLyrCdFxOlPAD/VERpuFisoSjURGm4GyyhGNRuIRzcg5HRZiMM8kdY1dUhAmjjNN+19vpX0FPFF0HzifCf8DCqARTcSH5T9BXcS9wKRn+SBTcDV5JhP+OQ1HwUHQteR44EJVgFm4kw++PgjOBweRgZF8UHI3dSYbfE5VgPu4mwn9BdxScDN/vyPE4FiXvBoYvSLZHwduhJ8nt7daoBCvwoiPvB7Fq5DHEeN5iQxQ81Q0lwr/BuqgG3Ynww69E1kZF6B8n/EusjKqwZYzwz7AsqsPpv4R/iiXRCTAJAyMPJR/gxPAJ8H//rqZpmqZpmqZp4lc/ATJm+sU92n3XAAAAAElFTkSuQmCC">
     </button>
 </div>
 
-<!-- Skript zum Importieren von Daten aus Google Sheets -->
-<!-- Das Skript enthält Klassen für Personen, Ergebnisse, Disziplinen und Bestenlisten -->
-<!-- Es verwaltet die Bestenlisten und filtert sie nach Disziplin und Geschlecht -->
+<!-- Classes and logic for fetching TSV data, building the leaderboard, and managing filters -->
 <script>
     class Statistics {
         constructor(leaderboard) {
@@ -889,16 +886,9 @@
 
     class CalenderDate {
         /**
-         * Erstellt ein Datum-Objekt
-         * @param {string} date - Datum im Format dd.mm.yyyy
-         * @throws {Error} - Wird geworfen, wenn das Datum nicht im Format dd.mm.yyyy ist
-         * @property {string} date - Datum im Format dd.mm.yyyy
-         * @property {number} day - Tag des Datums
-         * @property {number} month - Monat des Datums
-         * @property {number} year - Jahr des Datums
-         * @property {boolean} isCurrentYear - Gibt an, ob das Datum im aktuellen Jahr liegt
-         * @method equals - Vergleicht das Datum mit einem anderen Datum
-         * @method toString - Gibt das Datum als String zurück
+         * Parses a competition date from dd.mm.yyyy or year-only yyyy
+         * (year-only is normalised to 00.00.yyyy internally).
+         * @param {string} date - Date string in dd.mm.yyyy or yyyy format.
          */
 
         constructor(date) {
@@ -1037,14 +1027,10 @@
 
     class Person {
         /**
-         * Definiert eine Person
-         * @param {string} name - Name der Person
-         * @param {string} birth - Geburtsdatum der Person (yyyy)
-         * @param {string} gender - Geschlecht der Person
-         * @property {string} name - Name der Person
-         * @property {string} birth - Geburtsdatum der Person (yyyy)
-         * @method equals - Vergleicht die Person mit einer anderen Person
-         * @method toString - Gibt die Person als String zurück
+         * Minimal swimmer identity: name and birth year.
+         * @param {string} name - Full name.
+         * @param {string} birth - Birth year (yyyy).
+         * @param {string} gender - Gender string.
          */
 
         constructor(name, birth, gender) {
@@ -1076,19 +1062,11 @@
 
     class Result {
         /**
-         * Speichert ein Ergebnis einer Disziplin für eine Person
-         * @param {Person} person - Person des Ergebnisses
-         * @param {Time} time - Zeit des Ergebnisses
-         * @param {string} location - Ort des Ergebnisses
-         * @param {CalenderDate} date - Datum des Ergebnisses
-         * @property {Discipline} discipline - Disziplin des Ergebnisses
-         * @property {Person} person - Person des Ergebnisses
-         * @property {Time} time - Zeit des Ergebnisses
-         * @property {string} location - Ort des Ergebnisses
-         * @property {CalenderDate} date - Datum des Ergebnisses
-         * @property {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
-         * @method equals - Vergleicht zwei Ergebnisse
-         * @method toString - Gibt das Ergebnis als String zurück
+         * A single competition performance by one swimmer.
+         * @param {Person} person - The swimmer.
+         * @param {Time} time - Time achieved.
+         * @param {string} location - Venue name.
+         * @param {CalenderDate} date - Date of the competition.
          */
 
         constructor(person, time, location, date) {
@@ -1126,21 +1104,11 @@
 
     class Discipline {
         /**
-         * @param {number} distance
-         * @param {number} lane
-         * @param {string} stroke
-         * @param {string} gender
-         * @property {number} distance - Distanz der Disziplin
-         * @property {number} lane - Bahn der Disziplin
-         * @property {string} stroke - Schwimmstil der Disziplin
-         * @property {string} gender - Geschlecht der Disziplin
-         * @property {Result[]} results - Ergebnisse der Disziplin
-         * @property {string} uid - Eindeutige ID der Disziplin
-         * @method cutResults - Schneidet die Ergebnisse auf die Anzahl der Einträge
-         * @method sortResults - Sortiert die Ergebnisse nach Zeit
-         * @method addResult - Fügt ein Ergebnis hinzu
-         * @method removeDuplicateResults - Entfernt Ergebnisse von Personen, die mehrere Ergebnisse in der Disziplin haben
-         * @method equals - Vergleicht zwei Disziplinen
+         * One swimming event defined by distance, course length, stroke, and gender.
+         * @param {number} distance - Distance in metres.
+         * @param {number} lane - Course length: 50 (long) or 25 (short).
+         * @param {string} stroke - Stroke name in German.
+         * @param {string} gender - Gender string.
          */
 
         constructor(distance, lane, stroke, gender) {
@@ -1173,15 +1141,15 @@
 
         get uid() {
             /**
-             * Generiert eine eindeutige ID für die Disziplin basierend auf der Distanz, der Bahn, dem Schwimmstil und dem Geschlecht
+             * Compact identifier derived from stroke, distance, lane, and gender.
              */
             return ('#' + this.stroke.substring(0, 1) + this.distance.toString().substring(0, 2) + this.lane.toString().substring(0, 1) + this.gender.substring(0, 1)).toLowerCase();
         }
 
         static uidToProperties(uid) {
             /**
-             * Generiert die Eigenschaften einer Disziplin basierend auf der eindeutigen ID
-             * @param {string} uid - Eindeutige ID der Disziplin
+             * Derives discipline properties from a UID string.
+             * @param {string} uid - Discipline UID.
              */
 
             let stroke = uid.substring(1, uid.length - 2);
@@ -1212,15 +1180,14 @@
 
         sortResults() {
             /**
-             * Sortiert die Ergebnisse nach Zeit (von schnell nach langsam)
-             * @see Time.compare
+             * Sorts results ascending by time (fastest first).
              */
             this._results.sort((result1, result2) => Time.compare(result1.time, result2.time));
         }
 
         addResult(result) {
             /**
-             * Fügt ein Ergebnis hinzu, wenn es noch nicht vorhanden ist
+             * Adds a result only if no structurally identical entry already exists.
              */
             if (!this._results.some(existingResult => existingResult.equals(result))) {
                 this._results.push(result);
@@ -1229,7 +1196,7 @@
 
         removeDuplicateResults() {
             /**
-             * Wenn eine Person mehrere Ergebnisse in der Disziplin hat, wird nur das schnellste Ergebnis behalten
+             * Keeps only the fastest result per swimmer from the unsorted pool.
              */
 
             let uniqueResults = [];
@@ -1248,7 +1215,7 @@
 
         cutResults(entries) {
             /**
-             * Schneidet die Ergebnisse auf die Anzahl der Einträge
+             * Truncates the result list to the top N entries.
              */
             this._results = this._results.slice(0, entries);
         }
@@ -1321,20 +1288,15 @@
 
     class Leaderboard {
         /**
-         * Klasse für die Bestenliste
-         * @param {string} season - Saison der Bestenliste
-         * @property {string} season - Saison der Bestenliste
-         * @property {Discipline[]} disciplines - Disziplinen der Bestenliste
-         * @method createDisciplines - Erstellt alle Disziplinen
-         * @method addResult - Fügt ein Ergebnis hinzu
-         * @method addRawData - Fügt die Rohdaten der Bestenliste hinzu
+         * In-memory leaderboard for one season.
+         * @param {string} season - Season identifier (e.g. 'All-Time' or '2024').
          */
 
         constructor(season) {
             this._disciplines = [];
             this.createDisciplines();
             this._season = season;
-            this._statistics = new Statistics(this); // Statistiken für die Bestenlisten
+            this._statistics = new Statistics(this);
         }
 
         get disciplines() {
@@ -1350,10 +1312,6 @@
         }
 
         createDisciplines() {
-            /**
-             * Erstellt alle Disziplinen
-             */
-
             for (let discipline in Discipline.DISCIPLINES) {
                 let stroke = Discipline.DISCIPLINES[discipline].Lage;
                 let longCourse = Discipline.DISCIPLINES[discipline].Langbahn;
@@ -1370,9 +1328,6 @@
         }
 
         addResult(result, disciplineUid) {
-            /**
-             * Fügt ein Ergebnis hinzu
-             */
             let discipline = this._disciplines.find(discipline => discipline.uid === disciplineUid);
             try {
                 discipline.addResult(result);
@@ -1382,10 +1337,6 @@
         }
 
         addRawData(data) {
-            /**
-             * Fügt die Rohdaten der Bestenliste hinzu
-             */
-
             for (let i = 0; i < data.length; i++) {
                 let uidMale = data[i][0];
                 if (uidMale.startsWith('#')) {
@@ -1444,7 +1395,7 @@
 
         #resetPage() {
             /**
-             * Funktion zum Zurücksetzen der Seite
+             * Resets page state before a new content load.
              */
             this._currentPage = 1;
             this._elementsPerPage = [];
@@ -1453,16 +1404,16 @@
 
         loadLeaderboards(disciplines) {
             /**
-             * Funktion zum Laden der Bestenliste (eine Lage, ein Geschlecht, eine Bahnlänge) in die Tabelle
-             * @param {Discipline[]} disciplines - Liste von Disziplinen
+             * Renders disciplines for one stroke/gender/course combination into the paginated content area.
+             * @param {Discipline[]} disciplines - Filtered list of disciplines to display.
              */
 
             this.#resetPage();
 
             const createHeader = () => {
                 /**
-                 * Funktion zum Erstellen der Kopfzeile der Tabelle
-                 * @returns {HTMLTableRowElement} - Kopfzeile der Tabelle
+                 * Creates the column header row for the leaderboard table.
+                 * @returns {HTMLDivElement} Header row element.
                  */
                 const row = document.createElement('div');
                 row.classList.add('leaderboard__table-header');
@@ -1477,10 +1428,10 @@
 
             const createRow = (result, index, isCurrentYear) => {
                 /**
-                 * Erstellt eine Zeile in der Tabelle
-                 * @param {Result} result - Ergebnis
-                 * @param {number} index - Index des Ergebnisses
-                 * @param {boolean} isCurrentYear - Gibt an, ob das Ergebnis im aktuellen Jahr liegt
+                 * Creates one result row for the leaderboard table.
+                 * @param {Result} result - Result to render.
+                 * @param {number} index - Zero-based rank index.
+                 * @param {boolean} isCurrentYear - Whether the result is from the current year.
                  */
                 const row = document.createElement('div');
                 row.className = 'leaderboard__table-item';
@@ -1509,8 +1460,8 @@
 
             const createDisciplineTable = (leaderboard) => {
                 /**
-                 * Erstellt eine Tabelle für eine Disziplin
-                 * @param {Leaderboard} leaderboard - Bestenliste der Disziplin
+                 * Creates the full result table for one discipline.
+                 * @param {Discipline} leaderboard - Discipline with its results.
                  */
                 const table = document.createElement('div');
                 table.classList.add('leaderboard__table');
@@ -1531,9 +1482,6 @@
             };
 
             disciplines.forEach(leaderboard => {
-                /**
-                 * Erstelle für jede Disziplin eine Tabelle
-                 */
 
                 const disciplineDiv = document.createElement('div');
                 disciplineDiv.className = 'discipline';
@@ -1560,13 +1508,13 @@
                 this._htmlElements.push(dividerContainer);
             });
 
-            this.#setPage(this._currentPage); // Lade die Tabellen in die Seite
+            this.#setPage(this._currentPage);
         }
 
         loadStatistics(leaderboard) {
             /**
-             * Funktion zum Laden der Statistiken in die Tabelle
-             * @param {Statistics} statistics - Statistiken, die in die Tabelle geladen werden sollen
+             * Renders the statistics view into the paginated content area.
+             * @param {Leaderboard} leaderboard - Leaderboard to compute statistics from.
              */
 
             this.#resetPage();
@@ -1595,9 +1543,9 @@
 
             function createRankingContainer(title) {
                 /**
-                 * Funktion zum Erstellen des Containers für die Rangliste
-                 * @param {string} title - Titel der Rangliste
-                 * @returns {HTMLDivElement} - Container für die Rangliste
+                 * Creates the outer container for a ranking section.
+                 * @param {string} title - Section heading.
+                 * @returns {HTMLDivElement} Ranking container element.
                  */
                 let ranking = document.createElement('div');
                 ranking.className = 'statistics__ranking';
@@ -1627,9 +1575,10 @@
 
             function createRanking(arrNames, arrValues, rankingLength) {
                 /**
-                 * Erstellt eine Liste mit den Rankings
-                 * @param {string[]} arrNames - Liste mit den Namen
-                 * @param {string[]} arrValues - Liste mit den Werten
+                 * Builds a ranked list from parallel name and value arrays.
+                 * @param {string[]} arrNames - Display names.
+                 * @param {number[]} arrValues - Numeric values corresponding to each name.
+                 * @param {number} rankingLength - How many ranks to show before ties.
                  */
 
                 const rankingList = document.createElement('div');
@@ -1792,13 +1741,13 @@
             this._htmlElements.push(createOccurrencesLocations());
             this._htmlElements.push(createMostRecords());
 
-            this.#setPage(this._currentPage); // Lade die Statistiken in die Seite
+            this.#setPage(this._currentPage);
         }
 
         #setPage(page) {
             /**
-             * Funktion zum Anzeigen der Tabellen auf einer bestimmten Seite
-             * @param {number} page - Nummer der Seite
+             * Renders elements for the given page into the content area.
+             * @param {number} page - 1-based page number.
              */
 
             const content = document.getElementById('content');
@@ -1857,22 +1806,17 @@
 
     class Leaderboards {
         /**
-         * Klasse für die Bestenlisten
-         * @property {Page} page - Seite für die Bestenlisten
-         * @property {Leaderboard[]} leaderboards - Liste von Bestenlisten
-         * @property {Filter} filter - Filter für die Bestenlisten
-         * @method getData - Lädt die Daten von der TSV-Datei
-         * @method updateTable - Aktualisiert die Tabelle basierend auf den Filterkriterien
-         *
+         * Top-level controller: owns all per-season Leaderboard instances, the active Filter,
+         * and the Page renderer.
          */
         constructor() {
             this._page = new Page(this);
-            this._leaderboards = []; // Liste von Bestenlisten
-            this._filter = new Filter(); // Filter für die Bestenlisten
-            this.#createLeaderboards(); // Erstelle die Bestenlisten für die Saisons
-            this._filter.createDropdownListeners(); // Erstelle die Listener für die Dropdown-Menüs
+            this._leaderboards = [];
+            this._filter = new Filter();
+            this.#createLeaderboards();
+            this._filter.createDropdownListeners();
             this.#setLastUpdated();
-            this.updateTable(); // Lade die Bestenlisten in die Tabelle
+            this.updateTable();
         }
 
         get page() {
@@ -1889,14 +1833,14 @@
 
         #filterLeaderboards(filter) {
             /**
-             * Funktion zum Filtern der Bestenlisten nach Disziplin und Geschlecht
-             * @param {Filter} filter - Filterkriterien
-             * @returns {Leaderboard[]} - Liste von Bestenlisten, die den Filterkriterien entsprechen
+             * Returns disciplines from the matching season that satisfy the active filter.
+             * @param {Filter} filter - Active filter state.
+             * @returns {Discipline[]} Matching disciplines.
              */
 
-            if (!(filter instanceof Filter)) throw new Error("Filter ist kein Filter-Objekt"); // Überprüfe, ob der Filter ein Filter-Objekt ist
+            if (!(filter instanceof Filter)) throw new Error("filter must be a Filter instance");
 
-            let filteredDisciplines = []; // Liste von gefilterten Bestenlisten
+            let filteredDisciplines = [];
             for (let i = 0; i < this.leaderboards.length; i++) {
                 if (this.leaderboards[i].season === filter.season) {
                     for (let j = 0; j < this.leaderboards[i].disciplines.length; j++) {
@@ -1913,10 +1857,6 @@
         }
 
         #createLeaderboards() {
-            /**
-             * Erstellt die Bestenlisten für die Saisons
-             */
-
             const addLeaderboard = (leaderboard) => {
                 this._leaderboards.push(leaderboard);
             }
@@ -1938,17 +1878,16 @@
 
         async #getData(season) {
             /**
-             * Lädt die Daten der angegebenen Saison und fügt sie zu den Bestenlisten hinzu
-             * @param tsvUrl
-             * @returns {Promise<unknown>}
+             * Fetches TSV data for the given season and loads it into the matching Leaderboard.
+             * @param {string} season - Season key.
+             * @returns {Promise<void>}
              */
 
             function fetchData(tsvUrl) {
                 /**
-                 * Lade die Daten von der angegebenen TSV-URL und speichere sie im LocalStorage.
-                 * @param {string} tsvUrl - Die URL des TSV-Dokuments
-                 * @returns {Promise} - Ein Promise-Objekt, das den Status des Fetch-Vorgangs angibt
-                 * @throws {Error} - Ein Fehler wird geworfen, wenn der Fetch-Vorgang fehlschlägt
+                 * Fetches TSV content from the given URL and splits it into a 2D array.
+                 * @param {string} tsvUrl - Published Google Sheet URL in TSV format.
+                 * @returns {Promise<string[][]>}
                  */
 
                 return new Promise((resolve, reject) => {
@@ -1965,11 +1904,11 @@
                             for (let i = 0; i < rows.length; i++) {
                                 result.push(rows[i].split('\t'));
                             }
-                            resolve(result); // Erfolgreiches Auflösen des Promise mit den Daten
+                            resolve(result);
                         })
                         .catch(error => {
-                            console.error('Fehler beim Laden der TSV-Daten:', error);
-                            reject(error); // Ablehnen des Promise bei einem Fehler
+                            console.error('Failed to load TSV data:', error);
+                            reject(error);
                         });
                 });
             }
@@ -1995,11 +1934,11 @@
 
         async updateTable() {
             /**
-             * Aktualisiert die Tabelle basierend auf den Filterkriterien
-             * @param {Filter} filter - Filterkriterien
+             * Re-renders the content area based on the current filter state.
+             * Fetches data for the active season on first access.
              */
 
-            const filteredDisciplines = this.#filterLeaderboards(this._filter); // Filtere die Disziplinen basierend auf den Filterkriterien
+            const filteredDisciplines = this.#filterLeaderboards(this._filter);
             const numResults = filteredDisciplines.reduce((acc, discipline) => acc + discipline.results.length, 0);
 
             const elements = {
@@ -2022,31 +1961,27 @@
             toggleDisplay(this._filter.showLeaderboards);
 
             if (numResults === 0) {
-                elements.loading.style.display = 'block'; // Ladekreis anzeigen
-                elements.lastUpdated.style.display = 'none'; // Zuletzt aktualisiert verbergen
-                elements.content.style.display = 'none'; // Tabelle verbergen
-                await this.#getData(this._filter.season); // Lade die Daten für die Saison
+                elements.loading.style.display = 'block';
+                elements.lastUpdated.style.display = 'none';
+                elements.content.style.display = 'none';
+                await this.#getData(this._filter.season);
             }
 
             if (this._filter.showLeaderboards) {
-                this._page.loadLeaderboards(this.#filterLeaderboards(this._filter)); // Lade die Bestenlisten in die Tabelle
-                elements.lastUpdated.style.display = 'block'; // Tabelle anzeigen
+                this._page.loadLeaderboards(this.#filterLeaderboards(this._filter));
+                elements.lastUpdated.style.display = 'block';
             } else {
                 let currentLeaderboard = this.leaderboards.find(leaderboard => leaderboard.season === this._filter.season);
                 this._page.loadStatistics(currentLeaderboard);
             }
-            elements.loading.style.display = 'none'; // Ladekreis ausblenden
-            elements.content.style.display = 'block'; // Tabelle anzeigen
+            elements.loading.style.display = 'none';
+            elements.content.style.display = 'block';
         }
     }
 
     class Filter {
         /**
-         * Klasse für die Filterung der Bestenlisten nach Schwimmstil, Bahnlänge und Geschlecht
-         * @property {string} stroke - Schwimmstil (Freistil, Brust, Schmetterling, Rücken, Lagen)
-         * @property {string} lane - Bahnlänge (Kurzbahn, Langbahn)
-         * @property {string} gender - Geschlecht (Männlich, Weiblich)
-         * @property {string} season - Saison (yyyy)
+         * Holds the active filter state: stroke, course length, gender, season, and view mode.
          */
 
         constructor() {
@@ -2059,9 +1994,8 @@
 
         useFilter(filter) {
             /**
-             * Funktion zum Anwenden des Filters
-             * @param {string} id - ID des Dropdown-List-Elements
-             * @param {String} filter - Filterkriterium
+             * Updates the filter state based on the selected dropdown value.
+             * @param {string} filter - Selected value (season, gender, stroke, or course).
              */
 
             if (filter === 'All-Time' || filter.length === 9 || filter.length === 4) {
@@ -2094,7 +2028,7 @@
 
         createDropdownListeners() {
             /**
-             * Die Funktion erstellt für jedes Dropdown-List-Element einen Event-Listener
+             * Attaches click/hover listeners to all dropdowns and selection buttons.
              */
 
             let mobileSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mobile-size'));
@@ -2109,22 +2043,16 @@
             document.getElementById('dropdown-list__season').firstElementChild.setAttribute('data-radius', 'top');
             document.getElementById('dropdown-list__season').lastElementChild.setAttribute('data-radius', 'bottom');
 
-            // Event Listener für jedes dropdown-select Element
             document.querySelectorAll('.dropdown-list__item').forEach(item => {
                 item.addEventListener('click', event => {
                     let dropdownItem = event.target;
                     let dropdownSelect = dropdownItem.parentElement.previousElementSibling;
                     let dropdownList = dropdownItem.parentElement;
                     let text = dropdownItem.textContent;
-                    // Wende einen Filter an
                     this.useFilter(text);
-                    // Verberge die zugehörige dropdown-list
                     dropdownItem.parentElement.classList.remove('visible');
-                    // Setze den Text des dropdown-select Elements auf den ausgewählten Wert
                     dropdownSelect.querySelector('span').textContent = text;
-                    // Drehe auch das Icon um 180 Grad (transform)
                     dropdownSelect.querySelector('svg').style.transform = 'rotate(0deg)';
-                    // Verberge die Dropdown-Liste
                     dropdownList.style.visibility = 'hidden';
                     dropdownList.style.opacity = '0'
                     if (window.innerWidth <= mobileSize) {
@@ -2132,12 +2060,10 @@
                             dropdownList.style.display = 'none';
                         }, 300);
                     }
-                    // Lade die Bestenliste in die Tabelle
                     LEADERBOARDS.updateTable();
                 });
             });
 
-            // Event Listener für jedes dropdown-select Element
             document.querySelectorAll('.dropdown-select').forEach(item => {
 
                 if (window.innerWidth <= mobileSize) item.addEventListener('click', ignore => {
@@ -2154,7 +2080,7 @@
                         dropdownList.style.visibility = 'hidden';
                         dropdownList.style.opacity = '0';
                         dropdownList.style.display = 'block';
-                        // Warte 10ms, um den Browser Zeit zu geben, um das Display-Attribut zu setzen
+                        // delay lets the browser process display:block before transitioning opacity
                         setTimeout(() => {
                             dropdownList.style.visibility = 'visible';
                             dropdownList.style.opacity = '1';
@@ -2166,7 +2092,6 @@
                 if (window.innerWidth > mobileSize) item.addEventListener('mouseenter', ignore => {
 
                     let dropdownList = item.nextElementSibling;
-                    // Verberge alle anderen Dropdown-Listen
                     document.querySelectorAll('.dropdown-list').forEach(list => {
                         if (list !== dropdownList) {
                             list.style.visibility = 'hidden';
@@ -2180,8 +2105,7 @@
                         dropdownList.style.visibility = 'visible';
                         dropdownList.style.opacity = '1';
                         let timeout = setTimeout(() => {
-                            // Überprüfe, ob der User gerade mit der Maus auf der Dropdown-Liste ist
-                            if (dropdownList.matches(':hover')) {
+                                if (dropdownList.matches(':hover')) {
                                 clearTimeout(timeout);
                             } else {
                                 dropdownList.style.visibility = 'hidden';
@@ -2192,7 +2116,6 @@
                 });
             });
 
-            // Event Listener für jeden election-button
             document.querySelectorAll('.selection-button').forEach(button => {
                 button.addEventListener('click', ignore => {
                     let otherButton;
@@ -2210,7 +2133,6 @@
             });
 
             if (window.innerWidth > mobileSize) document.body.addEventListener('click', event => {
-                // Wenn der Klick nicht auf einem Dropdown-List-Element oder Dropdown-Select war, verberge alle Dropdown-Listen
                 if (!event.target.classList.contains('dropdown-list__item') && !event.target.classList.contains('dropdown-select')) {
                     document.querySelectorAll('.dropdown-list').forEach(list => {
                         list.style.visibility = 'hidden';
