@@ -1,18 +1,19 @@
 class RequestHandler {
     /**
-     * Handles requests to the DSV database
-     * @param {Leaderboard} leaderboard - Leaderboard
-     * @property {Leaderboard} _leaderboard - Leaderboard
-     * @property {string} _clubId - Club ID
-     * @property {string} _url - URL of the DSV database
-     * @property {number} _year - Year of the season
-     * @method requestResults - Requests new results from the DSV database
-     * @method _fetchNewData - Fetches new data from the DSV database
-     * @method _extractData - Extracts data from the raw HTML
-     * @method _splitElement - Splits elements into a one-dimensional array based on a begin and end string
-     * @method _convertToArray - Converts elements to an array
+     * Scrapes swimming results for a given club from the DSV website (dsvdaten.dsv.de).
+     *
+     * The DSV site runs on ASP.NET WebForms, which requires a two-step HTTP sequence:
+     * a GET request to load the page and extract the hidden __VIEWSTATE and
+     * __EVENTVALIDATION tokens, followed by a POST that submits the filter form with
+     * those tokens. Both User-Agent and Referer headers are required — the server
+     * rejects requests that omit them.
+     *
+     * Results are always scoped to the current calendar year because the DSV club page
+     * does not expose multi-year filtering.
+     *
+     * @param {Leaderboard} leaderboard - Provides the club ID and list of disciplines,
+     *   and receives fetched results via addResult().
      */
-
     constructor(leaderboard) {
         this._leaderboard = leaderboard;
         this._clubId = leaderboard.clubId;
@@ -21,7 +22,9 @@ class RequestHandler {
     }
 
     /**
-     * Fragt neue Daten von der Datenbank des DSV an und fügt sie zur Bestenliste hinzu
+     * Fetches results for every discipline in the leaderboard and adds them.
+     * All results created here carry newRecord=true so they can be identified as
+     * new entries after adjustResults() trims each discipline to the top N.
      */
     requestResults() {
         for (let discipline of this._leaderboard.disciplines) {
@@ -39,26 +42,33 @@ class RequestHandler {
     }
 
     /**
-     * Fetch new data from the DSV website
+     * Performs the two-step HTTP scrape for one discipline:
+     *   1. GET the club page to extract __VIEWSTATE and __EVENTVALIDATION tokens.
+     *   2. POST the filter form with discipline parameters to receive the results table.
+     *
+     * The event dropdown value encodes distance and the first letter of the stroke name
+     * (e.g. "50F|GL" for 50m Freestyle). The time range is fixed to the full current year.
+     *
+     * @param {Discipline} discipline - The discipline to fetch results for.
+     * @returns {Array<{name: string, time: string, birthYear: string, location: string, date: string}>}
      */
     _fetchNewData(discipline) {
         let loginResponse = UrlFetchApp.fetch(this._url, {
             method: "get",
             headers: {
-                "User-Agent": "Mozilla/5.0", // wichtig!
-                "sec-fetch-site": "same-origin", // versuch das manuell zu setzen
-                "Referer": "https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx", // auch sehr wichtig!
+                "User-Agent": "Mozilla/5.0", // required — server rejects requests without a browser UA
+                "sec-fetch-site": "same-origin", // must be set manually; UrlFetchApp does not send this by default
+                "Referer": "https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx", // required — server validates the referer
             },
             followRedirects: false,
             muteHttpExceptions: true
         });
 
-        let loginContext = loginResponse.getContentText(); // Check if login was successful and extract session information
+        let loginContext = loginResponse.getContentText();
 
-        let viewState = this._extractData(loginContext, '__VIEWSTATE" value="', '" />'); // Determine viewstate
-        let eventValidation = this._extractData(loginContext, '__EVENTVALIDATION" value="', '" />'); // Determine event validation
+        let viewState = this._extractData(loginContext, '__VIEWSTATE" value="', '" />');
+        let eventValidation = this._extractData(loginContext, '__EVENTVALIDATION" value="', '" />');
 
-        // Create POST parameters
         let payload = {
             "ClubID": this._clubId,
             "__EVENTTARGET": "ctl00$ContentSection$_rankingsButton",
@@ -70,7 +80,6 @@ class RequestHandler {
             "ctl00$ContentSection$_timerangeDropDownList": `01.01.${this._year}|31.12.${this._year}`
         };
 
-        // Configure Fetch call
         let options = {
             method: "post",
             payload: payload
@@ -78,47 +87,54 @@ class RequestHandler {
 
         Logger.log(discipline.gender + " " + (discipline.lane === 50 ? "Langbahn" : "Kurzbahn") + " " + discipline.distance + "m " + discipline.stroke);
 
-        let response = UrlFetchApp.fetch(this._url, options); // Perform fetch call for the data
+        let response = UrlFetchApp.fetch(this._url, options);
 
-        let content = this._extractData(response.getContentText(), 'class="table table-sm table-stripe"', '</table>'); // Extract the table from the response
+        let content = this._extractData(response.getContentText(), 'class="table table-sm table-stripe"', '</table>');
 
-        let contentArray = this._splitElement(content, '<tr>', '</tr>'); // Extract elements into a one-dimensional array (each element is a row)
-        contentArray.shift(); // Remove the first empty entry
-        contentArray.shift(); // Remove the second (header) entry
+        let contentArray = this._splitElement(content, '<tr>', '</tr>');
+        contentArray.shift(); // remove the empty fragment before the first <tr>
+        contentArray.shift(); // remove the table header row
 
-        return this._convertToArray(contentArray); // Format data into a two-dimensional array
+        return this._convertToArray(contentArray);
     }
 
     /**
-     * Extract data from the raw HTML
-     * @param context raw HTML
-     * @param begin begin string
-     * @param end end string
-     * @returns {string} extracted data
+     * Extracts the first substring between `begin` and `end` within `context`.
+     * Used to pull ViewState tokens and the results table out of raw HTML.
+     * Returns an empty string if `begin` is not found.
+     *
+     * @param {string} context - Raw HTML to search in.
+     * @param {string} begin - Start delimiter, not included in the result.
+     * @param {string} end - End delimiter, not included in the result.
+     * @returns {string}
      */
     _extractData(context, begin, end) {
         let startIndex = context.indexOf(begin);
         let endIndex = context.indexOf(end, startIndex);
         return context.substring(startIndex + begin.length, endIndex);
-
     }
 
-    /**viewstate
-     * Split elements
-     * @param input input string
-     * @param begin begin string
-     * @param end end string
-     * @returns {Array}
+    /**
+     * Splits `input` on every occurrence of `begin` and discards everything after `end`
+     * in each fragment, producing a flat array of the content between each begin/end pair.
+     * The first element is always the content before the first `begin` occurrence (usually empty).
+     *
+     * @param {string} input
+     * @param {string} begin
+     * @param {string} end
+     * @returns {string[]}
      */
     _splitElement(input, begin, end) {
         return input.split(begin).map(element => element.split(end)[0]);
     }
 
     /**
-     * Convert elements to array
-     * @param elements elements
-     * @param top top
-     * @returns {Array}
+     * Maps raw HTML table row fragments to plain result objects.
+     * The DSV results table has 8 columns; rank (index 1) and pool size (index 5)
+     * are skipped via destructuring — only the 6 meaningful fields are returned.
+     *
+     * @param {string[]} elements - One HTML fragment per table row, from _splitElement.
+     * @returns {Array<{name: string, time: string, birthYear: string, location: string, date: string}>}
      */
     _convertToArray(elements) {
         return elements.map(element => {

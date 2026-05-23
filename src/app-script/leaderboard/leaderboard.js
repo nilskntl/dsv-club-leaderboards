@@ -1,24 +1,19 @@
 class Leaderboard {
     /**
-     * Klasse für die Bestenliste
-     * @param {any} clubId - ID des Vereins
-     * @param {Array} data - Daten des Google Sheets
-     * @param {number} entriesPerDiscipline - Anzahl der Einträge pro Disziplin
-     * @property {Discipline[]} disciplines - Disziplinen der Bestenliste
-     * @property {number} entriesPerDiscipline - Anzahl der Einträge pro Disziplin
-     * @property {[[]]} results - Daten der Bestenliste
-     * @property {String[]} newResults - Neue Ergebnisse
-     * @property {string} clubId - ID des Vereins
-     * @property {Array} _oldData - Daten des Google Sheets
-     * @property {RequestHandler} _requestHandler - Handler für die Anfragen an die Datenbank
-     * @property {Sheet} _sheet - Verwaltet die Daten des Google Sheets
-     * @method addResult - Fügt ein Ergebnis hinzu
-     * @method extractResultsFromSheet - Extrahiert die bisherigen Ergebnisse aus dem Google Sheet
-     * @method requestResults - Fordert die Ergebnisse von der Datenbank an
-     * @method adjustResults - Bereitet die Ergebnisse für die Anzeige auf
-     * @method disciplineByStroke - Gibt alle Disziplinen eines Schwimmstils zurück
+     * Orchestrates the full leaderboard update pipeline for a single sheet tab.
+     *
+     * Intended call order:
+     *   1. extractResultsFromSheet() — loads existing results from the raw sheet data
+     *   2. requestResults()          — fetches current-year results from the DSV website
+     *   3. adjustResults()           — deduplicates, sorts, and trims each discipline
+     *
+     * After these three steps, `results` and `newResults` reflect the updated state
+     * and can be written back to the sheet.
+     *
+     * @param {string|number} clubId - DSV club ID used to query the DSV website.
+     * @param {Array[]} data - Raw 2D array from the Google Sheet (sheet.getDataRange().getValues()).
+     * @param {number} [entriesPerDiscipline=10] - How many top results to keep per discipline.
      */
-
     constructor(clubId, data, entriesPerDiscipline = 10) {
         this._clubId = clubId.toString();
         this._oldData = data;
@@ -41,17 +36,23 @@ class Leaderboard {
         return this._entriesPerDiscipline;
     }
 
+    /**
+     * Returns the full leaderboard as a 2D array ready to be written to the sheet via setValues().
+     * Delegates to Sheet.getSheetData() which encodes the fixed 14-column layout.
+     */
     get results() {
-        /**
-         * Gibt die Daten der Bestenliste zurück als zweidimensionales Array für das Google Sheet
-         */
         return this._sheet.getSheetData();
     }
 
+    /**
+     * Returns formatted log strings for results that are both new this run (fetched from DSV,
+     * newRecord=true) and survived the top-N cut in adjustResults(). This avoids re-reporting
+     * existing records on every run: a result only appears here if it displaced a previous
+     * entry or filled a previously empty rank slot.
+     *
+     * @returns {string[]} Each entry: "<timestamp>: <discipline>: <person> - <time> - <location> - <date>"
+     */
     get newResults() {
-        /**
-         * Gibt die neuen Ergebnisse zurück
-         */
         let newResults = [];
         for (let discipline of this._disciplines) {
             for (let result of discipline.results) {
@@ -64,11 +65,12 @@ class Leaderboard {
         return newResults;
     }
 
+    /**
+     * Creates one Discipline instance per combination of stroke, distance, course, and gender
+     * defined in the DISCIPLINES config. Female is pushed before male for each combination;
+     * getSheetData() re-sorts them so that male appears first in each pair.
+     */
     _createDisciplines() {
-        /**
-         * Erstellt alle Disziplinen
-         */
-
         for (let discipline in DISCIPLINES) {
             let stroke = DISCIPLINES[discipline].Lage;
             let longCourse = DISCIPLINES[discipline].Langbahn;
@@ -82,13 +84,16 @@ class Leaderboard {
                 this._disciplines.push(new Discipline(distance, LANES.SHORT_COURSE, stroke, GENDERS.MALE));
             }
         }
-
     }
 
+    /**
+     * Routes a result to its discipline by uid. Throws if the uid does not match any known
+     * discipline — an unrecognised uid in the sheet would otherwise cause silent data loss.
+     *
+     * @param {Result} result
+     * @param {string} disciplineUid - e.g. "#f502m"
+     */
     addResult(result, disciplineUid) {
-        /**
-         * Fügt ein Ergebnis hinzu
-         */
         let discipline = this._disciplines.find(discipline => discipline.uid === disciplineUid);
         try {
             discipline.addResult(result);
@@ -98,23 +103,19 @@ class Leaderboard {
     }
 
     extractResultsFromSheet() {
-        /**
-         * Extrahiert die Ergebnisse aus dem Google Sheet
-         */
         this._sheet.extractResults(this._oldData);
     }
 
     requestResults() {
-        /**
-         * Fordert die Ergebnisse von der Datenbank an
-         */
         this._requestHandler.requestResults();
     }
 
+    /**
+     * Deduplicates, sorts, and trims every discipline. The order is intentional:
+     * removeDuplicateResults() must run first (on the unsorted pool) so the slower
+     * duplicate of a swimmer is discarded before the sort determines the final ranking.
+     */
     adjustResults() {
-        /**
-         * Bereitet die Ergebnisse für die Anzeige auf
-         */
         for (let discipline of this._disciplines) {
             discipline.removeDuplicateResults();
             discipline.sortResults();
@@ -122,13 +123,11 @@ class Leaderboard {
         }
     }
 
+    /**
+     * @param {string} stroke - German stroke name matching a STROKES value (e.g. "Freistil").
+     * @returns {Discipline[]}
+     */
     disciplineByStroke(stroke) {
-        /**
-         * Gibt alle Disziplinen eines Schwimmstils zurück
-         * @param {string} stroke - Schwimmstil
-         * @returns {Discipline[]} - Disziplinen des Schwimmstils
-         */
-
         return this._disciplines.filter(discipline => discipline.stroke === stroke);
     }
 }

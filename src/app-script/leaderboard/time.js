@@ -1,18 +1,13 @@
 class Time {
     /**
-     * Represents a time in the format mm:ss,xx
-     * @param {string} time - Time in the format mm:ss,xx
-     * @property {string} time - Time in the format mm:ss,xx
-     * @property {number} minutes - Minutes of the time
-     * @property {number} seconds - Seconds of the time
-     * @property {number} hundredth - Hundredth of the time
-     * @property {number} totalSeconds - Total seconds of the time
-     * @property {number} totalHundredth - Total hundredth of the time
-     * @method compare - Compares two times
-     * @method toString - Returns the time as a string
-     * @method equals - Compares the time with another time
+     * Parses and compares swimming times in the format "mm:ss,xx"
+     * (minutes, seconds, hundredths of a second).
+     *
+     * All comparisons use integer hundredths (totalHundredth) to avoid
+     * floating-point precision issues that would arise from decimal seconds.
+     *
+     * @param {string} time - Time string in "mm:ss,xx" format, e.g. "1:23,45".
      */
-
     constructor(time) {
         this._time = time;
         let timeParts = time.split(":");
@@ -42,6 +37,11 @@ class Time {
         return this._minutes * 60 + this._seconds + this._hundredth / 100;
     }
 
+    /**
+     * Total elapsed time as an integer number of hundredths of a second.
+     * Used for all sorting and comparisons to avoid floating-point errors
+     * that would occur when converting to decimal seconds.
+     */
     get totalHundredth() {
         return this._minutes * 6000 + this._seconds * 100 + this._hundredth;
     }
@@ -54,6 +54,14 @@ class Time {
         return this._time;
     }
 
+    /**
+     * Comparator for ascending order — faster (lower) time sorts first.
+     * Intended for use with Array.sort() when building a top-N leaderboard.
+     *
+     * @param {Time} time1
+     * @param {Time} time2
+     * @returns {number} Negative if time1 is faster, positive if slower, 0 if equal.
+     */
     static compare(time1, time2) {
         if (time1.totalHundredth < time2.totalHundredth) {
             return -1;

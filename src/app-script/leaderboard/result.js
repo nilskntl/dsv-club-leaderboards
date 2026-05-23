@@ -1,21 +1,16 @@
 class Result {
     /**
-     * Speichert ein Ergebnis einer Disziplin für eine Person
-     * @param {Person} person - Person des Ergebnisses
-     * @param {Time} time - Zeit des Ergebnisses
-     * @param {string} location - Ort des Ergebnisses
-     * @param {CalendarDate} date - Datum des Ergebnisses
-     * @param {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
-     * @property {Discipline} discipline - Disziplin des Ergebnisses
-     * @property {Person} person - Person des Ergebnisses
-     * @property {Time} time - Zeit des Ergebnisses
-     * @property {string} location - Ort des Ergebnisses
-     * @property {CalendarDate} date - Datum des Ergebnisses
-     * @property {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
-     * @method equals - Vergleicht zwei Ergebnisse
-     * @method toString - Gibt das Ergebnis als String zurück
+     * Represents a single competition performance by one swimmer in one discipline.
+     *
+     * @param {Person} person - The swimmer who achieved this result.
+     * @param {Time} time - The time achieved.
+     * @param {string} location - Name of the competition venue.
+     * @param {CalendarDate} date - Date of the competition.
+     * @param {boolean} newRecord - True if this result was fetched from the DSV website
+     *   in the current run; false if it was already present in the sheet. After adjustResults()
+     *   trims each discipline to the top N, only results still present with newRecord=true
+     *   are reported as newly entered records.
      */
-
     constructor(person, time, location, date, newRecord) {
         this._person = person;
         this._time = time;
@@ -40,6 +35,11 @@ class Result {
         return this._date;
     }
 
+    /**
+     * Location is included in the equality check because the same swimmer can post
+     * the same time at two different meets — those are distinct results and must not
+     * be collapsed into one.
+     */
     equals(result) {
         return this._person.equals(result.person) && this._time.equals(result.time) && this._location === result.location;
     }

@@ -1,17 +1,15 @@
 class CalendarDate {
     /**
-     * Erstellt ein Datum-Objekt
-     * @param {string} date - Datum im Format dd.mm.yyyy
-     * @throws {Error} - Wird geworfen, wenn das Datum nicht im Format dd.mm.yyyy ist
-     * @property {string} date - Datum im Format dd.mm.yyyy
-     * @property {number} day - Tag des Datums
-     * @property {number} month - Monat des Datums
-     * @property {number} year - Jahr des Datums
-     * @property {boolean} isCurrentYear - Gibt an, ob das Datum im aktuellen Jahr liegt
-     * @method equals - Vergleicht das Datum mit einem anderen Datum
-     * @method toString - Gibt das Datum als String zurück
+     * Wraps a competition date sourced from either the DSV website or the Google Sheet.
+     *
+     * Accepts two input formats:
+     * - Full date "dd.mm.yyyy" — produced by the DSV website for individual results.
+     * - Year only "yyyy" (4-char string) — used for historical results already stored in
+     *   the sheet where only the season year was recorded. Day and month are set to 0 and
+     *   the date is normalised to "00.00.yyyy" to keep equality checks consistent.
+     *
+     * @param {string} date - Date string in "dd.mm.yyyy" or "yyyy" format.
      */
-
     constructor(date) {
         this._date = date;
         if(date.toString().trim().length === 4) {
@@ -43,11 +41,20 @@ class CalendarDate {
         return this._year;
     }
 
+    /**
+     * Returns true if the stored year matches the current calendar year.
+     * Relevant because the DSV API only exposes results for the ongoing season,
+     * so only current-year sheet entries can be verified or superseded by fresh DSV data.
+     */
     get isCurrentYear() {
         let today = new Date();
         return today.getFullYear() === this._year;
     }
 
+    /**
+     * Equality is based on the normalised date string. A year-only input "2023" is stored
+     * as "00.00.2023" and will not equal a full-date "01.06.2023" even though the years match.
+     */
     equals(calenderDate) {
         return this._date === calenderDate.date;
     }

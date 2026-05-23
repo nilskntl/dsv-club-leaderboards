@@ -1,82 +1,74 @@
 const version = '1.0.5';
 
 /**
- * Dieses Skript erstellt und aktualisiert die Bestenliste für einen deutschen Schwimmverein vollautomatisch.
+ * Automatically creates and updates a swimming club leaderboard in Google Sheets
+ * by fetching results from the German Swimming Federation (DSV) website.
  *
- * Funktionsweise:
- * Um die Bestenliste zu aktualisieren, muss die Funktion `updateAllTime()` ausgeführt werden. Diese Funktion ruft die Daten
- * vom Deutschen Schwimm-Verband (DSV) ab und schreibt sie in das Google Sheet.
+ * How it works:
+ * Call updateAllTime() to refresh the all-time leaderboard, or updateSeason() for
+ * the current season only. Both functions send the current sheet data and club config
+ * to a hosted Web App, which scrapes the DSV website and returns the updated leaderboard.
+ * To run on a schedule, set up a Google Apps Script trigger for either function.
+ * See: https://developers.google.com/apps-script/guides/triggers/
  *
- * Einrichtung:
- * 1. Erstellen Sie ein neues Google Sheet.
- * 2. Navigieren Sie in Google Sheets zu Erweiterungen -> Apps Script, erstellen Sie ein neues Skript und fügen Sie diesen Code ein.
- * 3. Setzen Sie die `clubId` auf die ID Ihres Vereins.
- * 4. Optional: Passen Sie die Anzahl der Einträge pro Disziplin an. Standardmäßig sind es 5 Einträge pro Disziplin.
- * 5. Optional: Unter FORMAT können Sie die Formatierung des Sheets anpassen. Dazu einfach die Werte unter dem jeweiligen Schlüssel anpassen.
- * 6. Optional: Setzen Sie `formatSheetEveryTime` auf `true`, wenn das Sheet bei jedem Update formatiert werden soll.
+ * Setup:
+ * 1. Create a new Google Sheet.
+ * 2. In Google Sheets, go to Extensions → Apps Script, create a new script, and paste this code.
+ * 3. Set `clubId` to your club's DSV ID.
+ * 4. Optional: adjust `numberOfEntries` (default: 5 entries per discipline).
+ * 5. Optional: customise colours and sizes in the FORMAT object below.
+ * 6. Optional: set `formatSheetEveryTime` to true to reformat the sheet on every update.
  *
- * Um die Bestenliste automatisch zu aktualisieren, richten Sie einen Trigger ein, der die Funktion `updateAllTime()` regelmäßig ausführt.
- * @see https://developers.google.com/apps-script/guides/triggers/
- * Das Skript enthält außerdem eine Funktion `updateSeason()`, die die Bestenliste für die aktuelle Saison aktualisiert. Hierfür
- * muss nichts weiter eingerichtet werden, da die Funktion die aktuelle Saison automatisch erkennt. Auch hier lässt sich ein Trigger
- * einrichten, um die Funktion regelmäßig auszuführen.
+ * Important notes:
+ * Because the DSV only exposes results for the current season, the all-time leaderboard
+ * must be seeded manually after the first run. Run updateAllTime() once to initialise the
+ * sheet structure, then fill in historical results by hand.
+ * Do not change the sheet structure — the script relies on a fixed 14-column layout to
+ * identify and update result rows. The formatting can be changed freely at any time.
  *
- * Hinweise:
- * Da vom DSV jeweils nur die Zeiten der aktuellen Saison abgerufen werden können, muss nach der erstmaligen Ausführung
- * die Bestenliste einmal manuell aktualisiert werden. Führen Sie dazu die Funktion `updateAllTime()` einmal aus, um das Sheet zu initialisieren
- * und zu formatieren, und aktualisieren Sie anschließend die Bestenliste manuell.
- * Die Struktur des Sheets sollte nicht geändert werden, da das Skript davon ausgeht, dass die Daten in einer bestimmten Struktur vorliegen.
- * Die Formatierung des Sheets kann sowohl manuell als auch per Skript beliebig oft geändert werden.
- *
- * Bei Fehlern:
- * Wenn ein Fehler auftritt, versuchen Sie das Skript erneut auszuführen. Sollte der Fehler weiterhin bestehen, überprüfen Sie die Konfiguration
- * und die Eingaben im Sheet. Sollte der Fehler weiterhin bestehen, überprüfen Sie, ob eine neue Version des Skripts verfügbar ist.
- * Bei weiteren Fragen oder Problemen können Sie sich gerne an mich wenden.
- * Im unwahrscheinlichen Fall, dass die Daten im Sheet weg sein sollten, dann finden sie unter Google Sheets -> Datei -> Versionsverlauf
- * einen ausführlichen Verlauf aller Änderungen und können eine frühere Version ohne Probleme wiederherstellen.
+ * If an error occurs:
+ * Try running the script again. If the error persists, check the configuration and verify
+ * that the sheet structure has not been altered. Check whether a newer version is available.
+ * Lost data can be recovered via Google Sheets → File → Version history.
  */
 
-const clubId = 7985 // Setze hier die ID des Vereins
-const numberOfEntries = 5 // Optional: Anzahl der Einträge pro Disziplin
-const formatSheetEveryTime = true // Optional: Soll das Sheet bei jedem Update formatiert werden?
+const clubId = 7985 // Set this to your club's DSV ID
+const numberOfEntries = 5 // Optional: number of entries to display per discipline
+const formatSheetEveryTime = true // Optional: reformat the sheet on every update
 
+/**
+ * Updates the all-time leaderboard tab. Creates the "All-Time" sheet if it does not exist.
+ * Loads the shared sheet.js logic at runtime from GitHub so that the Web App endpoint and
+ * formatting code can be updated centrally without requiring users to change this script.
+ */
 function updateAllTime() {
-    /**
-     * All-Time Bestenliste
-     * Diese Funktion aktualisiert die Bestenliste und schreibt die neuen Daten in das Sheet
-     * In Google Apps Script kann man diese Funktion als Trigger einrichten, um sie regelmäßig auszuführen
-     * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
-     */
-
     let nameOfSheet = 'All-Time';
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen 'All-Time'
-    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet);
+    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet);
     if (sheet.getName() !== nameOfSheet) {
-        Logger.log("Something went wrong. Sheet Name doesn't match '" + nameOfSheet + "'");
+        Logger.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
     }
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText(); // Externes Skript
-    eval(code); //Code des externen Skripts ausführen
-    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die All-Time
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText();
+    eval(code);
+    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime);
 }
 
+/**
+ * Updates the current season's leaderboard tab. The sheet is named after the current year
+ * (e.g. "2026") and is created automatically if it does not exist yet.
+ * Loads the shared sheet.js logic at runtime from GitHub — see updateAllTime() for details.
+ */
 function updateSeason() {
-    /**
-     * Saison Bestenliste
-     * Diese Funktion aktualisiert die Bestenliste und schreibt die neuen Daten in das Sheet
-     * In Google Apps Script kann man diese Funktion als Trigger einrichten, um sie regelmäßig auszuführen
-     * Die Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet
-     */
-
     let year = new Date().getFullYear();
     let nameOfSheet = year.toString();
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet); // Hole das Sheet mit dem Namen der aktuellen Saison
-    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet); // Erstelle ein neues Sheet, wenn keins vorhanden ist
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet);
+    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet);
     if (sheet.getName() !== nameOfSheet) {
-        Logger.log("Something went wrong. Sheet Name doesn't match '" + nameOfSheet + "'");
+        Logger.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
     }
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText(); // Externes Skript
-    eval(code); //Code des externen Skripts ausführen
-    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime); // Aktualisiere die Bestenliste für die aktuelle Saison
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText();
+    eval(code);
+    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime);
 }
 
 const FORMAT = {

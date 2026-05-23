@@ -1,21 +1,36 @@
 class Sheet {
     /**
-     * Klasse zum Verwalten der Daten des Sheets
-     * @param {Leaderboard} leaderboard - Bestenliste
-     * @property {Leaderboard} _leaderboard - Bestenliste
-     * @method extractResults - Extrahiert die Ergebnisse aus den Daten des Sheets
-     * @method getSheetData - Holt die Daten des Sheets
+     * Translates between the Leaderboard domain model and the Google Sheet's
+     * fixed 14-column layout (columns A–N).
+     *
+     * Sheet structure per stroke group:
+     *   Row 1: stroke name merged across all 14 columns
+     *   Row 2: "Männlich" (cols A–G) | "Weiblich" (cols H–N)
+     *   Row 3: column headers (UID, Rank, Name, Time, Birth, Location, Date) × 2
+     *   For each distance/course combination:
+     *     Row N:   distance label spanning both halves
+     *     Rows N+1 … N+entriesPerDiscipline: one result row each, male left / female right
+     *
+     * UIDs (e.g. "#f502m") in columns A and H are the join key between sheet rows
+     * and Discipline instances. Rows without a "#"-prefixed UID in both halves are
+     * header or label rows and are ignored during extraction.
+     *
+     * @param {Leaderboard} leaderboard
      */
-
     constructor(leaderboard) {
         this._leaderboard = leaderboard;
     }
 
+    /**
+     * Scans raw sheet data and loads existing results into the leaderboard.
+     *
+     * A row is treated as a result row only if it has more than 9 columns and both
+     * column 0 (male UID) and column 7 (female UID) start with "#". Header, label,
+     * and empty rows do not meet this condition and are silently skipped.
+     *
+     * @param {Array[]} data - Raw 2D array from sheet.getDataRange().getValues().
+     */
     extractResults(data) {
-        /**
-         * Extrahiert die Ergebnisse aus den Daten des Sheets
-         * @param {Array} data - Daten des Sheets
-         */
         for (let i = 0; i < data.length; i++) {
             if (data[i].length > 9) {
                 if (data[i][0].startsWith('#') && data[i][7].startsWith('#')) {
@@ -26,12 +41,22 @@ class Sheet {
         }
     }
 
+    /**
+     * Reads one result entry from row i starting at column offset j and adds it to the leaderboard.
+     *
+     * Column layout relative to j:
+     *   j+0: UID, j+1: rank (skipped), j+2: name, j+3: time, j+4: birth year,
+     *   j+5: location, j+6: date.
+     *
+     * Empty name cells indicate an unfilled rank slot in the sheet and are skipped.
+     * Results loaded from the sheet carry newRecord=false — they are existing entries,
+     * not new DSV results from the current run.
+     *
+     * @param {Array[]} data - Full 2D sheet data array.
+     * @param {number} i - Row index.
+     * @param {number} j - Column offset: 0 for the male half, 7 for the female half.
+     */
     _addResult(data, i, j) {
-        /**
-         * Fügt ein Ergebnis zur Bestenliste hinzu
-         * @param {Array} row - Zeile des Ergebnisses
-         * @param {number} index - Index des ersten Feldes des Ergebnisses
-         */
         let uid = data[i][j];
         let name = data[i][j + 2];
         if (name.toString().trim() === '') return;
@@ -43,12 +68,21 @@ class Sheet {
         this._leaderboard.addResult(result, uid);
     }
 
+    /**
+     * Serialises all disciplines into a 2D array formatted for Google Sheets setValues().
+     *
+     * Disciplines within each stroke group are sorted by distance ascending, then by course
+     * (short course before long course, i.e. 25m before 50m), then male before female.
+     * This sort order determines both the visual layout and the pairing used in the loop
+     * (disciplines[i] = male, disciplines[i+1] = female after sorting).
+     *
+     * Unfilled rank slots are written as empty strings so the sheet always has a fixed
+     * number of rows per discipline, regardless of how many results exist.
+     *
+     * @returns {Array[]} 2D array written to the sheet starting at row 3.
+     *   Rows 1–2 are the season header and the reserved row set by formatSheet().
+     */
     getSheetData() {
-        /**
-         * Bringt die neuen Daten in das Format für das Google Sheet
-         * @returns {Array} - Daten für das Google Sheet
-         */
-
         let disciplinesByStroke = {
             'Freistil': this._leaderboard.disciplineByStroke('Freistil'),
             'Schmetterling': this._leaderboard.disciplineByStroke('Schmetterling'),
@@ -60,9 +94,9 @@ class Sheet {
         let data = [];
 
         for (let stroke in disciplinesByStroke) {
-            let disciplines = disciplinesByStroke[stroke]; // Disziplinen des Schwimmstils
-            if (disciplines.length === 0) continue; // Wenn keine Disziplinen vorhanden sind, wird der Schwimmstil übersprungen
-            disciplines.sort((discipline1, discipline2) => { // Sortiert die Disziplinen nach Distanz, Bahn und Geschlecht
+            let disciplines = disciplinesByStroke[stroke];
+            if (disciplines.length === 0) continue;
+            disciplines.sort((discipline1, discipline2) => {
                 if (discipline1.distance === discipline2.distance) {
                     if (discipline1.lane === discipline2.lane) {
                         return discipline1.gender === 'Männlich' ? -1 : 1;
@@ -74,9 +108,9 @@ class Sheet {
                 }
             });
 
-            data.push([disciplines[0].stroke, '', '', '', '', '', '', '', '', '', '', '', '', '']); // Erste Zeile der Disziplin (Schwimmstil)
-            data.push(['Männlich', '', '', '', '', '', '', 'Weiblich', '', '', '', '', '', '']); // Zweite Zeile der Disziplin (Geschlecht)
-            data.push(['UID', 'Platz', 'Name', 'Zeit', 'Jahrgang', 'Ort', 'Datum', 'UID', 'Platz', 'Name', 'Zeit', 'Jahrgang', 'Ort', 'Datum']); // Dritte Zeile der Disziplin (Header)
+            data.push([disciplines[0].stroke, '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            data.push(['Männlich', '', '', '', '', '', '', 'Weiblich', '', '', '', '', '', '']);
+            data.push(['UID', 'Platz', 'Name', 'Zeit', 'Jahrgang', 'Ort', 'Datum', 'UID', 'Platz', 'Name', 'Zeit', 'Jahrgang', 'Ort', 'Datum']);
 
             for (let i = 0; i < disciplines.length; i = i + 2) {
                 let disciplineMale = disciplines[i];
@@ -84,7 +118,7 @@ class Sheet {
                 let resultsMale = disciplineMale.results;
                 let resultsFemale = disciplineFemale.results;
 
-                data.push([disciplineMale.distance + 'm (' + (disciplineMale.lane === 25 ? 'Kurzbahn' : 'Langbahn') + ')', '', '', '', '', '', '', disciplineMale.distance + 'm (' + (disciplineMale.lane === 25 ? 'Kurzbahn' : 'Langbahn') + ')', '', '', '', '', '', '']); // Zeile mit der Disziplin (Distanz und Bahn) 'Freistil 50m (Kurzbahn)'
+                data.push([disciplineMale.distance + 'm (' + (disciplineMale.lane === 25 ? 'Kurzbahn' : 'Langbahn') + ')', '', '', '', '', '', '', disciplineMale.distance + 'm (' + (disciplineMale.lane === 25 ? 'Kurzbahn' : 'Langbahn') + ')', '', '', '', '', '', '']);
 
                 for (let j = 0; j < this._leaderboard.entriesPerDiscipline; j++) {
                     let rank = (j + 1).toString() + '.';
@@ -101,25 +135,27 @@ class Sheet {
                 }
             }
 
-            data.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']); // Leere Zeile zwischen den Lagen
+            data.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         }
         return data;
     }
 
 }
 
+/**
+ * Appends new record strings to column P (col 16), starting after the last non-empty cell.
+ * Column P is excluded from the data range cleared by _writeNewDataToSheet, so entries
+ * accumulate permanently across runs. P1 is reserved for the "Neue Ergebnisse" header
+ * written by formatSheet(), so appending always starts from row 2 at the earliest.
+ *
+ * @param {string[]} results - Formatted record strings to append.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ */
 function _writeNewRecordsToSheet(results, sheet) {
-    /**
-     * Schreibt die Ergebnisse die neu hinzugekommen sind in das Sheet
-     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-     * @param {Array} results - Neue Ergebnisse
-     * @param {Sheet} sheet - Sheet
-     */
+    Logger.log('Writing new records to sheet...');
+    Logger.log('New records: ' + JSON.stringify(results));
 
-    Logger.log('Übertrage neue Rekorde in das Tabellenblatt...');
-    Logger.log('Neue Rekorde: ' + JSON.stringify(results));
-
-    let column = 16; // Spalte P
+    let column = 16; // column P
     let lastRow = sheet.getLastRow();
     let values = sheet.getRange(2, column, lastRow, 1).getValues();
 
@@ -136,58 +172,67 @@ function _writeNewRecordsToSheet(results, sheet) {
     }
 }
 
+/**
+ * Writes the leaderboard data array to the sheet starting at row 3, then clears any
+ * stale rows that remain below the new data block. Rows 1–2 (season header and reserved
+ * row set by formatSheet()) are never touched. Column P (new records log) is outside
+ * the write range and is also preserved.
+ *
+ * @param {Array[]} data - 2D array from Sheet.getSheetData().
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ */
 function _writeNewDataToSheet(data, sheet) {
-    /**
-     * Schreibt die neuen Daten in das Sheet
-     * Diese Funktion sollte nicht eigenständig aufgerufen werden!
-     * @param {Array} data - Daten für das Sheet
-     * @param {Sheet} sheet - Sheet
-     */
+    Logger.log('Writing new data to sheet...');
+    Logger.log('New data: ' + JSON.stringify(data));
 
-    Logger.log('Übertrage neue Daten in das Tabellenblatt...');
-    Logger.log('Neue Daten: ' + JSON.stringify(data));
+    let range = sheet.getRange(3, 1, data.length, data[0].length);
 
-    let range = sheet.getRange(3, 1, data.length, data[0].length); // Definiere die Range
+    range.clearContent();
+    range.setValues(data);
 
-    range.clearContent(); // Lösche vorhandene Daten in der Range
-    range.setValues(data); // Schreibe die neuen Daten in die Range
-
-    let lastRow = sheet.getLastRow(); // Sollten sich unterhalb der Range noch Daten befinden, werden diese gelöscht (außer sie befinden sich in Reihe P)
+    // Clear stale rows below the new data block (data starts at row 3, so last data row is data.length + 2)
+    let lastRow = sheet.getLastRow();
     if (lastRow > data.length + 2) {
         let rangeToDelete = sheet.getRange(data.length + 3, 1, lastRow - data.length - 2, data[0].length);
         rangeToDelete.clearContent();
     }
 }
 
+/**
+ * @param {Array[]} data - 2D array from Sheet.getSheetData().
+ * @param {string[]} results - New record strings from Leaderboard.newResults.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ */
 function writeDataToSheet(data, results, sheet) {
-    /**
-     * Schreibt die neuen Daten in das Sheet
-     * @param {Array} data - Daten für das Sheet
-     * @param {Array} results - Neue Ergebnisse
-     */
-
-    Logger.log('Übertrage neue Daten in das Tabellenblatt...');
+    Logger.log('Writing data to sheet...');
 
     _writeNewDataToSheet(data, sheet);
     _writeNewRecordsToSheet(results, sheet);
 
-    Logger.log('Daten erfolgreich übertragen.');
+    Logger.log('Data written successfully.');
 }
 
+/**
+ * Applies colours, row heights, column widths, and cell merges to match the fixed
+ * 14-column leaderboard structure. Safe to call repeatedly — clearFormats() runs first
+ * so existing formatting is fully replaced rather than layered.
+ *
+ * The `strokes` array encodes [startRow, disciplineCount] for each of the five stroke groups.
+ * Start rows are derived from numberOfEntries because each distance/course combination
+ * occupies numberOfEntries + 1 rows (1 distance header row + N result rows).
+ *
+ * Missing keys in `format` are filled in from DEFAULT_FORMAT at every nesting level,
+ * so users can override only specific values without providing the entire format object.
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @param {number} numberOfEntries - Entries per discipline; drives all row position calculations.
+ * @param {object} [format] - Partial or full format override; falls back to DEFAULT_FORMAT.
+ */
 function formatSheet(sheet, numberOfEntries, format) {
-    /** Formatiert das Sheet
-     * Die Funktion lässt sich beliebig oft ausführen, um das Sheet (neu) zu formatieren
-     * Die Funktion setzt die Hintergrundfarben, Textfarben, Textausrichtungen, Zeilen- und Spaltenhöhen und verbindet Zellen
-     * @param {Sheet} sheet - Sheet
-     * @param {number} numberOfEntries - Anzahl der Einträge pro Disziplin
-     * @param {object} format - Format für das Sheet
-     */
+    Logger.log('Formatting sheet...');
 
-    Logger.log('Formatiere das Tabellenblatt...');
+    if (!format) format = DEFAULT_FORMAT;
 
-    if (!format) format = DEFAULT_FORMAT; // Setze das Standardformat, wenn kein Format übergeben wird
-
-    // Um Konflikte mit verschiedenen Versionen zu vermeiden, überprüfe jeden Schlüssel in 'format' und ersetze ihn durch den Standardwert, wenn er nicht vorhanden ist
     for (let key in DEFAULT_FORMAT) {
         if (!format[key]) format[key] = DEFAULT_FORMAT[key];
         if (typeof DEFAULT_FORMAT[key] === 'object') {
@@ -202,34 +247,35 @@ function formatSheet(sheet, numberOfEntries, format) {
         }
     }
 
-    sheet.clearFormats(); // Lösche die Formatierung des gesamten Sheets
+    sheet.clearFormats();
 
-    sheet.getRange('A:P').setHorizontalAlignment(format.Allgemein.Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@'); // Textausrichtung für Reihe A bis N setzen und Format auf Text setzen
-    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@').setFontWeight(format['Neue Ergebnisse'].Textgewicht).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe).setFontColor(format['Neue Ergebnisse'].Textfarbe); // Textausrichtung für Reihe P setzen und Format auf Text setzen
-    let strokes = [[3, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]] // Zeilen in denen eine neue Disziplin beginnt
+    sheet.getRange('A:P').setHorizontalAlignment(format.Allgemein.Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@');
+    sheet.getRange("P:P").setHorizontalAlignment(format['Neue Ergebnisse'].Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@').setFontWeight(format['Neue Ergebnisse'].Textgewicht).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe).setFontColor(format['Neue Ergebnisse'].Textfarbe);
 
-    // Setze die Zeile für die Saison
-    sheet.getRange(1, 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Saison).setFontColor(format.Farben.Textfarben.Saison).setFontWeight('bold'); // Verbinde die Zellen für die Saison und setze die Hintergrundfarbe und Textfarbe
-    sheet.setRowHeight(1, format.Zeilen.Hoehen.Saison); // Setze die Höhe der Zeile mit der Saison
-    // Schreibe die aktuelle Saison in die erste Zelle
+    // Each entry [startRow, disciplineCount] for each of the five stroke groups.
+    // Start rows are calculated based on numberOfEntries: each distance/course pair
+    // occupies numberOfEntries + 1 rows, and there are fixed offsets between stroke groups.
+    let strokes = [[3, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]];
+
+    sheet.getRange(1, 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Saison).setFontColor(format.Farben.Textfarben.Saison).setFontWeight('bold');
+    sheet.setRowHeight(1, format.Zeilen.Hoehen.Saison);
     let season = sheet.getName()
     sheet.getRange(1, 1).setValue(season);
 
     strokes.forEach(function (stroke) {
-        sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Lage).setFontColor(format.Farben.Textfarben.Lage).setFontWeight('bold'); // Verbinde die Zellen für die Lage und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0], format.Zeilen.Hoehen.Lage); // Setze die Höhe der Zeile mit der Lage
-        sheet.getRange(stroke[0] + 1, 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Maennlich.Kopfzeile).setFontColor(format.Farben.Textfarben.Maennlich.Kopfzeile).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
-        sheet.getRange(stroke[0] + 1, 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Weiblich.Kopfzeile).setFontColor(format.Farben.Textfarben.Weiblich.Kopfzeile).setFontWeight('bold'); // Verbinde die Kopfzeile der Tabelle und setze die Hintergrundfarbe und Textfarbe
-        sheet.setRowHeight(stroke[0] + 1, format.Zeilen.Hoehen.Geschlecht); // Setze die Höhe der Zeile mit den Geschlechtern
-        sheet.getRange(stroke[0] + 2, 1, 1, 14).setBackground(format.Farben.Hintergrundfarben.Kopfzeile).setFontColor(format.Farben.Textfarben.Kopfzeile).setFontWeight('bold'); // Setze die Hintergrundfarbe und Textfarbe für die Kopfzeile
-        sheet.setRowHeight(stroke[0] + 2, format.Zeilen.Hoehen.Kopfzeile); // Setze die Höhe der Kopfzeile
+        sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Lage).setFontColor(format.Farben.Textfarben.Lage).setFontWeight('bold');
+        sheet.setRowHeight(stroke[0], format.Zeilen.Hoehen.Lage);
+        sheet.getRange(stroke[0] + 1, 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Maennlich.Kopfzeile).setFontColor(format.Farben.Textfarben.Maennlich.Kopfzeile).setFontWeight('bold');
+        sheet.getRange(stroke[0] + 1, 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Weiblich.Kopfzeile).setFontColor(format.Farben.Textfarben.Weiblich.Kopfzeile).setFontWeight('bold');
+        sheet.setRowHeight(stroke[0] + 1, format.Zeilen.Hoehen.Geschlecht);
+        sheet.getRange(stroke[0] + 2, 1, 1, 14).setBackground(format.Farben.Hintergrundfarben.Kopfzeile).setFontColor(format.Farben.Textfarben.Kopfzeile).setFontWeight('bold');
+        sheet.setRowHeight(stroke[0] + 2, format.Zeilen.Hoehen.Kopfzeile);
 
         for (let i = 0; i < stroke[1]; i++) {
-            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Maennlich).setFontColor(format.Farben.Textfarben.Streckenangabe.Maennlich).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
-            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Weiblich).setFontColor(format.Farben.Textfarben.Streckenangabe.Weiblich).setFontWeight('bold'); // Verbinde die Zellen für die Kopfzeile der Disziplin und setze die Hintergrundfarbe und Textfarbe
-            sheet.setRowHeight(stroke[0] + 3 + i * (numberOfEntries + 1), format.Zeilen.Hoehen.Streckenangabe); // Setze die Höhe der Zeile mit der Streckenangabe
+            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 1, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Maennlich).setFontColor(format.Farben.Textfarben.Streckenangabe.Maennlich).setFontWeight('bold');
+            sheet.getRange(stroke[0] + 3 + i * (numberOfEntries + 1), 8, 1, 7).merge().setBackground(format.Farben.Hintergrundfarben.Streckenangabe.Weiblich).setFontColor(format.Farben.Textfarben.Streckenangabe.Weiblich).setFontWeight('bold');
+            sheet.setRowHeight(stroke[0] + 3 + i * (numberOfEntries + 1), format.Zeilen.Hoehen.Streckenangabe);
             for (let j = 0; j < numberOfEntries; j++) {
-                // Setze die Hintergrundfarbe und Textfarbe für ein einzelnes Ergebnis
                 if (j % 2 === 0) {
                     sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 1, 1, 7).setBackground(format.Farben.Hintergrundfarben.Maennlich.Gerade).setFontColor(format.Farben.Textfarben.Maennlich.Gerade);
                     sheet.getRange(stroke[0] + 4 + i * (numberOfEntries + 1) + j, 8, 1, 7).setBackground(format.Farben.Hintergrundfarben.Weiblich.Gerade).setFontColor(format.Farben.Textfarben.Weiblich.Gerade);
@@ -258,28 +304,36 @@ function formatSheet(sheet, numberOfEntries, format) {
 
     sheet.setColumnWidth(16, format.Spalten.Breiten['Neue Ergebnisse']);
     sheet.getRange(1, 16).setFontColor(format['Neue Ergebnisse'].Textfarbe).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe);
-    sheet.getRange(1, 16).setValue(format['Neue Ergebnisse'].Text); // Schreibe in P:1 die Überschrift für die neuen Ergebnisse
+    sheet.getRange(1, 16).setValue(format['Neue Ergebnisse'].Text);
 
-    Logger.log('Formatierung abgeschlossen.');
+    Logger.log('Formatting complete.');
 }
 
+/**
+ * Entry point for a single sheet tab update. Sends the current sheet contents and club
+ * config to the Web App, which scrapes the DSV website and returns the updated leaderboard
+ * data plus any new records detected this run.
+ *
+ * The Web App endpoint URL is fetched from GitHub rather than being hardcoded, so the
+ * endpoint can be changed without requiring users to update their local script.
+ *
+ * An HTML response (starting with "<!DOCTYPE html>") indicates a Web App error — the script
+ * logs the raw response and aborts rather than overwriting the sheet with garbage data.
+ *
+ * @param {string} version - Current script version; compared against GitHub to warn about outdated scripts.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - The tab to update.
+ * @param {object} format - Format config passed through to formatSheet().
+ * @param {boolean} formatSheetEveryTime - If true, reformats the sheet after every data update.
+ */
 function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
-    /**
-     * Diese Funktion ruft die Daten von der Datenbank des DSV ab und schreibt sie in das Sheet das übergeben wird
-     * @param {string} version - Version des Skripts
-     * @param {Sheet} sheet - Sheet
-     * @param {object} format - Format für das Sheet
-     * @param {boolean} formatSheetEveryTime - Gibt an, ob das Sheet jedes Mal formatiert werden soll
-     */
-
     Logger.log('Version: ' + version);
     let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/version.txt').getContentText();
 
     if (newestVersion !== version) {
         Logger.log('--------------------------------------------------');
-        Logger.log('Es ist eine neue Version verfügbar. Bitte aktualisieren Sie das Skript.');
-        Logger.log('Neueste Version: ' + newestVersion);
-        Logger.log('Das neueste Skript finden Sie hier: https://github.com/nilskntl/dsv-club-leaderboards')
+        Logger.log('A new version is available. Please update the script.');
+        Logger.log('Latest version: ' + newestVersion);
+        Logger.log('Find the latest script here: https://github.com/nilskntl/dsv-club-leaderboards')
         Logger.log('--------------------------------------------------');
     }
 
@@ -297,25 +351,24 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
 
     let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/src/app-script/endpoint.txt').getContentText();
 
-    Logger.log('Aktualisiere Daten für die Saison: ' + sheet.getName() + '...');
+    Logger.log('Updating data for season: ' + sheet.getName() + '...');
 
     let response = UrlFetchApp.fetch(endpoint, options).getContentText();
 
-    // Überprüfe, ob die Antwort erfolgreich war
     if (response.startsWith('<!DOCTYPE html>')) {
-        Logger.log('Es ist ein Fehler aufgetreten. Bitte überprüfen Sie, ob Sie alles richtig eingegeben haben. Falls der Fehler weiterhin besteht, kontaktieren Sie den Entwickler.');
-        Logger.log('Antwort: ' + response);
+        Logger.log('An error occurred. Please check your configuration. If the problem persists, contact the developer.');
+        Logger.log('Response: ' + response);
         return;
     }
 
     response = JSON.parse(response);
 
-    Logger.log('Daten erfolgreich aktualisiert.');
+    Logger.log('Data updated successfully.');
 
-    writeDataToSheet(response.data, response.newResults, sheet); // Schreibe die neuen Daten in das Sheet
-    if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format); // Formatiere das Sheet, wenn 'formatSheetEveryTime' auf 'true' gesetzt ist
+    writeDataToSheet(response.data, response.newResults, sheet);
+    if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
 
-    Logger.log('Bestenliste wurde erfolgreich aktualisiert. Das Programm wurde beendet.');
+    Logger.log('Leaderboard updated successfully.');
 }
 
 let DEFAULT_FORMAT = {
