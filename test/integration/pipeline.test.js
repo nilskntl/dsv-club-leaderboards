@@ -92,4 +92,46 @@ describe(`DSV pipeline — club ${CLUB_ID} (real HTTP)`, () => {
         const unique = new Set(names);
         assert.equal(unique.size, names.length, 'no swimmer should appear more than once');
     });
+
+    it('VIEWSTATE chain: single GET provides tokens that chain through multiple sequential POSTs', async () => {
+        await pause(INTER_TEST_DELAY_MS);
+
+        const ctx = createContext();
+        const lb = new ctx.Leaderboard(CLUB_ID, [], 5);
+        const handler = lb._requestHandler;
+
+        const DISCIPLINE_UIDS = ['#f502m', '#b502w', '#r502m'];
+
+        // ONE GET for all disciplines — this is the invariant we are testing
+        const pageHtml = handler._getPage();
+        let viewState = handler._extractData(pageHtml, '__VIEWSTATE" value="', '" />');
+        let eventValidation = handler._extractData(pageHtml, '__EVENTVALIDATION" value="', '" />');
+
+        assert.ok(viewState.length > 0, 'initial viewState must not be empty');
+        assert.ok(eventValidation.length > 0, 'initial eventValidation must not be empty');
+
+        for (const uid of DISCIPLINE_UIDS) {
+            const discipline = lb.disciplines.find(d => d.uid === uid);
+            assert.ok(discipline, `discipline ${uid} must exist`);
+
+            const { data, nextViewState, nextEventValidation } =
+                handler._fetchNewData(discipline, viewState, eventValidation);
+
+            assert.ok(nextViewState.length > 0, `${uid}: POST response must contain a fresh viewState`);
+            assert.ok(nextEventValidation.length > 0, `${uid}: POST response must contain a fresh eventValidation`);
+            assert.ok(Array.isArray(data), `${uid}: data must be an array`);
+
+            if (data.length > 0) {
+                const r = data[0];
+                assert.ok(typeof r.name === 'string' && r.name.length > 0, `${uid}: name must be a non-empty string`);
+                assert.ok(typeof r.time === 'string', `${uid}: time must be a string`);
+            }
+
+            // Forward tokens to the next POST — this is the chain being tested
+            viewState = nextViewState;
+            eventValidation = nextEventValidation;
+
+            await pause(2000);
+        }
+    });
 });
