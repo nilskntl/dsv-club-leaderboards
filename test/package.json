@@ -1,0 +1,12 @@
+{
+  "name": "dsv-club-leaderboards-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test unit/*.test.js",
+    "test:integration": "node --test integration/*.test.js",
+    "test:all": "node --test unit/*.test.js integration/*.test.js"
+  },
+  "dependencies": {
+    "sync-request": "^6.1.0"
+  }
+}
