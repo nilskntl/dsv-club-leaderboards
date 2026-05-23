@@ -99,28 +99,26 @@ class Discipline {
     }
 
     toString() {
-        return this.distance + 'm ' + this.stroke + ' ' + this.gender + ' (' + (this.lane === LANES.Kurzbahn ? 'Kurzbahn' : 'Langbahn') + ')';
+        return this.distance + 'm ' + this.stroke + ' ' + this.gender + ' (' + (this.lane === LANES.SHORT_COURSE ? 'Kurzbahn' : 'Langbahn') + ')';
     }
 }
 
 const STROKES = {
-    'Freistil': 'Freistil',
-    'Brust': 'Brust',
-    'Ruecken': 'Rücken',
-    'Schmetterling': 'Schmetterling',
-    'Lagen': 'Lagen'
-
+    'FREESTYLE': 'Freistil',
+    'BREASTSTROKE': 'Brust',
+    'BACKSTROKE': 'Rücken',
+    'BUTTERFLY': 'Schmetterling',
+    'MEDLEY': 'Lagen'
 }
 
 const GENDERS = {
-    'Maennlich': 'Männlich',
-    'Weiblich': 'Weiblich'
-
+    'MALE': 'Männlich',
+    'FEMALE': 'Weiblich'
 }
 
 const LANES = {
-    'Langbahn': 50,
-    'Kurzbahn': 25
+    'LONG_COURSE': 50,
+    'SHORT_COURSE': 25
 }
 
 const DISTANCES = {
@@ -133,28 +131,28 @@ const DISTANCES = {
 }
 
 const DISCIPLINES = {
-    'Freistil': {
-        'Lage': STROKES.Freistil,
+    'FREESTYLE': {
+        'Lage': STROKES.FREESTYLE,
         'Langbahn': ['50', '100', '200', '400', '800', '1500'],
         'Kurzbahn': ['50', '100', '200', '400', '800', '1500']
     },
-    'Schmetterling': {
-        'Lage': STROKES.Schmetterling,
+    'BUTTERFLY': {
+        'Lage': STROKES.BUTTERFLY,
         'Langbahn': ['50', '100', '200'],
         'Kurzbahn': ['50', '100', '200']
     },
-    'Ruecken': {
-        'Lage': STROKES.Ruecken,
+    'BACKSTROKE': {
+        'Lage': STROKES.BACKSTROKE,
         'Langbahn': ['50', '100', '200'],
         'Kurzbahn': ['50', '100', '200']
     },
-    'Brust': {
-        'Lage': STROKES.Brust,
+    'BREASTSTROKE': {
+        'Lage': STROKES.BREASTSTROKE,
         'Langbahn': ['50', '100', '200'],
         'Kurzbahn': ['50', '100', '200']
     },
-    'Lagen': {
-        'Lage': STROKES.Lagen,
+    'MEDLEY': {
+        'Lage': STROKES.MEDLEY,
         'Langbahn': ['200', '400'],
         'Kurzbahn': ['100', '200', '400']
     }

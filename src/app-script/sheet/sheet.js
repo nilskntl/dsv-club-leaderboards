@@ -52,7 +52,7 @@ class Sheet {
         let disciplinesByStroke = {
             'Freistil': this._leaderboard.disciplineByStroke('Freistil'),
             'Schmetterling': this._leaderboard.disciplineByStroke('Schmetterling'),
-            'Ruecken': this._leaderboard.disciplineByStroke('Rücken'),
+            'Rücken': this._leaderboard.disciplineByStroke('Rücken'),
             'Brust': this._leaderboard.disciplineByStroke('Brust'),
             'Lagen': this._leaderboard.disciplineByStroke('Lagen')
         };
