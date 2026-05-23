@@ -120,8 +120,8 @@ class RequestHandler {
      * @param top top
      * @returns {Array}
      */
-    _convertToArray(elements, top) {
-        return elements.slice(0, top).map(element => {
+    _convertToArray(elements) {
+        return elements.map(element => {
             let [, position, name, birthYear, time, , location, date] = this._splitElement(element, '<td>', '</td>');
             return {name, time, birthYear, location, date: date};
         });
