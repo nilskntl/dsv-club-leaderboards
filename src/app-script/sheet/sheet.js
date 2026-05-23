@@ -39,7 +39,7 @@ class Sheet {
         let birthdate = data[i][j + 4];
         let location = data[i][j + 5];
         let date = data[i][j + 6];
-        let result = new Result(new Person(name, birthdate), new Time(time), location, new CalenderDate(date), false);
+        let result = new Result(new Person(name, birthdate), new Time(time), location, new CalendarDate(date), false);
         this._leaderboard.addResult(result, uid);
     }
 

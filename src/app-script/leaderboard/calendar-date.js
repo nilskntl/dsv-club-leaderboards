@@ -1,4 +1,4 @@
-class CalenderDate {
+class CalendarDate {
     /**
      * Erstellt ein Datum-Objekt
      * @param {string} date - Datum im Format dd.mm.yyyy

@@ -30,7 +30,7 @@ class RequestHandler {
                 let result = data[i];
                 let person = new Person(result.name, result.birthYear);
                 let time = new Time(result.time);
-                let date = new CalenderDate(result.date);
+                let date = new CalendarDate(result.date);
                 let location = result.location;
                 let newResult = new Result(person, time, location, date, true);
                 this._leaderboard.addResult(newResult, discipline.uid);

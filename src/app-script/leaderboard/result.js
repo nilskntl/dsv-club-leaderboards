@@ -4,13 +4,13 @@ class Result {
      * @param {Person} person - Person des Ergebnisses
      * @param {Time} time - Zeit des Ergebnisses
      * @param {string} location - Ort des Ergebnisses
-     * @param {CalenderDate} date - Datum des Ergebnisses
+     * @param {CalendarDate} date - Datum des Ergebnisses
      * @param {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
      * @property {Discipline} discipline - Disziplin des Ergebnisses
      * @property {Person} person - Person des Ergebnisses
      * @property {Time} time - Zeit des Ergebnisses
      * @property {string} location - Ort des Ergebnisses
-     * @property {CalenderDate} date - Datum des Ergebnisses
+     * @property {CalendarDate} date - Datum des Ergebnisses
      * @property {boolean} newRecord - Gibt an, ob das Ergebnis ein neuer Rekord ist
      * @method equals - Vergleicht zwei Ergebnisse
      * @method toString - Gibt das Ergebnis als String zurück
