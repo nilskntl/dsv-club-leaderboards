@@ -1,4 +1,4 @@
-const version = '1.0.5';
+const version = '1.0.6';
 
 /**
  * Automatically creates and updates a swimming club leaderboard in Google Sheets
