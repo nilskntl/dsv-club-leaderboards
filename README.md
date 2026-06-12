@@ -31,7 +31,7 @@ nach Saison, Lage, Bahnlänge und Geschlecht filtern.
 
 ### Wo finde ich meine Club-ID?
 
-1. Öffne [dsvdaten.dsv.de](https://dsvdaten.dsv.de) und suche nach deinem Verein.
+1. Öffne [dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/) und suche nach deinem Verein.
 2. Klicke auf den Vereinsnamen, um die Vereinsseite zu öffnen.
 3. Die Club-ID steht in der URL der Seite hinter `ClubID=`:  
    `…/Club.aspx?ClubID=`**7985**
