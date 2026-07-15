@@ -43,6 +43,13 @@ const clubId = 7985 // Set this to your club's DSV ID
 const numberOfEntries = 5 // Optional: number of entries to display per discipline
 const formatSheetEveryTime = true // Optional: reformat the sheet on every update
 
+// Optional: fine-tune the DSV request pacing to stay under the rate limit.
+// Leave empty ('') to use the defaults. requestDelayMs is the pause between requests
+// (default 1500), rateLimitRetryDelayMs is the pause before retrying after a rate limit
+// (HTTP 429) (default 12000). Increase them if you keep hitting the DSV rate limit.
+const requestDelayMs = '' // Optional: ms between DSV requests (empty = default 1500)
+const rateLimitRetryDelayMs = '' // Optional: ms to wait before retrying after a 429 (empty = default 12000)
+
 /**
  * Updates the male half of the all-time leaderboard. Set up a time trigger for this
  * function, offset from the updateAllTimeFemale() trigger.

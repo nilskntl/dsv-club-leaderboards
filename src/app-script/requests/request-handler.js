@@ -24,14 +24,35 @@ class RequestHandler {
      *
      * @param {Leaderboard} leaderboard - Provides the club ID and list of disciplines,
      *   and receives fetched results via addResult().
+     * @param {{requestDelayMs?: string|number, rateLimitRetryDelayMs?: string|number}} [config]
+     *   Optional tuning forwarded from the request body: the pause between POSTs and the
+     *   pause before retrying a 429. Blank, missing, or invalid values fall back to the
+     *   defaults (1500ms and 12000ms).
      */
-    constructor(leaderboard) {
+    constructor(leaderboard, config = {}) {
         this._leaderboard = leaderboard;
         this._clubId = leaderboard.clubId;
         this._url = `https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=${this._clubId}`;
         this._year = new Date().getFullYear();
-        this._requestDelayMs = 1200; // pause between POST requests to stay under the DSV rate limit
+        // Pause between POST requests to stay under the DSV rate limit, and the longer pause
+        // before retrying after a 429. Both are configurable via the request body so the delays
+        // can be tuned without redeploying; blank/invalid values fall back to the defaults.
+        this._requestDelayMs = this._resolveDelay(config.requestDelayMs, 1500);
+        this._rateLimitRetryDelayMs = this._resolveDelay(config.rateLimitRetryDelayMs, 12000);
         this._warnings = [];
+    }
+
+    /**
+     * Resolves a delay value coming from the request body. Blank, missing, or non-numeric
+     * values (and negatives) fall back to the default so callers can omit the setting.
+     *
+     * @param {string|number} value - Raw value from the request config.
+     * @param {number} fallback - Default used when value is empty or invalid.
+     * @returns {number} Milliseconds to wait.
+     */
+    _resolveDelay(value, fallback) {
+        let ms = parseInt(value, 10);
+        return Number.isFinite(ms) && ms >= 0 ? ms : fallback;
     }
 
     /**
@@ -187,8 +208,8 @@ class RequestHandler {
         });
 
         if (response.getResponseCode() === 429) {
-            Logger.log('Rate limited (429) — waiting 5s before retry');
-            Utilities.sleep(5000);
+            Logger.log('Rate limited (429) — waiting ' + this._rateLimitRetryDelayMs + 'ms before retry');
+            Utilities.sleep(this._rateLimitRetryDelayMs);
             response = UrlFetchApp.fetch(this._url, {
                 method: "post",
                 payload: payload,

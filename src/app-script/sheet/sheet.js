@@ -351,7 +351,9 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
         clubId: clubId,
         data: sheet.getDataRange().getValues(),
         entriesPerDiscipline: numberOfEntries,
-        filter: filter
+        filter: filter,
+        requestDelayMs: (typeof requestDelayMs !== 'undefined') ? requestDelayMs : '',
+        rateLimitRetryDelayMs: (typeof rateLimitRetryDelayMs !== 'undefined') ? rateLimitRetryDelayMs : ''
     };
 
     let options = {

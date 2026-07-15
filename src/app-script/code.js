@@ -5,7 +5,7 @@
  *
  * Pipeline:
  *   1. Parse the JSON request body (clubId, raw 2D sheet data, entriesPerDiscipline,
- *      optional discipline filter).
+ *      optional discipline filter, and optional requestDelayMs / rateLimitRetryDelayMs tuning).
  *   2. extractResultsFromSheet() — load existing sheet entries into each Discipline (newRecord=false).
  *   3. requestResults(filter)    — scrape DSV and add fresh results (newRecord=true).
  *      The optional filter restricts which disciplines are fetched so callers can split a
@@ -37,8 +37,12 @@ function doPost(e) {
         let data = requestData.data;
         let entriesPerDiscipline = requestData.entriesPerDiscipline;
         let filter = requestData.filter;
+        let requestConfig = {
+            requestDelayMs: requestData.requestDelayMs,
+            rateLimitRetryDelayMs: requestData.rateLimitRetryDelayMs
+        };
 
-        leaderboard = new Leaderboard(clubId, data, parseInt(entriesPerDiscipline));
+        leaderboard = new Leaderboard(clubId, data, parseInt(entriesPerDiscipline), requestConfig);
         leaderboard.extractResultsFromSheet();
         leaderboard.requestResults(filter);
         leaderboard.adjustResults();

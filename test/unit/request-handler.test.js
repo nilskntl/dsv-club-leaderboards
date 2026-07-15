@@ -156,3 +156,59 @@ describe('RequestHandler error handling and warnings', () => {
         assert.equal(handler._extractData('open only: __VIEWSTATE" value="abc', '__VIEWSTATE" value="', '" />'), '');
     });
 });
+
+describe('RequestHandler configurable delays', () => {
+    const { Leaderboard } = getContext();
+
+    function handlerWith(requestConfig) {
+        return new Leaderboard('7985', [], 5, requestConfig)._requestHandler;
+    }
+
+    it('defaults to 1500ms / 12000ms when no config is given', () => {
+        const handler = new Leaderboard('7985', [], 5)._requestHandler;
+        assert.equal(handler._requestDelayMs, 1500);
+        assert.equal(handler._rateLimitRetryDelayMs, 12000);
+    });
+
+    it('empty strings fall back to the defaults', () => {
+        const handler = handlerWith({ requestDelayMs: '', rateLimitRetryDelayMs: '' });
+        assert.equal(handler._requestDelayMs, 1500);
+        assert.equal(handler._rateLimitRetryDelayMs, 12000);
+    });
+
+    it('accepts numeric and numeric-string overrides', () => {
+        const handler = handlerWith({ requestDelayMs: 800, rateLimitRetryDelayMs: '30000' });
+        assert.equal(handler._requestDelayMs, 800);
+        assert.equal(handler._rateLimitRetryDelayMs, 30000);
+    });
+
+    it('allows an explicit zero delay', () => {
+        const handler = handlerWith({ requestDelayMs: 0, rateLimitRetryDelayMs: '0' });
+        assert.equal(handler._requestDelayMs, 0);
+        assert.equal(handler._rateLimitRetryDelayMs, 0);
+    });
+
+    it('invalid and negative values fall back to the defaults', () => {
+        const handler = handlerWith({ requestDelayMs: 'abc', rateLimitRetryDelayMs: -500 });
+        assert.equal(handler._requestDelayMs, 1500);
+        assert.equal(handler._rateLimitRetryDelayMs, 12000);
+    });
+
+    it('waits the configured retry delay before retrying a 429', () => {
+        const ctx = createContext();
+        const sleeps = [];
+        ctx.Utilities.sleep = (ms) => sleeps.push(ms);
+        ctx.UrlFetchApp.fetch = (url, options = {}) => {
+            if ((options.method || 'get') === 'get') {
+                return { getResponseCode: () => 200, getContentText: () => '<input type="hidden" name="__VIEWSTATE" value="vs0" /><input type="hidden" name="__EVENTVALIDATION" value="ev0" />' };
+            }
+            return { getResponseCode: () => 429, getContentText: () => 'Too Many Requests' };
+        };
+
+        const lb = new ctx.Leaderboard('7985', [], 5, { requestDelayMs: 200, rateLimitRetryDelayMs: 7000 });
+        lb.requestResults({ genders: ['Männlich'], strokes: ['Freistil'], distances: ['50'] });
+
+        // the 429 retry pause must use the configured value
+        assert.ok(sleeps.includes(7000), 'expected a 7000ms retry pause, got ' + JSON.stringify(sleeps));
+    });
+});

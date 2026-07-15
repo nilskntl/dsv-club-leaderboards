@@ -13,12 +13,15 @@ class Leaderboard {
      * @param {string|number} clubId - DSV club ID used to query the DSV website.
      * @param {Array[]} data - Raw 2D array from the Google Sheet (sheet.getDataRange().getValues()).
      * @param {number} [entriesPerDiscipline=10] - How many top results to keep per discipline.
+     * @param {{requestDelayMs?: string|number, rateLimitRetryDelayMs?: string|number}} [requestConfig]
+     *   Optional DSV request tuning forwarded to the RequestHandler (pause between POSTs and
+     *   the 429 retry pause). Blank or invalid values fall back to the handler's defaults.
      */
-    constructor(clubId, data, entriesPerDiscipline = 10) {
+    constructor(clubId, data, entriesPerDiscipline = 10, requestConfig = {}) {
         this._clubId = clubId.toString();
         this._oldData = data;
         this._disciplines = [];
-        this._requestHandler = new RequestHandler(this);
+        this._requestHandler = new RequestHandler(this, requestConfig);
         this._sheet = new Sheet(this);
         this._entriesPerDiscipline = entriesPerDiscipline;
         this._createDisciplines();
