@@ -56,20 +56,35 @@ therefore must run inside the user's own Google account context. See [Architectu
 
 ## Step 2 — Send to Web App
 
-`getNewSheetData()` reads the current tab's full data and POSTs it to the Web App:
+First, `getNewSheetData()` resolves the configured club **name** to the internal ClubID that all DSV
+requests use (`resolveClubId(clubName)`, see [DSV Scraping](dsv-scraping.md#resolving-a-club-name-to-a-clubid)).
+This runs in the bound script (client side), before the Web App is contacted:
+
+- **Exact match** → the DSV search 302-redirects straight to the club page; the ClubID is read from the
+  `Location` header.
+- **Several matches** → the first row of the result table is used and logged so the user can spot a wrong pick.
+- **No match** → `getNewSheetData()` logs an error pointing to the DSV club search and aborts without
+  touching the sheet or calling the Web App.
+
+It then reads the current tab's full data and POSTs it to the Web App:
 
 ```javascript
 let payload = {
-    clubId: clubId,                              // DSV club ID from config
+    clubId: club.clubId,                         // internal ClubID resolved from clubName
     data: sheet.getDataRange().getValues(),      // raw 2D array of the entire tab
     entriesPerDiscipline: numberOfEntries,       // max results per discipline from config
-    filter: filter                               // optional discipline filter, e.g. {genders: ['Männlich']}
+    filter: filter,                              // optional discipline filter, e.g. {genders: ['Männlich']}
+    requestDelayMs: requestDelayMs,              // optional: pause between DSV requests (blank → 1500)
+    rateLimitRetryDelayMs: rateLimitRetryDelayMs // optional: pause before a 429 retry (blank → 12000)
 };
 ```
 
 The optional `filter` restricts which disciplines are fetched from DSV in Step 4. It may contain
 `genders`, `strokes`, `lanes`, and/or `distances` arrays; provided keys combine with AND, omitted
 keys match everything. Requests without a filter (older client scripts) perform a full update.
+
+`requestDelayMs` and `rateLimitRetryDelayMs` tune the DSV request pacing (see [DSV Scraping](dsv-scraping.md));
+blank or invalid values fall back to the defaults inside `RequestHandler`.
 
 The Web App URL is fetched from `endpoint.txt` on GitHub (not hardcoded) so the endpoint can be updated
 without users changing `main.js`.

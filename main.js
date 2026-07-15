@@ -40,7 +40,7 @@ const version = '1.1.0';
  * Lost data can be recovered via Google Sheets → File → Version history.
  */
 
-const clubName = 'WSG Wunstorf' // Set this to your club's name as listed by the DSV. Look it up at: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/
+const clubName = 'Bielefelder Wasserfreunde' // Set this to your club's name as listed by the DSV. Look it up at: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/
 const numberOfEntries = 5 // Optional: number of entries to display per discipline
 const formatSheetEveryTime = true // Optional: reformat the sheet on every update
 

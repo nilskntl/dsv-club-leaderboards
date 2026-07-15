@@ -27,14 +27,20 @@ season, stroke, course length, and gender.
 ## Prerequisites
 
 - A **Google account** (free)
-- Your club's **Club ID** on the DSV portal
+- Your club's **name** as listed by the DSV
 
-### Where do I find my Club ID?
+### What is my club name?
 
-1. Open [dsvdaten.dsv.de](https://dsvdaten.dsv.de) and search for your club.
-2. Click on the club name to open the club page.
-3. The Club ID appears in the URL behind `ClubID=`:  
-   `…/Club.aspx?ClubID=`**7985**
+You don't need to look up any ID – before each update the script searches for your club via the
+DSV club search and resolves the matching internal ID automatically.
+
+1. Open [dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/) and search
+   for your club.
+2. Note the club name **exactly as shown there**.
+
+> **Tip:** Use the full name. If exactly one club matches, it is resolved directly. If several clubs
+> match your term, the script uses the **first** match and writes it to the
+> log – check there that the correct club was found.
 
 ---
 
@@ -57,18 +63,26 @@ season, stroke, course length, and gender.
 
 ---
 
-### Step 3 – Enter your Club ID
+### Step 3 – Enter your club name
 
-Find this line near the top of the script and replace the ID with your own:
+Find this line near the top of the script and replace the name with your own:
 
 ```js
-const clubId = 7985  // ← enter your club's ID here
+const clubName = 'Bielefelder Wasserfreunde'  // ← enter your club's name here
 ```
 
 You can also adjust the number of entries shown per discipline:
 
 ```js
 const numberOfEntries = 5  // How many places to show per event
+```
+
+If the DSV portal keeps throttling you (a "Rate limited" message in the log), you can optionally
+increase the wait times between requests (leave empty to use the defaults):
+
+```js
+const requestDelayMs = ''          // Pause between requests in ms (default: 1500)
+const rateLimitRetryDelayMs = ''   // Wait before retrying after a rate limit in ms (default: 12000)
 ```
 
 ---
@@ -168,11 +182,13 @@ Embed `index.html` into your website, or open it directly in a browser to previe
 
 ### Script (`main.js`)
 
-| Setting                | Default | Description                           |
-|------------------------|---------|---------------------------------------|
-| `clubId`               | `7985`  | Your club's DSV Club ID               |
-| `numberOfEntries`      | `5`     | Number of places shown per discipline |
-| `formatSheetEveryTime` | `true`  | Reformat the sheet on every update    |
+| Setting                 | Default                       | Description                                                                       |
+|-------------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `clubName`              | `'Bielefelder Wasserfreunde'` | Your club's name as listed by the DSV (resolved to the internal ID automatically) |
+| `numberOfEntries`       | `5`                           | Number of places shown per discipline                                             |
+| `formatSheetEveryTime`  | `true`                        | Reformat the sheet on every update                                                |
+| `requestDelayMs`        | `''` (→ 1500)                 | Pause between DSV requests in ms; empty = default                                 |
+| `rateLimitRetryDelayMs` | `''` (→ 12000)                | Wait before retrying after a rate limit (HTTP 429) in ms; empty = default         |
 
 Colours, column widths, and row heights can be adjusted via the `FORMAT` object at the bottom of `main.js`.
 
@@ -190,13 +206,21 @@ Colours, column widths, and row heights can be adjusted via the `FORMAT` object 
 
 ## Frequently asked questions
 
-**I can't find my Club ID.**  
-Search for your club at [dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx). The Club ID appears in the
-URL of the club page after `ClubID=`.
+**The script reports "No club found".**  
+The `clubName` you entered doesn't match any club. Search for your club at
+[dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx) or
+[dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/)
+and copy the name exactly as shown there.
+
+**The wrong club was found.**  
+If your search term matches several clubs, the script uses the first match. The log (under **Executions**)
+shows which club was picked (`Found club "…"`). Enter a more specific/complete name to make the search
+unambiguous.
 
 **The sheet stays empty after running the script.**  
-Check that the `clubId` you entered is correct. In the script editor under **Executions**, you can view the logs and
-check for any error messages.
+Check the logs in the script editor under **Executions**: they show which club was found and whether the DSV
+portal throttled the requests (a "Rate limited" message). If so, increase the wait times (see Step 3) or run
+the trigger less frequently.
 
 **Can I edit the sheet manually after setup?**  
 Yes – adding and correcting entries is always possible. The identifiers in columns A and H and the overall column
