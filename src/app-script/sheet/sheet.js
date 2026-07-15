@@ -337,7 +337,7 @@ function formatSheet(sheet, numberOfEntries, format) {
  */
 function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
     Logger.log('Version: ' + version);
-    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/version.txt').getContentText();
+    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/1-exceeded-maximum-execution-time/src/app-script/version.txt').getContentText();
 
     if (newestVersion !== version) {
         Logger.log('--------------------------------------------------');
@@ -360,7 +360,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
         'payload': JSON.stringify(payload)
     }
 
-    let endpoint = UrlFetchApp.fetch('https://github.com/nilskntl/dsv-club-leaderboards/raw/master/src/app-script/endpoint.txt').getContentText();
+    let endpoint = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/1-exceeded-maximum-execution-time/src/app-script/endpoint.txt').getContentText();
 
     Logger.log('Updating data for season: ' + sheet.getName() + '...');
 
