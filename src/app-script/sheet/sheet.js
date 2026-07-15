@@ -322,7 +322,7 @@ function formatSheet(sheet, numberOfEntries, format) {
  * here). A response with an `error` field means the run failed — it is logged and the
  * sheet is left untouched. A `warnings` field lists non-fatal problems (e.g. the DSV rate
  * limiter aborted the run partway); warnings are logged to this script's execution log
- * and appended to the "Neue Ergebnisse" column (P) so they are visible in the sheet.
+ * (Apps Script → Executions) — column P stays a pure record history.
  * An HTML response (starting with "<!DOCTYPE html>") indicates an outdated Web App
  * deployment error page — the script logs the raw response and aborts.
  *
@@ -390,9 +390,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
 
     Logger.log('Data updated successfully.');
 
-    // Warnings go into column P alongside the new records so partial updates
-    // (e.g. a run aborted by the DSV rate limiter) are visible in the sheet itself
-    writeDataToSheet(response.data, warnings.concat(response.newResults), sheet);
+    writeDataToSheet(response.data, response.newResults, sheet);
     if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
 
     Logger.log('Leaderboard updated successfully.');

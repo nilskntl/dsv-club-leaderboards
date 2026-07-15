@@ -80,8 +80,8 @@ execution log belongs to the hosting account, so the body is the only channel vi
 - `error` present → the Web App run failed (exception in `doPost()`). The script logs message and stack
   and aborts without touching the sheet.
 - `warnings` non-empty → the run completed but with problems (e.g. the DSV rate limiter aborted the fetch
-  partway). Warnings are logged to the bound script's execution log and appended to column P with a
-  timestamp and a ⚠️ prefix, so partial updates are visible in the sheet itself.
+  partway). Warnings are logged to the bound script's execution log (Apps Script → Executions) with a
+  timestamp and a ⚠️ prefix; they are not written into the sheet.
 
 A response that starts with `<!DOCTYPE html>` indicates an error page from an outdated Web App deployment.
 The script logs the response body and aborts without touching the sheet.
@@ -176,9 +176,9 @@ Back in the bound script:
 1. `_writeNewDataToSheet()` writes the `data` array to the sheet starting at row 3. Rows 1–2 (season header
    and column headers) are left untouched. Any stale rows below the new data block are cleared.
 
-2. `_writeNewRecordsToSheet()` appends each `warnings` string (timestamped, ⚠️-prefixed) and each
-   `newResults` string to column P, starting after the last non-empty cell. Column P is never cleared by
-   `_writeNewDataToSheet()`, so entries accumulate permanently across runs.
+2. `_writeNewRecordsToSheet()` appends each `newResults` string to column P, starting after the last
+   non-empty cell. Column P is never cleared by `_writeNewDataToSheet()`, so entries accumulate permanently
+   across runs. `warnings` strings only go to the execution log — they are never written into the sheet.
 
 3. If `formatSheetEveryTime` is `true`, `formatSheet()` re-applies all colours, merges, and column widths.
 
