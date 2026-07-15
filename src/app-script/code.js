@@ -28,11 +28,19 @@
  *   and `warnings` (string[]) — or `error` ({message, stack}) and `warnings` on failure.
  */
 function doPost(e) {
+    let startTime = new Date().getTime();
+    console.log('[doPost] ===== Web App request received =====');
+
     let leaderboard;
     let payload;
 
     try {
-        let requestData = JSON.parse(e.postData.contents);
+        let rawBody = e && e.postData ? e.postData.contents : '';
+        console.log('[doPost] Raw request body length: ' + (rawBody ? rawBody.length : 0) + ' characters');
+
+        let requestData = JSON.parse(rawBody);
+        console.log('[doPost] Request body parsed successfully');
+
         let clubId = requestData.clubId;
         let data = requestData.data;
         let entriesPerDiscipline = requestData.entriesPerDiscipline;
@@ -42,9 +50,22 @@ function doPost(e) {
             rateLimitRetryDelayMs: requestData.rateLimitRetryDelayMs
         };
 
+        console.log('[doPost] clubId=' + clubId + ', entriesPerDiscipline=' + entriesPerDiscipline);
+        console.log('[doPost] Incoming sheet data: ' + (Array.isArray(data) ? data.length + ' row(s)' : 'none'));
+        console.log('[doPost] Discipline filter: ' + (filter ? JSON.stringify(filter) : 'none (full update)'));
+        console.log('[doPost] Request tuning: requestDelayMs=' + (requestConfig.requestDelayMs || 'default') +
+            ', rateLimitRetryDelayMs=' + (requestConfig.rateLimitRetryDelayMs || 'default'));
+
+        console.log('[doPost] Building leaderboard...');
         leaderboard = new Leaderboard(clubId, data, parseInt(entriesPerDiscipline), requestConfig);
+
+        console.log('[doPost] Step 1/3: extracting existing results from sheet...');
         leaderboard.extractResultsFromSheet();
+
+        console.log('[doPost] Step 2/3: requesting fresh results from DSV...');
         leaderboard.requestResults(filter);
+
+        console.log('[doPost] Step 3/3: deduplicating, sorting and trimming results...');
         leaderboard.adjustResults();
 
         payload = {
@@ -52,7 +73,12 @@ function doPost(e) {
             newResults: leaderboard.newResults,
             warnings: leaderboard.warnings
         };
+
+        console.log('[doPost] Response ready: ' + payload.data.length + ' data row(s), ' +
+            payload.newResults.length + ' new record(s), ' + payload.warnings.length + ' warning(s)');
     } catch (error) {
+        console.error('[doPost] Request failed: ' + error.message);
+        if (error.stack) console.error('[doPost] Stack: ' + error.stack);
         payload = {
             error: {
                 message: error.message,
@@ -61,6 +87,9 @@ function doPost(e) {
             warnings: leaderboard ? leaderboard.warnings : []
         };
     }
+
+    let durationMs = new Date().getTime() - startTime;
+    console.log('[doPost] ===== Request finished in ' + durationMs + 'ms =====');
 
     return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
 }

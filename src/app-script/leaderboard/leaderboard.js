@@ -24,7 +24,10 @@ class Leaderboard {
         this._requestHandler = new RequestHandler(this, requestConfig);
         this._sheet = new Sheet(this);
         this._entriesPerDiscipline = entriesPerDiscipline;
+        console.log('[Leaderboard] Initialising for clubId=' + this._clubId + ', entriesPerDiscipline=' +
+            this._entriesPerDiscipline + ', sheet rows=' + (Array.isArray(data) ? data.length : 0));
         this._createDisciplines();
+        console.log('[Leaderboard] Created ' + this._disciplines.length + ' discipline(s).');
     }
 
     get clubId() {
@@ -65,6 +68,7 @@ class Leaderboard {
                 }
             }
         }
+        console.log('[Leaderboard] newResults: ' + newResults.length + ' new record(s) survived the top-N cut.');
         return newResults;
     }
 
@@ -112,11 +116,14 @@ class Leaderboard {
         try {
             discipline.addResult(result);
         } catch (error) {
+            console.error('[Leaderboard] addResult: no discipline matches uid "' + disciplineUid +
+                '" for result ' + result.toString());
             throw new Error('Result could not be added to the leaderboard: ' + result.toString());
         }
     }
 
     extractResultsFromSheet() {
+        console.log('[Leaderboard] extractResultsFromSheet: loading existing results from the sheet...');
         this._sheet.extractResults(this._oldData);
     }
 
@@ -127,6 +134,8 @@ class Leaderboard {
      * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter]
      */
     requestResults(filter) {
+        console.log('[Leaderboard] requestResults: delegating to RequestHandler' +
+            (filter ? ' with filter ' + JSON.stringify(filter) : ' (full update)') + '...');
         this._requestHandler.requestResults(filter);
     }
 
@@ -136,11 +145,19 @@ class Leaderboard {
      * duplicate of a swimmer is discarded before the sort determines the final ranking.
      */
     adjustResults() {
+        console.log('[Leaderboard] adjustResults: deduplicating, sorting and trimming ' +
+            this._disciplines.length + ' discipline(s) to top ' + this.entriesPerDiscipline + '...');
+        let totalBefore = 0;
+        let totalAfter = 0;
         for (let discipline of this._disciplines) {
+            totalBefore += discipline.results.length;
             discipline.removeDuplicateResults();
             discipline.sortResults();
             discipline.cutResults(this.entriesPerDiscipline);
+            totalAfter += discipline.results.length;
         }
+        console.log('[Leaderboard] adjustResults: ' + totalBefore + ' pooled result(s) reduced to ' +
+            totalAfter + ' after dedup + top-N cut.');
     }
 
     /**

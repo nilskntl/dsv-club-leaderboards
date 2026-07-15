@@ -12,9 +12,13 @@ class Time {
         this._time = time;
         let timeParts = time.split(":");
         this._minutes = parseInt(timeParts[0]);
-        let secondsAndHundredth = timeParts[1].split(",");
+        let secondsAndHundredth = (timeParts[1] || '').split(",");
         this._seconds = parseInt(secondsAndHundredth[0]);
         this._hundredth = parseInt(secondsAndHundredth[1]);
+        if (Number.isNaN(this._minutes) || Number.isNaN(this._seconds) || Number.isNaN(this._hundredth)) {
+            console.warn('[Time] Could not fully parse time "' + time + '" (expected "mm:ss,xx") — ' +
+                'minutes=' + this._minutes + ', seconds=' + this._seconds + ', hundredth=' + this._hundredth);
+        }
     }
 
     get time() {

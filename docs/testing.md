@@ -97,10 +97,10 @@ Expected output for unit tests (no network required):
 
 ## Environment Variables
 
-| Variable  | Default | Effect                                                                                     |
-|-----------|---------|--------------------------------------------------------------------------------------------|
-| `VERBOSE` | unset   | Set to any non-empty value to print `Logger.log` output to stdout during integration tests |
-| `CLUB_ID` | `7985`  | DSV club ID used by integration tests. Override to test against your own club's live data  |
+| Variable  | Default | Effect                                                                                                 |
+|-----------|---------|--------------------------------------------------------------------------------------------------------|
+| `VERBOSE` | unset   | Set to any non-empty value to print the code's `console.log` output to stdout during integration tests |
+| `CLUB_ID` | `7985`  | DSV club ID used by integration tests. Override to test against your own club's live data              |
 
 ```bash
 VERBOSE=1 CLUB_ID=1234 npm run test:integration

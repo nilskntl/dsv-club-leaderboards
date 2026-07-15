@@ -53,6 +53,21 @@ function createContext({ verbose = !!process.env.VERBOSE } = {}) {
             }
         },
 
+        // Apps Script code logs via console.log/warn/error (visible in Web App / trigger
+        // executions, with matching severity in Cloud Logging). All are gated on verbose so
+        // test output stays quiet unless VERBOSE is set.
+        console: {
+            log(...args) {
+                if (verbose) process.stdout.write('  [LOG] ' + args.map(String).join(' ') + '\n');
+            },
+            warn(...args) {
+                if (verbose) process.stdout.write('  [WARN] ' + args.map(String).join(' ') + '\n');
+            },
+            error(...args) {
+                if (verbose) process.stdout.write('  [ERROR] ' + args.map(String).join(' ') + '\n');
+            }
+        },
+
         // Utilities.sleep is a no-op in tests — callers must add their own delays if needed
         Utilities: {
             sleep(_ms) {}

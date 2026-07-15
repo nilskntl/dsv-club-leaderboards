@@ -22,6 +22,10 @@ class CalendarDate {
             this._day = parseInt(dateParts[0]);
             this._month = parseInt(dateParts[1]);
             this._year = parseInt(dateParts[2]);
+            if (Number.isNaN(this._day) || Number.isNaN(this._month) || Number.isNaN(this._year)) {
+                console.warn('[CalendarDate] Could not fully parse date "' + date + '" (expected "dd.mm.yyyy" or "yyyy") — ' +
+                    'day=' + this._day + ', month=' + this._month + ', year=' + this._year);
+            }
         }
     }
 

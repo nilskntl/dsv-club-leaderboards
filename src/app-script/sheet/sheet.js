@@ -31,14 +31,18 @@ class Sheet {
      * @param {Array[]} data - Raw 2D array from sheet.getDataRange().getValues().
      */
     extractResults(data) {
+        console.log('[Sheet] extractResults: scanning ' + data.length + ' sheet row(s) for existing results...');
+        let resultRows = 0;
         for (let i = 0; i < data.length; i++) {
             if (data[i].length > 9) {
                 if (data[i][0].startsWith('#') && data[i][7].startsWith('#')) {
+                    resultRows++;
                     this._addResult(data, i, 0);
                     this._addResult(data, i, 7);
                 }
             }
         }
+        console.log('[Sheet] extractResults: identified ' + resultRows + ' result row(s) (male + female per row).');
     }
 
     /**
@@ -59,11 +63,13 @@ class Sheet {
     _addResult(data, i, j) {
         let uid = data[i][j];
         let name = data[i][j + 2];
-        if (name.toString().trim() === '') return;
+        if (name.toString().trim() === '') return; // unfilled rank slot
         let time = data[i][j + 3];
         let birthdate = data[i][j + 4];
         let location = data[i][j + 5];
         let date = data[i][j + 6];
+        console.log('[Sheet] extractResults: row ' + (i + 1) + ' col ' + (j + 1) + ' → ' + uid +
+            ' ' + name + ' (' + birthdate + ') ' + time + ' @ ' + location + ' ' + date);
         let result = new Result(new Person(name, birthdate), new Time(time), location, new CalendarDate(date), false);
         this._leaderboard.addResult(result, uid);
     }
@@ -91,11 +97,17 @@ class Sheet {
             'Lagen': this._leaderboard.disciplineByStroke('Lagen')
         };
 
+        console.log('[Sheet] getSheetData: serialising disciplines into the 14-column sheet layout...');
+
         let data = [];
 
         for (let stroke in disciplinesByStroke) {
             let disciplines = disciplinesByStroke[stroke];
-            if (disciplines.length === 0) continue;
+            if (disciplines.length === 0) {
+                console.log('[Sheet] getSheetData: no disciplines for stroke "' + stroke + '" — skipped.');
+                continue;
+            }
+            console.log('[Sheet] getSheetData: stroke "' + stroke + '" → ' + disciplines.length + ' discipline(s).');
             disciplines.sort((discipline1, discipline2) => {
                 if (discipline1.distance === discipline2.distance) {
                     if (discipline1.lane === discipline2.lane) {
@@ -137,6 +149,7 @@ class Sheet {
 
             data.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         }
+        console.log('[Sheet] getSheetData: produced ' + data.length + ' row(s) for the sheet.');
         return data;
     }
 
@@ -152,8 +165,14 @@ class Sheet {
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
  */
 function _writeNewRecordsToSheet(results, sheet) {
-    Logger.log('Writing new records to sheet...');
-    Logger.log('New records: ' + JSON.stringify(results));
+    console.log('[Sheet] _writeNewRecordsToSheet: appending ' + results.length + ' new record(s) to column P...');
+    if (results.length === 0) {
+        console.log('[Sheet] _writeNewRecordsToSheet: no new records this run — nothing to append.');
+        return;
+    }
+    for (let i = 0; i < results.length; i++) {
+        console.log('[Sheet] _writeNewRecordsToSheet: new record ' + (i + 1) + '/' + results.length + ': ' + results[i]);
+    }
 
     let column = 16; // column P
     let lastRow = sheet.getLastRow();
@@ -166,10 +185,12 @@ function _writeNewRecordsToSheet(results, sheet) {
             break;
         }
     }
+    console.log('[Sheet] _writeNewRecordsToSheet: first empty cell found at row ' + row + ' — appending from there.');
 
     for (let i = 0; i < results.length; i++) {
         sheet.getRange(row + i, column).setValue(results[i]);
     }
+    console.log('[Sheet] _writeNewRecordsToSheet: wrote records to rows ' + row + '–' + (row + results.length - 1) + '.');
 }
 
 /**
@@ -182,19 +203,25 @@ function _writeNewRecordsToSheet(results, sheet) {
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
  */
 function _writeNewDataToSheet(data, sheet) {
-    Logger.log('Writing new data to sheet...');
-    Logger.log('New data: ' + JSON.stringify(data));
+    console.log('[Sheet] _writeNewDataToSheet: writing ' + data.length + ' row(s) × ' +
+        (data[0] ? data[0].length : 0) + ' column(s) starting at row 3...');
 
     let range = sheet.getRange(3, 1, data.length, data[0].length);
 
     range.clearContent();
     range.setValues(data);
+    console.log('[Sheet] _writeNewDataToSheet: data block written (rows 3–' + (data.length + 2) + ').');
 
     // Clear stale rows below the new data block (data starts at row 3, so last data row is data.length + 2)
     let lastRow = sheet.getLastRow();
     if (lastRow > data.length + 2) {
-        let rangeToDelete = sheet.getRange(data.length + 3, 1, lastRow - data.length - 2, data[0].length);
+        let staleRows = lastRow - data.length - 2;
+        console.log('[Sheet] _writeNewDataToSheet: clearing ' + staleRows + ' stale row(s) below the data block (rows ' +
+            (data.length + 3) + '–' + lastRow + ').');
+        let rangeToDelete = sheet.getRange(data.length + 3, 1, staleRows, data[0].length);
         rangeToDelete.clearContent();
+    } else {
+        console.log('[Sheet] _writeNewDataToSheet: no stale rows to clear below the data block.');
     }
 }
 
@@ -204,12 +231,12 @@ function _writeNewDataToSheet(data, sheet) {
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
  */
 function writeDataToSheet(data, results, sheet) {
-    Logger.log('Writing data to sheet...');
+    console.log('[Sheet] writeDataToSheet: writing data + new records to sheet "' + sheet.getName() + '"...');
 
     _writeNewDataToSheet(data, sheet);
     _writeNewRecordsToSheet(results, sheet);
 
-    Logger.log('Data written successfully.');
+    console.log('[Sheet] writeDataToSheet: data written successfully.');
 }
 
 /**
@@ -229,9 +256,14 @@ function writeDataToSheet(data, results, sheet) {
  * @param {object} [format] - Partial or full format override; falls back to DEFAULT_FORMAT.
  */
 function formatSheet(sheet, numberOfEntries, format) {
-    Logger.log('Formatting sheet...');
+    console.log('[formatSheet] Formatting sheet "' + sheet.getName() + '" with ' + numberOfEntries + ' entries per discipline...');
 
-    if (!format) format = DEFAULT_FORMAT;
+    if (!format) {
+        console.log('[formatSheet] No format supplied — using DEFAULT_FORMAT.');
+        format = DEFAULT_FORMAT;
+    } else {
+        console.log('[formatSheet] Custom format supplied — filling missing keys from DEFAULT_FORMAT.');
+    }
 
     for (let key in DEFAULT_FORMAT) {
         if (!format[key]) format[key] = DEFAULT_FORMAT[key];
@@ -247,6 +279,7 @@ function formatSheet(sheet, numberOfEntries, format) {
         }
     }
 
+    console.log('[formatSheet] Clearing existing formats before re-applying...');
     sheet.clearFormats();
 
     sheet.getRange('A:P').setHorizontalAlignment(format.Allgemein.Textausrichtung).setVerticalAlignment(format.Allgemein["Vertikale Ausrichtung"]).setNumberFormat('@');
@@ -256,12 +289,16 @@ function formatSheet(sheet, numberOfEntries, format) {
     // Start rows are calculated based on numberOfEntries: each distance/course pair
     // occupies numberOfEntries + 1 rows, and there are fixed offsets between stroke groups.
     let strokes = [[3, 12], [((numberOfEntries + 1) * 12) + 7, 6], [((numberOfEntries + 1) * 18) + 11, 6], [((numberOfEntries + 1) * 24) + 15, 6], [((numberOfEntries + 1) * 30) + 19, 5]];
+    console.log('[formatSheet] Stroke group start rows (derived from numberOfEntries): ' +
+        strokes.map(s => s[0]).join(', '));
 
     sheet.getRange(1, 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Saison).setFontColor(format.Farben.Textfarben.Saison).setFontWeight('bold');
     sheet.setRowHeight(1, format.Zeilen.Hoehen.Saison);
     let season = sheet.getName()
     sheet.getRange(1, 1).setValue(season);
+    console.log('[formatSheet] Season header set to "' + season + '".');
 
+    console.log('[formatSheet] Applying colours, merges and row heights for ' + strokes.length + ' stroke group(s)...');
     strokes.forEach(function (stroke) {
         sheet.getRange(stroke[0], 1, 1, 14).merge().setBackground(format.Farben.Hintergrundfarben.Lage).setFontColor(format.Farben.Textfarben.Lage).setFontWeight('bold');
         sheet.setRowHeight(stroke[0], format.Zeilen.Hoehen.Lage);
@@ -306,7 +343,7 @@ function formatSheet(sheet, numberOfEntries, format) {
     sheet.getRange(1, 16).setFontColor(format['Neue Ergebnisse'].Textfarbe).setBackground(format['Neue Ergebnisse'].Hintergrundfarbe);
     sheet.getRange(1, 16).setValue(format['Neue Ergebnisse'].Text);
 
-    Logger.log('Formatting complete.');
+    console.log('[formatSheet] Formatting complete for sheet "' + sheet.getName() + '".');
 }
 
 /**
@@ -329,6 +366,7 @@ function formatSheet(sheet, numberOfEntries, format) {
  *   Resolved club, or null when nothing matched.
  */
 function resolveClubId(clubName) {
+    console.log('[resolveClubId] Resolving club name "' + clubName + '" via DSV club search...');
     let searchUrl = 'https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx';
 
     let extract = function (html, begin, end) {
@@ -340,6 +378,7 @@ function resolveClubId(clubName) {
     };
 
     // 1. GET the search page for the ASP.NET WebForms session tokens.
+    console.log('[resolveClubId] Step 1: GET search page for session tokens...');
     let searchPage = UrlFetchApp.fetch(searchUrl, {
         method: 'get',
         headers: {
@@ -368,6 +407,7 @@ function resolveClubId(clubName) {
         .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(fields[key]); })
         .join('&');
 
+    console.log('[resolveClubId] Step 2: POST search form for "' + clubName + '"...');
     let response = UrlFetchApp.fetch(searchUrl, {
         method: 'post',
         payload: body,
@@ -379,19 +419,24 @@ function resolveClubId(clubName) {
         followRedirects: false,
         muteHttpExceptions: true
     });
+    console.log('[resolveClubId] Search responded with HTTP ' + response.getResponseCode() + '.');
 
     // Case 1: exactly one match -> 302 redirect to the club page.
     if (response.getResponseCode() === 302) {
+        console.log('[resolveClubId] Case 1: single match (302 redirect) — reading ClubID from Location header.');
         let headers = response.getHeaders();
         let location = headers['Location'] || headers['location'] || '';
         let match = location.match(/ClubID=(\d+)/);
         if (match) {
+            console.log('[resolveClubId] Extracted ClubID ' + match[1] + ' — loading club details...');
             let details = _clubDetails(match[1], searchUrl, extract);
             return { clubId: match[1], name: details.name || clubName, vereinsId: details.vereinsId, matches: 1 };
         }
+        console.warn('[resolveClubId] 302 redirect had no ClubID in its Location header — falling back to HTML parsing.');
     }
 
     // Case 2/3: HTML result list. Collect every row that links to a club.
+    console.log('[resolveClubId] Case 2/3: parsing HTML result list for club rows...');
     let html = response.getContentText();
     let strip = function (s) { return s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); };
     let rows = [];
@@ -408,10 +453,15 @@ function resolveClubId(clubName) {
         rows.push({ clubId: idMatch[1], name: cells[0] || clubName, vereinsId: cells[2] || '' });
     }
 
-    if (rows.length === 0) return null; // Case 3: no match
+    if (rows.length === 0) {
+        console.warn('[resolveClubId] Case 3: no club rows found for "' + clubName + '" — returning null.');
+        return null; // Case 3: no match
+    }
 
     let first = rows[0];
     first.matches = rows.length;
+    console.log('[resolveClubId] Found ' + rows.length + ' matching row(s). Using first: "' + first.name +
+        '" (ClubID ' + first.clubId + ', VereinsID ' + (first.vereinsId || 'n/a') + ').');
     return first;
 }
 
@@ -426,6 +476,7 @@ function resolveClubId(clubName) {
  * @returns {{name: string, vereinsId: string}}
  */
 function _clubDetails(clubId, referer, extract) {
+    console.log('[_clubDetails] Loading club page for ClubID ' + clubId + ' to read name and VereinsID...');
     let strip = function (s) { return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); };
     let html = UrlFetchApp.fetch('https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=' + clubId, {
         method: 'get',
@@ -436,10 +487,12 @@ function _clubDetails(clubId, referer, extract) {
         },
         muteHttpExceptions: true
     }).getContentText();
-    return {
+    let details = {
         name: strip(extract(html, 'headerLabel">', '</span>')),
         vereinsId: strip(extract(html, 'clubidLabel">', '</span>'))
     };
+    console.log('[_clubDetails] ClubID ' + clubId + ' → name="' + details.name + '", VereinsID=' + (details.vereinsId || 'n/a') + '.');
+    return details;
 }
 
 /**
@@ -469,38 +522,50 @@ function _clubDetails(clubId, referer, extract) {
  *   under the Apps Script 6-minute limit. Unfetched disciplines keep their current sheet data.
  */
 function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
-    Logger.log('Version: ' + version);
+    let startTime = new Date().getTime();
+    console.log('[getNewSheetData] ===== Update started for sheet "' + sheet.getName() + '" =====');
+    console.log('[getNewSheetData] Local script version: ' + version);
+    console.log('[getNewSheetData] formatSheetEveryTime=' + formatSheetEveryTime +
+        ', filter=' + (filter ? JSON.stringify(filter) : 'none (full update)'));
+
+    console.log('[getNewSheetData] Checking for a newer script version on GitHub...');
     let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/version.txt').getContentText();
 
     if (newestVersion !== version) {
-        Logger.log('--------------------------------------------------');
-        Logger.log('A new version is available. Please update the script.');
-        Logger.log('Latest version: ' + newestVersion);
-        Logger.log('Find the latest script here: https://github.com/nilskntl/dsv-club-leaderboards')
-        Logger.log('--------------------------------------------------');
+        console.warn('--------------------------------------------------');
+        console.warn('A new version is available. Please update the script.');
+        console.warn('Latest version: ' + newestVersion + ' (you have: ' + version + ')');
+        console.warn('Find the latest script here: https://github.com/nilskntl/dsv-club-leaderboards')
+        console.warn('--------------------------------------------------');
+    } else {
+        console.log('[getNewSheetData] Script is up to date (version ' + version + ').');
     }
 
     // Resolve the configured club name to the internal ClubID the Web App scrapes with.
     // Everything past this point stays ID-based.
+    console.log('[getNewSheetData] Resolving club name "' + clubName + '" to a DSV ClubID...');
     let club = resolveClubId(clubName);
     if (!club) {
-        Logger.log('--------------------------------------------------');
-        Logger.log('❌ No club found for "' + clubName + '". Update aborted.');
-        Logger.log('Please set clubName to the exact club name as listed by the DSV and try again.');
-        Logger.log('Look up the exact name here: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/');
-        Logger.log('--------------------------------------------------');
+        console.error('--------------------------------------------------');
+        console.error('❌ No club found for "' + clubName + '". Update aborted.');
+        console.error('Please set clubName to the exact club name as listed by the DSV and try again.');
+        console.error('Look up the exact name here: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/');
+        console.error('--------------------------------------------------');
         return;
     }
     if (club.matches > 1) {
-        Logger.log('Found club "' + club.name + '" — DSV VereinsID: ' + club.vereinsId + ', ClubID (used for requests): ' + club.clubId +
+        console.warn('[getNewSheetData] Found club "' + club.name + '" — DSV VereinsID: ' + club.vereinsId + ', ClubID (used for requests): ' + club.clubId +
             ' (first of ' + club.matches + ' matches — if this is not your club, set clubName to a more exact name)');
     } else {
-        Logger.log('Found club "' + club.name + '" — DSV VereinsID: ' + (club.vereinsId || 'n/a') + ', ClubID (used for requests): ' + club.clubId);
+        console.log('[getNewSheetData] Found club "' + club.name + '" — DSV VereinsID: ' + (club.vereinsId || 'n/a') + ', ClubID (used for requests): ' + club.clubId);
     }
+
+    let sheetData = sheet.getDataRange().getValues();
+    console.log('[getNewSheetData] Read ' + sheetData.length + ' row(s) from the sheet.');
 
     let payload = {
         clubId: club.clubId,
-        data: sheet.getDataRange().getValues(),
+        data: sheetData,
         entriesPerDiscipline: numberOfEntries,
         filter: filter,
         requestDelayMs: (typeof requestDelayMs !== 'undefined') ? requestDelayMs : '',
@@ -513,38 +578,54 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
         'payload': JSON.stringify(payload)
     }
 
+    console.log('[getNewSheetData] Fetching the Web App endpoint URL from GitHub...');
     let endpoint = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/endpoint.txt').getContentText();
 
-    Logger.log('Updating data for season: ' + sheet.getName() + '...');
-
+    console.log('[getNewSheetData] Sending update request to the Web App for season "' + sheet.getName() + '"...');
+    let requestStart = new Date().getTime();
     let response = UrlFetchApp.fetch(endpoint, options).getContentText();
+    console.log('[getNewSheetData] Web App responded in ' + (new Date().getTime() - requestStart) +
+        'ms (' + response.length + ' characters).');
 
     if (response.startsWith('<!DOCTYPE html>')) {
-        Logger.log('An error occurred. Please check your configuration. If the problem persists, contact the developer.');
-        Logger.log('Response: ' + response);
+        console.error('[getNewSheetData] The Web App returned an HTML error page — likely an outdated deployment.');
+        console.error('An error occurred. Please check your configuration. If the problem persists, contact the developer.');
+        console.error('Response: ' + response);
         return;
     }
 
     response = JSON.parse(response);
+    console.log('[getNewSheetData] Web App response parsed successfully.');
 
     let warnings = (response.warnings || []).map(warning => new Date().toLocaleString() + ': ⚠️ ' + warning);
-    for (let warning of warnings) {
-        Logger.log(warning);
+    if (warnings.length > 0) {
+        console.warn('[getNewSheetData] Web App reported ' + warnings.length + ' warning(s):');
+        for (let warning of warnings) {
+            console.warn(warning);
+        }
+    } else {
+        console.log('[getNewSheetData] Web App reported no warnings.');
     }
 
     if (response.error) {
-        Logger.log('The Web App reported an error — the sheet was not changed.');
-        Logger.log('Error: ' + response.error.message);
-        if (response.error.stack) Logger.log('Stack: ' + response.error.stack);
+        console.error('[getNewSheetData] The Web App reported an error — the sheet was not changed.');
+        console.error('Error: ' + response.error.message);
+        if (response.error.stack) console.error('Stack: ' + response.error.stack);
         return;
     }
 
-    Logger.log('Data updated successfully.');
+    console.log('[getNewSheetData] Data updated successfully — received ' +
+        (response.data ? response.data.length : 0) + ' data row(s) and ' +
+        (response.newResults ? response.newResults.length : 0) + ' new record(s).');
 
     writeDataToSheet(response.data, response.newResults, sheet);
-    if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
+    if (formatSheetEveryTime) {
+        console.log('[getNewSheetData] formatSheetEveryTime is enabled — reformatting sheet...');
+        formatSheet(sheet, numberOfEntries, format);
+    }
 
-    Logger.log('Leaderboard updated successfully.');
+    console.log('[getNewSheetData] ===== Leaderboard updated successfully in ' +
+        (new Date().getTime() - startTime) + 'ms =====');
 }
 
 let DEFAULT_FORMAT = {

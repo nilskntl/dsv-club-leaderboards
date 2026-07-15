@@ -68,6 +68,8 @@ class Discipline {
     addResult(result) {
         if (!this._results.some(existingResult => existingResult.equals(result))) {
             this._results.push(result);
+        } else {
+            console.log('[Discipline ' + this.uid + '] addResult: identical result skipped (' + result.toString() + ').');
         }
     }
 
@@ -79,6 +81,7 @@ class Discipline {
      * After this method, each swimmer appears at most once.
      */
     removeDuplicateResults() {
+        let before = this._results.length;
         let uniqueResults = [];
         this._results.forEach(result => {
             if (!uniqueResults.some(uniqueResult => uniqueResult.person.equals(result.person))) {
@@ -91,6 +94,10 @@ class Discipline {
             }
         });
         this._results = uniqueResults;
+        if (before !== uniqueResults.length) {
+            console.log('[Discipline ' + this.uid + '] removeDuplicateResults: ' + before + ' → ' +
+                uniqueResults.length + ' (kept fastest per swimmer).');
+        }
     }
 
     /**
@@ -100,7 +107,12 @@ class Discipline {
      * @param {number} entries - Maximum number of results to keep.
      */
     cutResults(entries) {
+        let before = this._results.length;
         this._results = this._results.slice(0, entries);
+        if (before > entries) {
+            console.log('[Discipline ' + this.uid + '] cutResults: trimmed ' + before + ' → ' + entries +
+                ' (dropped ' + (before - entries) + ' slower entry/entries).');
+        }
     }
 
     equals(discipline) {

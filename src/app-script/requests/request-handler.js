@@ -85,30 +85,40 @@ class RequestHandler {
      *   Each provided list restricts fetching to matching disciplines; omitted keys match everything.
      */
     requestResults(filter) {
+        let total = this._leaderboard.disciplines.length;
         let disciplines = this._leaderboard.disciplines.filter(discipline => this._matchesFilter(discipline, filter));
+        console.log('[RequestHandler] requestResults: ' + disciplines.length + ' of ' + total +
+            ' discipline(s) match the filter — fetching year ' + this._year + ' from DSV (ClubID ' + this._clubId + ').');
         if (disciplines.length === 0) {
-            Logger.log('No disciplines match the filter — nothing to fetch');
+            console.log('[RequestHandler] No disciplines match the filter — nothing to fetch.');
             return;
         }
 
+        console.log('[RequestHandler] Performing initial GET to obtain session tokens...');
         let pageHtml = this._getPage();
         let viewState = this._extractData(pageHtml, '__VIEWSTATE" value="', '" />');
         let eventValidation = this._extractData(pageHtml, '__EVENTVALIDATION" value="', '" />');
 
         if (!viewState || !eventValidation) {
+            console.error('[RequestHandler] Initial GET returned no session tokens (VIEWSTATE/EVENTVALIDATION missing).');
             this._warnings.push('Initial GET returned no session tokens (likely rate limited or blocked by DSV) — no disciplines were fetched, existing sheet data is kept');
             return;
         }
+        console.log('[RequestHandler] Session tokens acquired — starting to fetch disciplines.');
 
+        let fetchedCount = 0;
+        let resultCount = 0;
         for (let i = 0; i < disciplines.length; i++) {
             let discipline = disciplines[i];
-            Logger.log(discipline.gender + ' ' + (discipline.lane === 50 ? 'Langbahn' : 'Kurzbahn') + ' ' + discipline.distance + 'm ' + discipline.stroke);
+            console.log('[RequestHandler] (' + (i + 1) + '/' + disciplines.length + ') Fetching ' + discipline.toString() + '...');
 
             let { data, nextViewState, nextEventValidation, rateLimited } = this._fetchNewData(discipline, viewState, eventValidation);
 
             // A 429 that survives the retry will keep triggering — abort instead of burning
             // the remaining execution time. Unfetched disciplines keep their sheet data.
             if (rateLimited) {
+                console.error('[RequestHandler] Aborting run — rate limited at ' + discipline.toString() +
+                    ', ' + (disciplines.length - i) + ' discipline(s) not fetched.');
                 this._warnings.push('Rate limited by DSV (HTTP 429) despite retry at ' + discipline.toString() + ' — run aborted, ' + (disciplines.length - i) + ' discipline(s) not fetched, existing sheet data is kept');
                 return;
             }
@@ -124,9 +134,15 @@ class RequestHandler {
                 let newResult = new Result(person, time, result.location, date, true);
                 this._leaderboard.addResult(newResult, discipline.uid);
             }
+            fetchedCount++;
+            resultCount += data.length;
+            console.log('[RequestHandler] (' + (i + 1) + '/' + disciplines.length + ') ' + discipline.toString() +
+                ' → ' + data.length + ' result(s). Waiting ' + this._requestDelayMs + 'ms before next request.');
 
             Utilities.sleep(this._requestDelayMs);
         }
+        console.log('[RequestHandler] requestResults finished: fetched ' + fetchedCount + '/' + disciplines.length +
+            ' discipline(s), ' + resultCount + ' result(s) total, ' + this._warnings.length + ' warning(s).');
     }
 
     /**
@@ -157,6 +173,7 @@ class RequestHandler {
      * @returns {string} Raw HTML of the club page.
      */
     _getPage() {
+        console.log('[RequestHandler] GET ' + this._url);
         let response = UrlFetchApp.fetch(this._url, {
             method: "get",
             headers: {
@@ -167,7 +184,9 @@ class RequestHandler {
             followRedirects: false,
             muteHttpExceptions: true
         });
-        return response.getContentText();
+        let text = response.getContentText();
+        console.log('[RequestHandler] GET responded with HTTP ' + response.getResponseCode() + ' (' + text.length + ' characters).');
+        return text;
     }
 
     /**
@@ -201,6 +220,9 @@ class RequestHandler {
             "ctl00$ContentSection$_timerangeDropDownList": `01.01.${this._year}|31.12.${this._year}`
         };
 
+        console.log('[RequestHandler] POST ' + discipline.uid + ' (event=' + payload['ctl00$ContentSection$_eventDropDownList'] +
+            ', gender=' + payload['ctl00$ContentSection$_genderRadioButtonList'] +
+            ', course=' + payload['ctl00$ContentSection$_courseRadioButtonList'] + ')');
         let response = UrlFetchApp.fetch(this._url, {
             method: "post",
             payload: payload,
@@ -208,7 +230,8 @@ class RequestHandler {
         });
 
         if (response.getResponseCode() === 429) {
-            Logger.log('Rate limited (429) — waiting ' + this._rateLimitRetryDelayMs + 'ms before retry');
+            console.warn('[RequestHandler] Rate limited (HTTP 429) for ' + discipline.toString() +
+                ' — waiting ' + this._rateLimitRetryDelayMs + 'ms before retry.');
             Utilities.sleep(this._rateLimitRetryDelayMs);
             response = UrlFetchApp.fetch(this._url, {
                 method: "post",
@@ -219,7 +242,7 @@ class RequestHandler {
 
         let responseCode = response.getResponseCode();
         if (responseCode === 429) {
-            Logger.log('Still rate limited (429) after retry');
+            console.error('[RequestHandler] Still rate limited (HTTP 429) after retry for ' + discipline.toString() + '.');
             return { data: [], nextViewState: '', nextEventValidation: '', rateLimited: true };
         }
 
@@ -230,6 +253,9 @@ class RequestHandler {
         let nextEventValidation = this._extractData(responseText, '__EVENTVALIDATION" value="', '" />');
 
         if (responseCode !== 200 || !nextViewState || !nextEventValidation) {
+            console.warn('[RequestHandler] Unexpected response for ' + discipline.toString() + ': HTTP ' + responseCode +
+                ', VIEWSTATE ' + (nextViewState ? 'present' : 'missing') +
+                ', EVENTVALIDATION ' + (nextEventValidation ? 'present' : 'missing') + ' — discipline skipped.');
             this._warnings.push('Unexpected response (HTTP ' + responseCode + ') for ' + discipline.toString() + ' — discipline skipped, existing sheet data is kept');
             return { data: [], nextViewState: '', nextEventValidation: '' };
         }
@@ -240,8 +266,11 @@ class RequestHandler {
         rows.shift(); // remove the empty fragment before the first <tr>
         rows.shift(); // remove the table header row
 
+        let data = this._convertToArray(rows);
+        console.log('[RequestHandler] POST ' + discipline.uid + ' → HTTP ' + responseCode + ', parsed ' + data.length + ' result row(s).');
+
         return {
-            data: this._convertToArray(rows),
+            data: data,
             nextViewState: nextViewState,
             nextEventValidation: nextEventValidation
         };

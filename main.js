@@ -97,7 +97,7 @@ function _updateSheet(nameOfSheet, filter) {
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet);
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet);
     if (sheet.getName() !== nameOfSheet) {
-        Logger.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
+        console.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
     }
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/sheet/sheet.js').getContentText();
     eval(code);
