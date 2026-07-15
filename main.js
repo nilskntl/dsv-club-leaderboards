@@ -21,7 +21,8 @@ const version = '1.1.0';
  * Setup:
  * 1. Create a new Google Sheet.
  * 2. In Google Sheets, go to Extensions → Apps Script, create a new script, and paste this code.
- * 3. Set `clubId` to your club's DSV ID.
+ * 3. Set `clubName` to your club's name as listed by the DSV (looked up automatically to the
+ *    internal club ID before each update). If several clubs match, the first is used and logged.
  * 4. Optional: adjust `numberOfEntries` (default: 5 entries per discipline).
  * 5. Optional: customise colours and sizes in the FORMAT object below.
  * 6. Optional: set `formatSheetEveryTime` to true to reformat the sheet on every update.
@@ -39,7 +40,7 @@ const version = '1.1.0';
  * Lost data can be recovered via Google Sheets → File → Version history.
  */
 
-const clubId = 7985 // Set this to your club's DSV ID
+const clubName = 'WSG Wunstorf' // Set this to your club's name as listed by the DSV. Look it up at: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/
 const numberOfEntries = 5 // Optional: number of entries to display per discipline
 const formatSheetEveryTime = true // Optional: reformat the sheet on every update
 

@@ -310,6 +310,139 @@ function formatSheet(sheet, numberOfEntries, format) {
 }
 
 /**
+ * Resolves a human-readable DSV club name to the internal ClubID that every data request uses.
+ *
+ * The DSV site uses two unrelated identifiers: the public "VereinsID" printed on the club page
+ * (e.g. 6544) and an internal, site-wide sequential ClubID that appears only in the Club.aspx
+ * URL (e.g. 7985). The scraper needs the internal ClubID, but users only know their club by
+ * name, so this resolves the name via the DSV club search (Search.aspx) before any scraping.
+ *
+ * The search behaves in two ways, both handled here:
+ *   Case 1 — exactly one match: the site answers with a 302 redirect straight to
+ *            Club.aspx?ClubID=<internal>. We read the ClubID from the Location header.
+ *   Case 2 — several matches: an HTML table is returned; we take the first row. Its cells are
+ *            [Verein, Region, VereinsID, Internet] and the link carries the internal ClubID.
+ *   Case 3 — no match: an empty table. We return null so the caller can abort with guidance.
+ *
+ * @param {string} clubName - Club name as listed by the DSV.
+ * @returns {{clubId: string, name: string, vereinsId: string, matches: number}|null}
+ *   Resolved club, or null when nothing matched.
+ */
+function resolveClubId(clubName) {
+    let searchUrl = 'https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx';
+
+    let extract = function (html, begin, end) {
+        let start = html.indexOf(begin);
+        if (start === -1) return '';
+        let stop = html.indexOf(end, start + begin.length);
+        if (stop === -1) return '';
+        return html.substring(start + begin.length, stop);
+    };
+
+    // 1. GET the search page for the ASP.NET WebForms session tokens.
+    let searchPage = UrlFetchApp.fetch(searchUrl, {
+        method: 'get',
+        headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Referer': 'https://dsvdaten.dsv.de/'
+        },
+        muteHttpExceptions: true
+    }).getContentText();
+
+    // 2. POST the search form. The body is manually URL-encoded (matching what a browser sends)
+    //    and followRedirects is disabled so a single-match 302 exposes the ClubID in Location.
+    let fields = {
+        '__EVENTTARGET': '',
+        '__EVENTARGUMENT': '',
+        '__LASTFOCUS': '',
+        '__VIEWSTATE': extract(searchPage, '__VIEWSTATE" value="', '" />'),
+        '__VIEWSTATEGENERATOR': extract(searchPage, '__VIEWSTATEGENERATOR" value="', '" />'),
+        '__EVENTVALIDATION': extract(searchPage, '__EVENTVALIDATION" value="', '" />'),
+        'ctl00$ContentSection$_clubnameTextBox': clubName,
+        'ctl00$ContentSection$_cityTextBox': '',
+        'ctl00$ContentSection$_zipTextBox': '',
+        'ctl00$ContentSection$_regionDropDownList': '0',
+        'ctl00$ContentSection$_updateButton': 'Suche'
+    };
+    let body = Object.keys(fields)
+        .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(fields[key]); })
+        .join('&');
+
+    let response = UrlFetchApp.fetch(searchUrl, {
+        method: 'post',
+        payload: body,
+        contentType: 'application/x-www-form-urlencoded',
+        headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Referer': searchUrl
+        },
+        followRedirects: false,
+        muteHttpExceptions: true
+    });
+
+    // Case 1: exactly one match -> 302 redirect to the club page.
+    if (response.getResponseCode() === 302) {
+        let headers = response.getHeaders();
+        let location = headers['Location'] || headers['location'] || '';
+        let match = location.match(/ClubID=(\d+)/);
+        if (match) {
+            let details = _clubDetails(match[1], searchUrl, extract);
+            return { clubId: match[1], name: details.name || clubName, vereinsId: details.vereinsId, matches: 1 };
+        }
+    }
+
+    // Case 2/3: HTML result list. Collect every row that links to a club.
+    let html = response.getContentText();
+    let strip = function (s) { return s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); };
+    let rows = [];
+    let rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+    let rowMatch;
+    while ((rowMatch = rowRegex.exec(html)) !== null) {
+        let rowHtml = rowMatch[1];
+        let idMatch = rowHtml.match(/ClubID=(\d+)/);
+        if (!idMatch) continue; // header row / non-club row
+        let cells = [];
+        let cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+        let cellMatch;
+        while ((cellMatch = cellRegex.exec(rowHtml)) !== null) cells.push(strip(cellMatch[1]));
+        rows.push({ clubId: idMatch[1], name: cells[0] || clubName, vereinsId: cells[2] || '' });
+    }
+
+    if (rows.length === 0) return null; // Case 3: no match
+
+    let first = rows[0];
+    first.matches = rows.length;
+    return first;
+}
+
+/**
+ * Loads a club page and reads its display name and public VereinsID. Used only for the
+ * single-match (302) case, where the search redirect gives the internal ClubID but no
+ * name/VereinsID for the confirmation log.
+ *
+ * @param {string} clubId - Internal ClubID.
+ * @param {string} referer - Referer to send (the search page).
+ * @param {function(string, string, string): string} extract - Delimiter-based substring helper.
+ * @returns {{name: string, vereinsId: string}}
+ */
+function _clubDetails(clubId, referer, extract) {
+    let strip = function (s) { return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); };
+    let html = UrlFetchApp.fetch('https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=' + clubId, {
+        method: 'get',
+        headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'sec-fetch-site': 'same-origin',
+            'Referer': referer
+        },
+        muteHttpExceptions: true
+    }).getContentText();
+    return {
+        name: strip(extract(html, 'headerLabel">', '</span>')),
+        vereinsId: strip(extract(html, 'clubidLabel">', '</span>'))
+    };
+}
+
+/**
  * Entry point for a single sheet tab update. Sends the current sheet contents and club
  * config to the Web App, which scrapes the DSV website and returns the updated leaderboard
  * data plus any new records detected this run.
@@ -347,8 +480,26 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
         Logger.log('--------------------------------------------------');
     }
 
+    // Resolve the configured club name to the internal ClubID the Web App scrapes with.
+    // Everything past this point stays ID-based.
+    let club = resolveClubId(clubName);
+    if (!club) {
+        Logger.log('--------------------------------------------------');
+        Logger.log('❌ No club found for "' + clubName + '". Update aborted.');
+        Logger.log('Please set clubName to the exact club name as listed by the DSV and try again.');
+        Logger.log('Look up the exact name here: https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/');
+        Logger.log('--------------------------------------------------');
+        return;
+    }
+    if (club.matches > 1) {
+        Logger.log('Found club "' + club.name + '" — DSV VereinsID: ' + club.vereinsId + ', ClubID (used for requests): ' + club.clubId +
+            ' (first of ' + club.matches + ' matches — if this is not your club, set clubName to a more exact name)');
+    } else {
+        Logger.log('Found club "' + club.name + '" — DSV VereinsID: ' + (club.vereinsId || 'n/a') + ', ClubID (used for requests): ' + club.clubId);
+    }
+
     let payload = {
-        clubId: clubId,
+        clubId: club.clubId,
         data: sheet.getDataRange().getValues(),
         entriesPerDiscipline: numberOfEntries,
         filter: filter,
