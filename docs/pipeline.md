@@ -74,8 +74,17 @@ keys match everything. Requests without a filter (older client scripts) perform 
 The Web App URL is fetched from `endpoint.txt` on GitHub (not hardcoded) so the endpoint can be updated
 without users changing `main.js`.
 
-A response that starts with `<!DOCTYPE html>` indicates a Web App deployment error. The script logs the
-response body and aborts without touching the sheet.
+Errors travel inside the JSON response body — Web Apps always answer with HTTP 200 and the Web App's
+execution log belongs to the hosting account, so the body is the only channel visible to the user:
+
+- `error` present → the Web App run failed (exception in `doPost()`). The script logs message and stack
+  and aborts without touching the sheet.
+- `warnings` non-empty → the run completed but with problems (e.g. the DSV rate limiter aborted the fetch
+  partway). Warnings are logged to the bound script's execution log and appended to column P with a
+  timestamp and a ⚠️ prefix, so partial updates are visible in the sheet itself.
+
+A response that starts with `<!DOCTYPE html>` indicates an error page from an outdated Web App deployment.
+The script logs the response body and aborts without touching the sheet.
 
 ---
 
@@ -150,19 +159,26 @@ The Web App returns:
   // 2D array ready for setValues(), starting at sheet row 3
   "newResults": [
     ...
-  ]
+  ],
   // formatted strings for results that are new AND in the top N
+  "warnings": [
+    ...
+  ]
+  // non-fatal problems from this run, e.g. "Rate limited by DSV (HTTP 429) despite retry at ..."
 }
 ```
+
+If `doPost()` throws, the Web App instead returns `{ "error": { "message": ..., "stack": ... }, "warnings": [...] }`
+— the bound script logs the error and leaves the sheet untouched.
 
 Back in the bound script:
 
 1. `_writeNewDataToSheet()` writes the `data` array to the sheet starting at row 3. Rows 1–2 (season header
    and column headers) are left untouched. Any stale rows below the new data block are cleared.
 
-2. `_writeNewRecordsToSheet()` appends each `newResults` string to column P, starting after the last
-   non-empty cell. Column P is never cleared by `_writeNewDataToSheet()`, so entries accumulate permanently
-   across runs.
+2. `_writeNewRecordsToSheet()` appends each `warnings` string (timestamped, ⚠️-prefixed) and each
+   `newResults` string to column P, starting after the last non-empty cell. Column P is never cleared by
+   `_writeNewDataToSheet()`, so entries accumulate permanently across runs.
 
 3. If `formatSheetEveryTime` is `true`, `formatSheet()` re-applies all colours, merges, and column widths.
 

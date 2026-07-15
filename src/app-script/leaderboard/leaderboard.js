@@ -66,6 +66,17 @@ class Leaderboard {
     }
 
     /**
+     * Problems encountered while fetching from DSV this run (persistent rate limits,
+     * unexpected responses). Included in the Web App response so the user's bound script
+     * can log them — users cannot see the hosting account's execution log.
+     *
+     * @returns {string[]}
+     */
+    get warnings() {
+        return this._requestHandler.warnings;
+    }
+
+    /**
      * Creates one Discipline instance per combination of stroke, distance, course, and gender
      * defined in the DISCIPLINES config. Female is pushed before male for each combination;
      * getSheetData() re-sorts them so that male appears first in each pair.

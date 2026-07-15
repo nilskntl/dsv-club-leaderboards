@@ -317,8 +317,14 @@ function formatSheet(sheet, numberOfEntries, format) {
  * The Web App endpoint URL is fetched from GitHub rather than being hardcoded, so the
  * endpoint can be changed without requiring users to update their local script.
  *
- * An HTML response (starting with "<!DOCTYPE html>") indicates a Web App error — the script
- * logs the raw response and aborts rather than overwriting the sheet with garbage data.
+ * Error handling: the Web App reports failures inside its JSON body (it cannot set HTTP
+ * status codes, and its execution log runs under a different account and is not visible
+ * here). A response with an `error` field means the run failed — it is logged and the
+ * sheet is left untouched. A `warnings` field lists non-fatal problems (e.g. the DSV rate
+ * limiter aborted the run partway); warnings are logged to this script's execution log
+ * and appended to the "Neue Ergebnisse" column (P) so they are visible in the sheet.
+ * An HTML response (starting with "<!DOCTYPE html>") indicates an outdated Web App
+ * deployment error page — the script logs the raw response and aborts.
  *
  * @param {string} version - Current script version; compared against GitHub to warn about outdated scripts.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - The tab to update.
@@ -368,9 +374,23 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
 
     response = JSON.parse(response);
 
+    let warnings = (response.warnings || []).map(warning => new Date().toLocaleString() + ': ⚠️ ' + warning);
+    for (let warning of warnings) {
+        Logger.log(warning);
+    }
+
+    if (response.error) {
+        Logger.log('The Web App reported an error — the sheet was not changed.');
+        Logger.log('Error: ' + response.error.message);
+        if (response.error.stack) Logger.log('Stack: ' + response.error.stack);
+        return;
+    }
+
     Logger.log('Data updated successfully.');
 
-    writeDataToSheet(response.data, response.newResults, sheet);
+    // Warnings go into column P alongside the new records so partial updates
+    // (e.g. a run aborted by the DSV rate limiter) are visible in the sheet itself
+    writeDataToSheet(response.data, warnings.concat(response.newResults), sheet);
     if (formatSheetEveryTime) formatSheet(sheet, numberOfEntries, format);
 
     Logger.log('Leaderboard updated successfully.');
