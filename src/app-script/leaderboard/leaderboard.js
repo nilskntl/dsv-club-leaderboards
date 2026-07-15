@@ -13,12 +13,15 @@ class Leaderboard {
      * @param {string|number} clubId - DSV club ID used to query the DSV website.
      * @param {Array[]} data - Raw 2D array from the Google Sheet (sheet.getDataRange().getValues()).
      * @param {number} [entriesPerDiscipline=10] - How many top results to keep per discipline.
+     * @param {{requestDelayMs?: string|number, rateLimitRetryDelayMs?: string|number}} [requestConfig]
+     *   Optional DSV request tuning forwarded to the RequestHandler (pause between POSTs and
+     *   the 429 retry pause). Blank or invalid values fall back to the handler's defaults.
      */
-    constructor(clubId, data, entriesPerDiscipline = 10) {
+    constructor(clubId, data, entriesPerDiscipline = 10, requestConfig = {}) {
         this._clubId = clubId.toString();
         this._oldData = data;
         this._disciplines = [];
-        this._requestHandler = new RequestHandler(this);
+        this._requestHandler = new RequestHandler(this, requestConfig);
         this._sheet = new Sheet(this);
         this._entriesPerDiscipline = entriesPerDiscipline;
         this._createDisciplines();
@@ -66,6 +69,17 @@ class Leaderboard {
     }
 
     /**
+     * Problems encountered while fetching from DSV this run (persistent rate limits,
+     * unexpected responses). Included in the Web App response so the user's bound script
+     * can log them — users cannot see the hosting account's execution log.
+     *
+     * @returns {string[]}
+     */
+    get warnings() {
+        return this._requestHandler.warnings;
+    }
+
+    /**
      * Creates one Discipline instance per combination of stroke, distance, course, and gender
      * defined in the DISCIPLINES config. Female is pushed before male for each combination;
      * getSheetData() re-sorts them so that male appears first in each pair.
@@ -106,8 +120,14 @@ class Leaderboard {
         this._sheet.extractResults(this._oldData);
     }
 
-    requestResults() {
-        this._requestHandler.requestResults();
+    /**
+     * Fetches DSV results, optionally restricted to a subset of disciplines.
+     * Disciplines excluded by the filter keep their sheet-loaded results untouched.
+     *
+     * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter]
+     */
+    requestResults(filter) {
+        this._requestHandler.requestResults(filter);
     }
 
     /**

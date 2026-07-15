@@ -27,14 +27,20 @@ season, stroke, course length, and gender.
 ## Prerequisites
 
 - A **Google account** (free)
-- Your club's **Club ID** on the DSV portal
+- Your club's **name** as listed by the DSV
 
-### Where do I find my Club ID?
+### What is my club name?
 
-1. Open [dsvdaten.dsv.de](https://dsvdaten.dsv.de) and search for your club.
-2. Click on the club name to open the club page.
-3. The Club ID appears in the URL behind `ClubID=`:  
-   `…/Club.aspx?ClubID=`**7985**
+You don't need to look up any ID – before each update the script searches for your club via the
+DSV club search and resolves the matching internal ID automatically.
+
+1. Open [dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/) and search
+   for your club.
+2. Note the club name **exactly as shown there**.
+
+> **Tip:** Use the full name. If exactly one club matches, it is resolved directly. If several clubs
+> match your term, the script uses the **first** match and writes it to the
+> log – check there that the correct club was found.
 
 ---
 
@@ -57,12 +63,12 @@ season, stroke, course length, and gender.
 
 ---
 
-### Step 3 – Enter your Club ID
+### Step 3 – Enter your club name
 
-Find this line near the top of the script and replace the ID with your own:
+Find this line near the top of the script and replace the name with your own:
 
 ```js
-const clubId = 7985  // ← enter your club's ID here
+const clubName = 'Bielefelder Wasserfreunde'  // ← enter your club's name here
 ```
 
 You can also adjust the number of entries shown per discipline:
@@ -71,18 +77,29 @@ You can also adjust the number of entries shown per discipline:
 const numberOfEntries = 5  // How many places to show per event
 ```
 
+If the DSV portal keeps throttling you (a "Rate limited" message in the log), you can optionally
+increase the wait times between requests (leave empty to use the defaults):
+
+```js
+const requestDelayMs = ''          // Pause between requests in ms (default: 1500)
+const rateLimitRetryDelayMs = ''   // Wait before retrying after a rate limit in ms (default: 12000)
+```
+
 ---
 
 ### Step 4 – Populate the sheet for the first time
 
-1. In the script editor, select **`updateAllTime`** from the function dropdown and click the **Run button (▶)**.
+1. In the script editor, select **`updateAllTimeMale`** from the function dropdown and click the **Run button (▶)**.
 2. On the first run, Google will ask for permissions – click **"Allow"**. The script only needs access to your own
    spreadsheet.
-3. Once complete, a new sheet tab named **"All-Time"** will appear with the full discipline structure and this year's
+3. Then run **`updateAllTimeFemale`** as well.
+4. Once complete, a new sheet tab named **"All-Time"** will appear with the full discipline structure and this year's
    results.
 
-To also create a **season leaderboard** for the current year, run **`updateSeason`** as well. This creates a tab named
-after the current year (e.g. "2026") automatically.
+The update is split by gender so each run stays under the Google Apps Script 6-minute execution limit.
+
+To also create a **season leaderboard** for the current year, run **`updateSeasonMale`** and **`updateSeasonFemale`**
+as well. This creates a tab named after the current year (e.g. "2026") automatically.
 
 > **Note:** The DSV portal only provides results for the current calendar year. Older results for the all-time ranking
 > must be entered manually once (→ next step).
@@ -106,10 +123,16 @@ To update the leaderboards daily without manual intervention:
 
 1. In the script editor, click the **clock icon (Triggers)** in the left sidebar.
 2. Click **"+ Add Trigger"** in the bottom right.
-3. Select **`updateAllTime`** as the function and **"Time-driven"** → **"Daily"** as the event type.
+3. Select **`updateAllTimeMale`** as the function and **"Time-driven"** → **"Daily"** as the event type, and pick a
+   time window (e.g. 2–3 AM).
 4. Click **"Save"**.
+5. Add a second trigger for **`updateAllTimeFemale`** the same way – **at least 6 min apart** to avoid race conditions.
 
-A second trigger for **`updateSeason`** can be set up the same way if needed.
+> **Important:** The male and female triggers must not run at the same time. Each run reads and writes the entire
+> sheet – overlapping runs would overwrite each other's results.
+
+Two more triggers for **`updateSeasonMale`** and **`updateSeasonFemale`** can be set up the same way if needed – also
+offset in time.
 
 ---
 
@@ -159,11 +182,13 @@ Embed `index.html` into your website, or open it directly in a browser to previe
 
 ### Script (`main.js`)
 
-| Setting                | Default | Description                           |
-|------------------------|---------|---------------------------------------|
-| `clubId`               | `7985`  | Your club's DSV Club ID               |
-| `numberOfEntries`      | `5`     | Number of places shown per discipline |
-| `formatSheetEveryTime` | `true`  | Reformat the sheet on every update    |
+| Setting                 | Default                       | Description                                                                       |
+|-------------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `clubName`              | `'Bielefelder Wasserfreunde'` | Your club's name as listed by the DSV (resolved to the internal ID automatically) |
+| `numberOfEntries`       | `5`                           | Number of places shown per discipline                                             |
+| `formatSheetEveryTime`  | `true`                        | Reformat the sheet on every update                                                |
+| `requestDelayMs`        | `''` (→ 1500)                 | Pause between DSV requests in ms; empty = default                                 |
+| `rateLimitRetryDelayMs` | `''` (→ 12000)                | Wait before retrying after a rate limit (HTTP 429) in ms; empty = default         |
 
 Colours, column widths, and row heights can be adjusted via the `FORMAT` object at the bottom of `main.js`.
 
@@ -181,13 +206,21 @@ Colours, column widths, and row heights can be adjusted via the `FORMAT` object 
 
 ## Frequently asked questions
 
-**I can't find my Club ID.**  
-Search for your club at [dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx). The Club ID appears in the
-URL of the club page after `ClubID=`.
+**The script reports "No club found".**  
+The `clubName` you entered doesn't match any club. Search for your club at
+[dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx) or
+[dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/)
+and copy the name exactly as shown there.
+
+**The wrong club was found.**  
+If your search term matches several clubs, the script uses the first match. The log (under **Executions**)
+shows which club was picked (`Found club "…"`). Enter a more specific/complete name to make the search
+unambiguous.
 
 **The sheet stays empty after running the script.**  
-Check that the `clubId` you entered is correct. In the script editor under **Executions**, you can view the logs and
-check for any error messages.
+Check the logs in the script editor under **Executions**: they show which club was found and whether the DSV
+portal throttled the requests (a "Rate limited" message). If so, increase the wait times (see Step 3) or run
+the trigger less frequently.
 
 **Can I edit the sheet manually after setup?**  
 Yes – adding and correcting entries is always possible. The identifiers in columns A and H and the overall column

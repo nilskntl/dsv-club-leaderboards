@@ -49,8 +49,9 @@ stages: extraction, fetching, and adjustment.
 ### Lifecycle
 
 ```
-new Leaderboard(clubId, rawSheetData, entriesPerDiscipline)
+new Leaderboard(clubId, rawSheetData, entriesPerDiscipline, requestConfig)
     └── _createDisciplines()   creates one Discipline per event combination from DISCIPLINES config
+    └── requestConfig          optional {requestDelayMs, rateLimitRetryDelayMs} forwarded to RequestHandler
 ```
 
 ```

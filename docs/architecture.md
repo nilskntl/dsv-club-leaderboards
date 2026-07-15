@@ -32,9 +32,9 @@ German Swimming Federation (DSV) website. It consists of two independently deplo
 ┌──────────────────────────────────────────────────────────────────┐
 │  User's Google Sheet  (bound script: main.js)                    │
 │                                                                  │
-│  updateAllTime() / updateSeason()                                │
+│  updateAllTime[Male|Female]() / updateSeason[Male|Female]()     │
 │    1. Read current tab via SpreadsheetApp                        │
-│    2. POST {clubId, sheetData, entriesPerDiscipline} ──────────┐ │
+│    2. POST {clubId, sheetData, entriesPerDiscipline, filter} ──┐ │
 │    5. Write returned data back to sheet                        │ │
 └────────────────────────────────────────────────────────────────│─┘
                                                                  │
@@ -52,6 +52,11 @@ German Swimming Federation (DSV) website. It consists of two independently deplo
                         ▼
                  dsvdaten.dsv.de
 ```
+
+> Before step 2, the bound script resolves the configured **club name** to the internal `clubId`
+> (via the DSV club search) and forwards it in the payload — along with the optional
+> `requestDelayMs` / `rateLimitRetryDelayMs` pacing settings. See
+> [DSV Scraping](dsv-scraping.md#resolving-a-club-name-to-a-clubid) and [Pipeline](pipeline.md#step-2--send-to-web-app).
 
 ---
 

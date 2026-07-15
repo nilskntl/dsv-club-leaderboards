@@ -9,14 +9,54 @@ For where the scraper fits in the overall flow see [Pipeline](pipeline.md).
 
 ## Table of Contents
 
+- [Resolving a Club Name to a ClubID](#resolving-a-club-name-to-a-clubid)
 - [Target URL](#target-url)
 - [Why Two HTTP Requests?](#why-two-http-requests)
 - [Step 1 — GET: Obtain Session Tokens](#step-1--get-obtain-session-tokens)
 - [Step 2 — POST: Submit the Filter Form](#step-2--post-submit-the-filter-form)
 - [Response Parsing](#response-parsing)
+- [Rate Limiting and Error Reporting](#rate-limiting-and-error-reporting)
 - [Required Headers](#required-headers)
 - [Scope Limitation — Current Year Only](#scope-limitation--current-year-only)
 - [HTML Parsing Helpers](#html-parsing-helpers)
+
+---
+
+## Resolving a Club Name to a ClubID
+
+The DSV portal uses **two unrelated identifiers**:
+
+- **VereinsID** — the public DSV club number shown on the club page (e.g. `6544`). It can even be
+  non-numeric (e.g. `IWV`). This is what a club knows itself by.
+- **ClubID** — a site-wide, sequential internal ID that appears only in the `Club.aspx?ClubID=` URL
+  (e.g. `7985`). This is what every data request needs.
+
+The two spaces are independent — `ClubID=6544` is a completely different (foreign) club, not the one
+whose VereinsID is `6544` — so there is no formula between them, and **the search cannot be queried by
+VereinsID** (only by name / city / zip / region). Users therefore configure a **club name**, and
+`resolveClubId(clubName)` (in `sheet.js`, run client-side before the Web App call) maps it to the ClubID
+via the club search at `https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx`:
+
+```
+1. GET  Search.aspx                     → __VIEWSTATE / __VIEWSTATEGENERATOR / __EVENTVALIDATION
+2. POST Search.aspx (followRedirects:false)
+        body: tokens + _clubnameTextBox=<name> + empty city/zip + region=0 + _updateButton=Suche
+```
+
+The search answers in one of three ways:
+
+| Case | Server response | Handling |
+|------|-----------------|----------|
+| **Exactly one match** | `302` redirect to `Club.aspx?ClubID=<n>` | Read the ClubID from the `Location` header |
+| **Several matches** | `200` + result table (`Verein · Region · VereinsID · Internet`) | Take the **first** row; its link carries the ClubID, its cells the name + VereinsID |
+| **No match** | `200` + empty table | Return `null` → `getNewSheetData()` logs an error (with the DSV search link) and aborts |
+
+The resolved club is logged (`Found club "…" — DSV VereinsID: …, ClubID (used for requests): …`) so the
+user can confirm the right club was picked when a partial name matched several.
+
+> The POST body is **manually URL-encoded** with an explicit `Content-Type: application/x-www-form-urlencoded`.
+> `UrlFetchApp` would encode an object payload correctly on its own, but the explicit form keeps the
+> request identical to what a browser sends and portable across HTTP clients.
 
 ---
 
@@ -27,6 +67,7 @@ https://dsvdaten.dsv.de/Modules/Clubs/Club.aspx?ClubID=<clubId>
 ```
 
 This is the club page on the DSV data portal. The same URL is used for both the GET and the POST.
+`<clubId>` is the internal ClubID produced by [club-name resolution](#resolving-a-club-name-to-a-clubid).
 
 ---
 
@@ -138,6 +179,41 @@ The remaining 6 fields are returned as plain objects.
 
 ---
 
+## Rate Limiting and Error Reporting
+
+The DSV server rate-limits aggressive clients with **HTTP 429**. `RequestHandler` mitigates this in
+several layers:
+
+1. Only **one GET** per run — the fresh `__VIEWSTATE`/`__EVENTVALIDATION` tokens embedded in every POST
+   response are reused for the next POST, halving the request count.
+2. A delay between POSTs (`_requestDelayMs`, default **1500 ms**).
+3. On a 429, the POST is retried **once** after a longer pause (`_rateLimitRetryDelayMs`, default **12000 ms**).
+
+Both delays are configurable per request: the client passes `requestDelayMs` / `rateLimitRetryDelayMs`
+in the Web App body (from `main.js`), `Leaderboard` forwards them to `RequestHandler`, and blank or
+invalid values fall back to the defaults above via `_resolveDelay()`. This lets the pacing be tuned
+without redeploying the Web App.
+
+> The DSV limiter is **per IP** and behaves like a sliding window: once tripped it keeps returning 429
+> until the client stays quiet for a while — so a too-short retry pause tends to re-trigger it. The
+> defaults are deliberately conservative; raise them further if 429s persist.
+
+Failures that survive these mitigations are collected as human-readable strings in
+`RequestHandler.warnings` and returned to the client inside the Web App's JSON response (see
+[Pipeline, Step 6](pipeline.md#step-6--return-and-write)) — the hosting account's execution log is not
+visible to users, so the response body is the only error channel:
+
+| Situation                                   | Behaviour                                                                                  |
+|---------------------------------------------|--------------------------------------------------------------------------------------------|
+| Initial GET returns no tokens               | Warning recorded, run aborted before any POST                                              |
+| POST still 429 after the retry              | Warning recorded, **run aborted** — further POSTs would keep triggering the limiter        |
+| Other non-200 response or page without tokens | Warning recorded, discipline skipped; the previous (still valid) tokens are kept          |
+
+In every failure case the affected disciplines simply keep their existing sheet data — the sheet is never
+overwritten with garbage.
+
+---
+
 ## Required Headers
 
 | Header                        | Why required                                                                          |
@@ -171,7 +247,8 @@ Three private methods handle all HTML extraction without a DOM parser:
 ### `_extractData(context, begin, end)`
 
 Extracts the **first** substring between `begin` and `end`. Used to pull the ViewState tokens and the
-results table out of raw HTML. Returns an empty string if `begin` is not found.
+results table out of raw HTML. Returns an empty string if either delimiter is not found — callers rely
+on this to detect error pages (a page without a `__VIEWSTATE` is not a regular WebForms response).
 
 ### `_splitElement(input, begin, end)`
 

@@ -27,14 +27,20 @@ nach Saison, Lage, Bahnlänge und Geschlecht filtern.
 ## Voraussetzungen
 
 - Ein **Google-Konto** (kostenlos)
-- Die **Club-ID** deines Vereins beim DSV
+- Den **Namen** deines Vereins, wie er beim DSV gelistet ist
 
-### Wo finde ich meine Club-ID?
+### Wie lautet der Vereinsname?
 
-1. Öffne [dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/) und suche nach deinem Verein.
-2. Klicke auf den Vereinsnamen, um die Vereinsseite zu öffnen.
-3. Die Club-ID steht in der URL der Seite hinter `ClubID=`:  
-   `…/Club.aspx?ClubID=`**7985**
+Du brauchst keine ID herauszusuchen – das Skript sucht deinen Verein vor jeder Aktualisierung
+automatisch über die DSV-Vereinssuche und ermittelt die passende interne ID selbst.
+
+1. Öffne [dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/) und suche
+   nach deinem Verein.
+2. Notiere den Vereinsnamen **genau so, wie er dort angezeigt wird**.
+
+> **Tipp:** Gib den vollständigen Namen an. Bei einem eindeutigen Treffer wird dein Verein direkt
+> erkannt. Passen mehrere Vereine zum Suchbegriff, nimmt das Skript den
+> **ersten** Treffer und schreibt ihn ins Protokoll – prüfe dort, ob der richtige Verein gefunden wurde.
 
 ---
 
@@ -57,12 +63,12 @@ nach Saison, Lage, Bahnlänge und Geschlecht filtern.
 
 ---
 
-### Schritt 3 – Club-ID eintragen
+### Schritt 3 – Vereinsnamen eintragen
 
-Suche am Anfang des Skripts diese Zeile und trage deine Club-ID ein:
+Suche am Anfang des Skripts diese Zeile und trage den Namen deines Vereins ein:
 
 ```js
-const clubId = 7985  // ← hier deine Club-ID eintragen
+const clubName = 'Bielefelder Wasserfreunde'  // ← hier den Vereinsnamen eintragen
 ```
 
 Optional kannst du außerdem die Anzahl der angezeigten Plätze pro Disziplin anpassen:
@@ -71,19 +77,31 @@ Optional kannst du außerdem die Anzahl der angezeigten Plätze pro Disziplin an
 const numberOfEntries = 5  // Wie viele Plätze pro Strecke angezeigt werden sollen
 ```
 
+Sollte das DSV-Portal dich häufig ausbremsen (Meldung „Rate limited" im Protokoll), kannst du die
+Wartezeiten zwischen den Anfragen optional erhöhen (leer lassen = Standardwerte):
+
+```js
+const requestDelayMs = ''          // Pause zwischen Anfragen in ms (Standard: 1500)
+const rateLimitRetryDelayMs = ''   // Wartezeit vor erneutem Versuch nach einer Sperre in ms (Standard: 12000)
+```
+
 ---
 
 ### Schritt 4 – Tabelle zum ersten Mal befüllen
 
-1. Wähle im Skripteditor oben in der Funktionsauswahl **`updateAllTime`** aus und klicke auf das **Ausführen-Symbol (▶)
-   **.
+1. Wähle im Skripteditor oben in der Funktionsauswahl **`updateAllTimeMale`** aus und klicke auf das
+   **Ausführen-Symbol (▶)**.
 2. Beim ersten Ausführen erscheint eine Berechtigungsabfrage von Google – klicke auf **„Zulassen"**. Das Skript benötigt
    nur Zugriff auf deine eigene Tabelle.
-3. Nach Abschluss erscheint in deiner Tabelle ein neues Blatt namens **„All-Time"** mit der vollständigen
+3. Führe anschließend **`updateAllTimeFemale`** aus.
+4. Nach Abschluss erscheint in deiner Tabelle ein neues Blatt namens **„All-Time"** mit der vollständigen
    Disziplinstruktur und den aktuellen Jahresergebnissen.
 
-Für eine separate **Saisonbestenliste** des aktuellen Jahres führe zusätzlich **`updateSeason`** aus. Dabei wird
-automatisch ein Blatt mit dem aktuellen Jahr als Name angelegt (z. B. „2026").
+Die Aktualisierung ist nach Geschlecht aufgeteilt, damit jeder Lauf unter dem 6-Minuten-Limit von Google Apps Script
+bleibt.
+
+Für eine separate **Saisonbestenliste** des aktuellen Jahres führe zusätzlich **`updateSeasonMale`** und
+**`updateSeasonFemale`** aus. Dabei wird automatisch ein Blatt mit dem aktuellen Jahr als Name angelegt (z. B. „2026").
 
 > **Hinweis:** Das DSV-Portal stellt nur Ergebnisse des laufenden Jahres zur Verfügung. Ältere Ergebnisse für die
 > All-Time-Wertung müssen einmalig von Hand eingetragen werden (→ nächster Schritt).
@@ -108,10 +126,17 @@ Damit die Bestenlisten täglich ohne manuellen Eingriff aktualisiert werden:
 
 1. Klicke im Skripteditor links in der Seitenleiste auf das **Uhrsymbol (Trigger)**.
 2. Klicke unten rechts auf **„+ Trigger hinzufügen"**.
-3. Wähle als Funktion **`updateAllTime`** und als Ereignistyp **„Zeitgesteuert"** → **„Täglich"**.
+3. Wähle als Funktion **`updateAllTimeMale`** und als Ereignistyp **„Zeitgesteuert"** → **„Täglich"** und wähle eine
+   Uhrzeit (z. B. 2–3 Uhr).
 4. Klicke auf **„Speichern"**.
+5. Lege auf dieselbe Weise einen zweiten Trigger für **`updateAllTimeFemale`** an – **mit mindestens 6 min
+   Abstand** um überlappende Ausführungen zu vermeiden.
 
-Für die Saisonbestenliste kann auf dieselbe Weise ein zweiter Trigger für **`updateSeason`** eingerichtet werden.
+> **Wichtig:** Die Trigger für Male und Female dürfen nicht zur gleichen Zeit laufen. Jeder Lauf liest und schreibt das
+> gesamte Blatt – überlappende Läufe würden sich gegenseitig die Ergebnisse überschreiben.
+
+Für die Saisonbestenliste können auf dieselbe Weise zwei weitere Trigger für **`updateSeasonMale`** und
+**`updateSeasonFemale`** eingerichtet werden – ebenfalls zeitlich versetzt.
 
 ---
 
@@ -161,11 +186,13 @@ Binde `index.html` in deine Website ein oder öffne sie direkt im Browser, um da
 
 ### Skript (`main.js`)
 
-| Einstellung            | Standard | Beschreibung                                     |
-|------------------------|----------|--------------------------------------------------|
-| `clubId`               | `7985`   | Club-ID deines Vereins beim DSV                  |
-| `numberOfEntries`      | `5`      | Anzahl der angezeigten Plätze pro Disziplin      |
-| `formatSheetEveryTime` | `true`   | Tabelle bei jeder Aktualisierung neu formatieren |
+| Einstellung             | Standard                      | Beschreibung                                                                       |
+|-------------------------|-------------------------------|------------------------------------------------------------------------------------|
+| `clubName`              | `'Bielefelder Wasserfreunde'` | Vereinsname wie beim DSV gelistet (wird automatisch zur internen ID aufgelöst)     |
+| `numberOfEntries`       | `5`                           | Anzahl der angezeigten Plätze pro Disziplin                                        |
+| `formatSheetEveryTime`  | `true`                        | Tabelle bei jeder Aktualisierung neu formatieren                                   |
+| `requestDelayMs`        | `''` (→ 1500)                 | Pause zwischen DSV-Anfragen in ms; leer = Standard                                 |
+| `rateLimitRetryDelayMs` | `''` (→ 12000)                | Wartezeit vor erneutem Versuch nach einer Sperre (HTTP 429) in ms; leer = Standard |
 
 Farben, Spaltenbreiten und Zeilenhöhen lassen sich über das `FORMAT`-Objekt am Ende von `main.js` anpassen.
 
@@ -183,13 +210,21 @@ Farben, Spaltenbreiten und Zeilenhöhen lassen sich über das `FORMAT`-Objekt am
 
 ## Häufige Fragen
 
-**Ich finde meine Club-ID nicht.**  
-Suche deinen Verein auf [dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx). Die Club-ID steht in der
-URL der Vereinsseite hinter `ClubID=`.
+**Das Skript meldet „No club found".**  
+Der eingetragene `clubName` passt zu keinem Verein. Suche deinen Verein auf
+[dsvdaten.dsv.de](https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx) bzw.
+[dsv.de](https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-regional/vereine/)
+und übernimm den Namen exakt so, wie er dort steht.
+
+**Es wurde der falsche Verein gefunden.**  
+Passt dein Suchbegriff auf mehrere Vereine, nimmt das Skript den ersten Treffer. Das Protokoll (unter
+**Ausführungen**) zeigt, welcher Verein gewählt wurde (`Found club "…"`). Trage einen genaueren/vollständigen
+Namen ein, damit die Suche eindeutig wird.
 
 **Die Tabelle bleibt nach dem Ausführen leer.**  
-Überprüfe, ob die eingetragene `clubId` korrekt ist. Im Skripteditor unter **Ausführungen** kannst du die Protokolle
-einsehen und mögliche Fehlermeldungen nachlesen.
+Prüfe im Skripteditor unter **Ausführungen** die Protokolle: Dort steht, welcher Verein gefunden wurde und ob
+das DSV-Portal die Anfragen ausgebremst hat (Meldung „Rate limited"). In dem Fall die Wartezeiten erhöhen
+(siehe Schritt 3) oder den Trigger seltener laufen lassen.
 
 **Darf ich die Tabelle nach der Einrichtung manuell bearbeiten?**  
 Ja – Einträge ergänzen und korrigieren ist jederzeit möglich. Die Kürzel in Spalte A und H sowie die Gesamtstruktur der

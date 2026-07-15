@@ -23,13 +23,21 @@ For how DSV data is fetched see [DSV Scraping](dsv-scraping.md).
 
 ## Trigger
 
-The pipeline starts when `updateAllTime()` or `updateSeason()` is called in the user's bound script —
+The pipeline starts when one of the update functions is called in the user's bound script —
 either manually or via a configured Apps Script time trigger.
 
-| Function          | Sheet tab                   | Tab created if missing? |
-|-------------------|-----------------------------|-------------------------|
-| `updateAllTime()` | `'All-Time'`                | Yes                     |
-| `updateSeason()`  | Current year, e.g. `'2026'` | Yes                     |
+| Function                                        | Sheet tab                   | Disciplines fetched | Tab created if missing? |
+|-------------------------------------------------|-----------------------------|---------------------|-------------------------|
+| `updateAllTimeMale()` / `updateAllTimeFemale()` | `'All-Time'`                | One gender          | Yes                     |
+| `updateSeasonMale()` / `updateSeasonFemale()`   | Current year, e.g. `'2026'` | One gender          | Yes                     |
+| `updateAllTime()`                               | `'All-Time'`                | All                 | Yes                     |
+| `updateSeason()`                                | Current year, e.g. `'2026'` | All                 | Yes                     |
+
+The gendered variants exist because a full update makes ~70 DSV requests and can exceed the
+Apps Script 6-minute execution limit. Each variant fetches only its own gender; the other
+gender's sheet entries pass through unchanged. The male and female triggers must be scheduled
+at different times (e.g. one hour apart) — each run reads and writes the whole tab, so
+overlapping runs would overwrite each other's results.
 
 ---
 
@@ -48,21 +56,50 @@ therefore must run inside the user's own Google account context. See [Architectu
 
 ## Step 2 — Send to Web App
 
-`getNewSheetData()` reads the current tab's full data and POSTs it to the Web App:
+First, `getNewSheetData()` resolves the configured club **name** to the internal ClubID that all DSV
+requests use (`resolveClubId(clubName)`, see [DSV Scraping](dsv-scraping.md#resolving-a-club-name-to-a-clubid)).
+This runs in the bound script (client side), before the Web App is contacted:
+
+- **Exact match** → the DSV search 302-redirects straight to the club page; the ClubID is read from the
+  `Location` header.
+- **Several matches** → the first row of the result table is used and logged so the user can spot a wrong pick.
+- **No match** → `getNewSheetData()` logs an error pointing to the DSV club search and aborts without
+  touching the sheet or calling the Web App.
+
+It then reads the current tab's full data and POSTs it to the Web App:
 
 ```javascript
 let payload = {
-    clubId: clubId,                              // DSV club ID from config
+    clubId: club.clubId,                         // internal ClubID resolved from clubName
     data: sheet.getDataRange().getValues(),      // raw 2D array of the entire tab
-    entriesPerDiscipline: numberOfEntries        // max results per discipline from config
+    entriesPerDiscipline: numberOfEntries,       // max results per discipline from config
+    filter: filter,                              // optional discipline filter, e.g. {genders: ['Männlich']}
+    requestDelayMs: requestDelayMs,              // optional: pause between DSV requests (blank → 1500)
+    rateLimitRetryDelayMs: rateLimitRetryDelayMs // optional: pause before a 429 retry (blank → 12000)
 };
 ```
+
+The optional `filter` restricts which disciplines are fetched from DSV in Step 4. It may contain
+`genders`, `strokes`, `lanes`, and/or `distances` arrays; provided keys combine with AND, omitted
+keys match everything. Requests without a filter (older client scripts) perform a full update.
+
+`requestDelayMs` and `rateLimitRetryDelayMs` tune the DSV request pacing (see [DSV Scraping](dsv-scraping.md));
+blank or invalid values fall back to the defaults inside `RequestHandler`.
 
 The Web App URL is fetched from `endpoint.txt` on GitHub (not hardcoded) so the endpoint can be updated
 without users changing `main.js`.
 
-A response that starts with `<!DOCTYPE html>` indicates a Web App deployment error. The script logs the
-response body and aborts without touching the sheet.
+Errors travel inside the JSON response body — Web Apps always answer with HTTP 200 and the Web App's
+execution log belongs to the hosting account, so the body is the only channel visible to the user:
+
+- `error` present → the Web App run failed (exception in `doPost()`). The script logs message and stack
+  and aborts without touching the sheet.
+- `warnings` non-empty → the run completed but with problems (e.g. the DSV rate limiter aborted the fetch
+  partway). Warnings are logged to the bound script's execution log (Apps Script → Executions) with a
+  timestamp and a ⚠️ prefix; they are not written into the sheet.
+
+A response that starts with `<!DOCTYPE html>` indicates an error page from an outdated Web App deployment.
+The script logs the response body and aborts without touching the sheet.
 
 ---
 
@@ -89,10 +126,12 @@ All results loaded from the sheet receive `newRecord = false`.
 ## Step 4 — Fetch DSV Results
 
 ```javascript
-leaderboard.requestResults();
+leaderboard.requestResults(filter);
 ```
 
-`RequestHandler.requestResults()` iterates every discipline and calls `_fetchNewData(discipline)` for each.
+`RequestHandler.requestResults(filter)` iterates every discipline matching the optional filter and calls
+`_fetchNewData(discipline)` for each. Disciplines excluded by the filter are not fetched — they keep the
+results loaded from the sheet in Step 3 and pass through Steps 5–6 unchanged.
 The fetch is a 2-step HTTP sequence — see [DSV Scraping](dsv-scraping.md) for the full breakdown.
 
 Every result fetched from DSV receives `newRecord = true`. Results are added via `Discipline.addResult()`,
@@ -135,10 +174,17 @@ The Web App returns:
   // 2D array ready for setValues(), starting at sheet row 3
   "newResults": [
     ...
-  ]
+  ],
   // formatted strings for results that are new AND in the top N
+  "warnings": [
+    ...
+  ]
+  // non-fatal problems from this run, e.g. "Rate limited by DSV (HTTP 429) despite retry at ..."
 }
 ```
+
+If `doPost()` throws, the Web App instead returns `{ "error": { "message": ..., "stack": ... }, "warnings": [...] }`
+— the bound script logs the error and leaves the sheet untouched.
 
 Back in the bound script:
 
@@ -147,7 +193,7 @@ Back in the bound script:
 
 2. `_writeNewRecordsToSheet()` appends each `newResults` string to column P, starting after the last
    non-empty cell. Column P is never cleared by `_writeNewDataToSheet()`, so entries accumulate permanently
-   across runs.
+   across runs. `warnings` strings only go to the execution log — they are never written into the sheet.
 
 3. If `formatSheetEveryTime` is `true`, `formatSheet()` re-applies all colours, merges, and column widths.
 
