@@ -99,7 +99,7 @@ function _updateSheet(nameOfSheet, filter) {
     if (sheet.getName() !== nameOfSheet) {
         Logger.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
     }
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/1-exceeded-maximum-execution-time/src/app-script/sheet/sheet.js').getContentText();
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/sheet/sheet.js').getContentText();
     eval(code);
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime, filter);
 }
