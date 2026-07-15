@@ -106,8 +106,14 @@ class Leaderboard {
         this._sheet.extractResults(this._oldData);
     }
 
-    requestResults() {
-        this._requestHandler.requestResults();
+    /**
+     * Fetches DSV results, optionally restricted to a subset of disciplines.
+     * Disciplines excluded by the filter keep their sheet-loaded results untouched.
+     *
+     * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter]
+     */
+    requestResults(filter) {
+        this._requestHandler.requestResults(filter);
     }
 
     /**

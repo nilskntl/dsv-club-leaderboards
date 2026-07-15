@@ -75,14 +75,17 @@ const numberOfEntries = 5  // How many places to show per event
 
 ### Step 4 – Populate the sheet for the first time
 
-1. In the script editor, select **`updateAllTime`** from the function dropdown and click the **Run button (▶)**.
+1. In the script editor, select **`updateAllTimeMale`** from the function dropdown and click the **Run button (▶)**.
 2. On the first run, Google will ask for permissions – click **"Allow"**. The script only needs access to your own
    spreadsheet.
-3. Once complete, a new sheet tab named **"All-Time"** will appear with the full discipline structure and this year's
+3. Then run **`updateAllTimeFemale`** as well.
+4. Once complete, a new sheet tab named **"All-Time"** will appear with the full discipline structure and this year's
    results.
 
-To also create a **season leaderboard** for the current year, run **`updateSeason`** as well. This creates a tab named
-after the current year (e.g. "2026") automatically.
+The update is split by gender so each run stays under the Google Apps Script 6-minute execution limit.
+
+To also create a **season leaderboard** for the current year, run **`updateSeasonMale`** and **`updateSeasonFemale`**
+as well. This creates a tab named after the current year (e.g. "2026") automatically.
 
 > **Note:** The DSV portal only provides results for the current calendar year. Older results for the all-time ranking
 > must be entered manually once (→ next step).
@@ -106,10 +109,16 @@ To update the leaderboards daily without manual intervention:
 
 1. In the script editor, click the **clock icon (Triggers)** in the left sidebar.
 2. Click **"+ Add Trigger"** in the bottom right.
-3. Select **`updateAllTime`** as the function and **"Time-driven"** → **"Daily"** as the event type.
+3. Select **`updateAllTimeMale`** as the function and **"Time-driven"** → **"Daily"** as the event type, and pick a
+   time window (e.g. 2–3 AM).
 4. Click **"Save"**.
+5. Add a second trigger for **`updateAllTimeFemale`** the same way – **at least 6 min apart** to avoid race conditions.
 
-A second trigger for **`updateSeason`** can be set up the same way if needed.
+> **Important:** The male and female triggers must not run at the same time. Each run reads and writes the entire
+> sheet – overlapping runs would overwrite each other's results.
+
+Two more triggers for **`updateSeasonMale`** and **`updateSeasonFemale`** can be set up the same way if needed – also
+offset in time.
 
 ---
 

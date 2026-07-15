@@ -23,13 +23,21 @@ For how DSV data is fetched see [DSV Scraping](dsv-scraping.md).
 
 ## Trigger
 
-The pipeline starts when `updateAllTime()` or `updateSeason()` is called in the user's bound script —
+The pipeline starts when one of the update functions is called in the user's bound script —
 either manually or via a configured Apps Script time trigger.
 
-| Function          | Sheet tab                   | Tab created if missing? |
-|-------------------|-----------------------------|-------------------------|
-| `updateAllTime()` | `'All-Time'`                | Yes                     |
-| `updateSeason()`  | Current year, e.g. `'2026'` | Yes                     |
+| Function                                        | Sheet tab                   | Disciplines fetched | Tab created if missing? |
+|-------------------------------------------------|-----------------------------|---------------------|-------------------------|
+| `updateAllTimeMale()` / `updateAllTimeFemale()` | `'All-Time'`                | One gender          | Yes                     |
+| `updateSeasonMale()` / `updateSeasonFemale()`   | Current year, e.g. `'2026'` | One gender          | Yes                     |
+| `updateAllTime()`                               | `'All-Time'`                | All                 | Yes                     |
+| `updateSeason()`                                | Current year, e.g. `'2026'` | All                 | Yes                     |
+
+The gendered variants exist because a full update makes ~70 DSV requests and can exceed the
+Apps Script 6-minute execution limit. Each variant fetches only its own gender; the other
+gender's sheet entries pass through unchanged. The male and female triggers must be scheduled
+at different times (e.g. one hour apart) — each run reads and writes the whole tab, so
+overlapping runs would overwrite each other's results.
 
 ---
 
@@ -54,9 +62,14 @@ therefore must run inside the user's own Google account context. See [Architectu
 let payload = {
     clubId: clubId,                              // DSV club ID from config
     data: sheet.getDataRange().getValues(),      // raw 2D array of the entire tab
-    entriesPerDiscipline: numberOfEntries        // max results per discipline from config
+    entriesPerDiscipline: numberOfEntries,       // max results per discipline from config
+    filter: filter                               // optional discipline filter, e.g. {genders: ['Männlich']}
 };
 ```
+
+The optional `filter` restricts which disciplines are fetched from DSV in Step 4. It may contain
+`genders`, `strokes`, `lanes`, and/or `distances` arrays; provided keys combine with AND, omitted
+keys match everything. Requests without a filter (older client scripts) perform a full update.
 
 The Web App URL is fetched from `endpoint.txt` on GitHub (not hardcoded) so the endpoint can be updated
 without users changing `main.js`.
@@ -89,10 +102,12 @@ All results loaded from the sheet receive `newRecord = false`.
 ## Step 4 — Fetch DSV Results
 
 ```javascript
-leaderboard.requestResults();
+leaderboard.requestResults(filter);
 ```
 
-`RequestHandler.requestResults()` iterates every discipline and calls `_fetchNewData(discipline)` for each.
+`RequestHandler.requestResults(filter)` iterates every discipline matching the optional filter and calls
+`_fetchNewData(discipline)` for each. Disciplines excluded by the filter are not fetched — they keep the
+results loaded from the sheet in Step 3 and pass through Steps 5–6 unchanged.
 The fetch is a 2-step HTTP sequence — see [DSV Scraping](dsv-scraping.md) for the full breakdown.
 
 Every result fetched from DSV receives `newRecord = true`. Results are added via `Discipline.addResult()`,

@@ -324,8 +324,12 @@ function formatSheet(sheet, numberOfEntries, format) {
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - The tab to update.
  * @param {object} format - Format config passed through to formatSheet().
  * @param {boolean} formatSheetEveryTime - If true, reformats the sheet after every data update.
+ * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter] -
+ *   Optional discipline filter forwarded to the Web App. Restricts which disciplines are
+ *   fetched from DSV so a full update can be split across several trigger runs, each staying
+ *   under the Apps Script 6-minute limit. Unfetched disciplines keep their current sheet data.
  */
-function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
+function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
     Logger.log('Version: ' + version);
     let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/version.txt').getContentText();
 
@@ -340,7 +344,8 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime) {
     let payload = {
         clubId: clubId,
         data: sheet.getDataRange().getValues(),
-        entriesPerDiscipline: numberOfEntries
+        entriesPerDiscipline: numberOfEntries,
+        filter: filter
     };
 
     let options = {

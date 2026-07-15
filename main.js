@@ -1,14 +1,21 @@
-const version = '1.0.6';
+const version = '1.1.0';
 
 /**
  * Automatically creates and updates a swimming club leaderboard in Google Sheets
  * by fetching results from the German Swimming Federation (DSV) website.
  *
  * How it works:
- * Call updateAllTime() to refresh the all-time leaderboard, or updateSeason() for
- * the current season only. Both functions send the current sheet data and club config
- * to a hosted Web App, which scrapes the DSV website and returns the updated leaderboard.
- * To run on a schedule, set up a Google Apps Script trigger for either function.
+ * The update is split by gender so each run stays under the Apps Script 6-minute
+ * execution limit: call updateAllTimeMale() and updateAllTimeFemale() to refresh the
+ * all-time leaderboard, or updateSeasonMale() and updateSeasonFemale() for the current
+ * season only. Each function sends the current sheet data and club config to a hosted
+ * Web App, which scrapes the DSV website for the requested gender and returns the
+ * updated leaderboard; the other gender's entries pass through unchanged.
+ * To run on a schedule, set up one Google Apps Script time trigger per function.
+ * IMPORTANT: schedule the male and female triggers at different times (e.g. one hour
+ * apart) — overlapping runs read and write the whole sheet and would overwrite each
+ * other's results.
+ *
  * See: https://developers.google.com/apps-script/guides/triggers/
  *
  * Setup:
@@ -37,30 +44,48 @@ const numberOfEntries = 5 // Optional: number of entries to display per discipli
 const formatSheetEveryTime = true // Optional: reformat the sheet on every update
 
 /**
- * Updates the all-time leaderboard tab. Creates the "All-Time" sheet if it does not exist.
- * Loads the shared sheet.js logic at runtime from GitHub so that the Web App endpoint and
- * formatting code can be updated centrally without requiring users to change this script.
+ * Updates the male half of the all-time leaderboard. Set up a time trigger for this
+ * function, offset from the updateAllTimeFemale() trigger.
  */
-function updateAllTime() {
-    let nameOfSheet = 'All-Time';
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet);
-    if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet);
-    if (sheet.getName() !== nameOfSheet) {
-        Logger.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
-    }
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText();
-    eval(code);
-    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime);
+function updateAllTimeMale() {
+    _updateSheet('All-Time', {genders: ['Männlich']});
 }
 
 /**
- * Updates the current season's leaderboard tab. The sheet is named after the current year
- * (e.g. "2026") and is created automatically if it does not exist yet.
- * Loads the shared sheet.js logic at runtime from GitHub — see updateAllTime() for details.
+ * Updates the female half of the all-time leaderboard. Set up a time trigger for this
+ * function, offset from the updateAllTimeMale() trigger.
  */
-function updateSeason() {
-    let year = new Date().getFullYear();
-    let nameOfSheet = year.toString();
+function updateAllTimeFemale() {
+    _updateSheet('All-Time', {genders: ['Weiblich']});
+}
+
+/**
+ * Updates the male half of the current season's leaderboard. Set up a time trigger for
+ * this function, offset from the updateSeasonFemale() trigger.
+ */
+function updateSeasonMale() {
+    _updateSheet(new Date().getFullYear().toString(), {genders: ['Männlich']});
+}
+
+/**
+ * Updates the female half of the current season's leaderboard. Set up a time trigger for
+ * this function, offset from the updateSeasonMale() trigger.
+ */
+function updateSeasonFemale() {
+    _updateSheet(new Date().getFullYear().toString(), {genders: ['Weiblich']});
+}
+
+/**
+ * Updates one leaderboard tab, creating it if it does not exist. Loads the shared sheet.js
+ * logic at runtime from GitHub so that the Web App endpoint and formatting code can be
+ * updated centrally without requiring users to change this script.
+ *
+ * @param {string} nameOfSheet - Tab to update: 'All-Time' or a season year like '2026'.
+ * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter] -
+ *   Restricts which disciplines are fetched from DSV; disciplines outside the filter keep
+ *   their current sheet entries. Omit to fetch everything.
+ */
+function _updateSheet(nameOfSheet, filter) {
     let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nameOfSheet);
     if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(nameOfSheet);
     if (sheet.getName() !== nameOfSheet) {
@@ -68,7 +93,7 @@ function updateSeason() {
     }
     let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/app-script/sheet/sheet.js').getContentText();
     eval(code);
-    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime);
+    getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime, filter);
 }
 
 const FORMAT = {

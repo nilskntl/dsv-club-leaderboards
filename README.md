@@ -75,15 +75,19 @@ const numberOfEntries = 5  // Wie viele Plätze pro Strecke angezeigt werden sol
 
 ### Schritt 4 – Tabelle zum ersten Mal befüllen
 
-1. Wähle im Skripteditor oben in der Funktionsauswahl **`updateAllTime`** aus und klicke auf das **Ausführen-Symbol (▶)
-   **.
+1. Wähle im Skripteditor oben in der Funktionsauswahl **`updateAllTimeMale`** aus und klicke auf das
+   **Ausführen-Symbol (▶)**.
 2. Beim ersten Ausführen erscheint eine Berechtigungsabfrage von Google – klicke auf **„Zulassen"**. Das Skript benötigt
    nur Zugriff auf deine eigene Tabelle.
-3. Nach Abschluss erscheint in deiner Tabelle ein neues Blatt namens **„All-Time"** mit der vollständigen
+3. Führe anschließend **`updateAllTimeFemale`** aus.
+4. Nach Abschluss erscheint in deiner Tabelle ein neues Blatt namens **„All-Time"** mit der vollständigen
    Disziplinstruktur und den aktuellen Jahresergebnissen.
 
-Für eine separate **Saisonbestenliste** des aktuellen Jahres führe zusätzlich **`updateSeason`** aus. Dabei wird
-automatisch ein Blatt mit dem aktuellen Jahr als Name angelegt (z. B. „2026").
+Die Aktualisierung ist nach Geschlecht aufgeteilt, damit jeder Lauf unter dem 6-Minuten-Limit von Google Apps Script
+bleibt.
+
+Für eine separate **Saisonbestenliste** des aktuellen Jahres führe zusätzlich **`updateSeasonMale`** und
+**`updateSeasonFemale`** aus. Dabei wird automatisch ein Blatt mit dem aktuellen Jahr als Name angelegt (z. B. „2026").
 
 > **Hinweis:** Das DSV-Portal stellt nur Ergebnisse des laufenden Jahres zur Verfügung. Ältere Ergebnisse für die
 > All-Time-Wertung müssen einmalig von Hand eingetragen werden (→ nächster Schritt).
@@ -108,10 +112,17 @@ Damit die Bestenlisten täglich ohne manuellen Eingriff aktualisiert werden:
 
 1. Klicke im Skripteditor links in der Seitenleiste auf das **Uhrsymbol (Trigger)**.
 2. Klicke unten rechts auf **„+ Trigger hinzufügen"**.
-3. Wähle als Funktion **`updateAllTime`** und als Ereignistyp **„Zeitgesteuert"** → **„Täglich"**.
+3. Wähle als Funktion **`updateAllTimeMale`** und als Ereignistyp **„Zeitgesteuert"** → **„Täglich"** und wähle eine
+   Uhrzeit (z. B. 2–3 Uhr).
 4. Klicke auf **„Speichern"**.
+5. Lege auf dieselbe Weise einen zweiten Trigger für **`updateAllTimeFemale`** an – **mit mindestens 6 min
+   Abstand** um überlappende Ausführungen zu vermeiden.
 
-Für die Saisonbestenliste kann auf dieselbe Weise ein zweiter Trigger für **`updateSeason`** eingerichtet werden.
+> **Wichtig:** Die Trigger für Male und Female dürfen nicht zur gleichen Zeit laufen. Jeder Lauf liest und schreibt das
+> gesamte Blatt – überlappende Läufe würden sich gegenseitig die Ergebnisse überschreiben.
+
+Für die Saisonbestenliste können auf dieselbe Weise zwei weitere Trigger für **`updateSeasonMale`** und
+**`updateSeasonFemale`** eingerichtet werden – ebenfalls zeitlich versetzt.
 
 ---
 

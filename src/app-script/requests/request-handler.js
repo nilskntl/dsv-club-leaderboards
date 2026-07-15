@@ -29,22 +29,35 @@ class RequestHandler {
     }
 
     /**
-     * Fetches results for every discipline in the leaderboard and adds them.
+     * Fetches results for every discipline matching the optional filter and adds them.
      *
      * One GET is performed at the start to obtain the initial session tokens. The VIEWSTATE
      * and EVENTVALIDATION returned by each POST are immediately reused for the next POST,
      * so no further GET requests are needed. A fixed delay between POSTs prevents the
      * rate limiter from triggering.
      *
+     * The filter exists so callers can split a full update into several smaller runs that
+     * each stay under the Apps Script 6-minute execution limit. Disciplines excluded by the
+     * filter are not fetched — their existing sheet results pass through unchanged.
+     *
      * All results carry newRecord=true so they can be identified after adjustResults()
      * trims each discipline to the top N.
+     *
+     * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter]
+     *   Each provided list restricts fetching to matching disciplines; omitted keys match everything.
      */
-    requestResults() {
+    requestResults(filter) {
+        let disciplines = this._leaderboard.disciplines.filter(discipline => this._matchesFilter(discipline, filter));
+        if (disciplines.length === 0) {
+            Logger.log('No disciplines match the filter — nothing to fetch');
+            return;
+        }
+
         let pageHtml = this._getPage();
         let viewState = this._extractData(pageHtml, '__VIEWSTATE" value="', '" />');
         let eventValidation = this._extractData(pageHtml, '__EVENTVALIDATION" value="', '" />');
 
-        for (let discipline of this._leaderboard.disciplines) {
+        for (let discipline of disciplines) {
             Logger.log(discipline.gender + ' ' + (discipline.lane === 50 ? 'Langbahn' : 'Kurzbahn') + ' ' + discipline.distance + 'm ' + discipline.stroke);
 
             let { data, nextViewState, nextEventValidation } = this._fetchNewData(discipline, viewState, eventValidation);
@@ -63,6 +76,27 @@ class RequestHandler {
 
             Utilities.sleep(this._requestDelayMs);
         }
+    }
+
+    /**
+     * Checks whether a discipline passes the filter. Every provided (non-empty) list must
+     * contain the discipline's corresponding attribute. No filter or an empty object matches
+     * every discipline, so requests without a filter still perform a full update.
+     *
+     * Lanes and distances are compared as strings because distances arrive as strings from
+     * the DISCIPLINES config while callers may pass numbers.
+     *
+     * @param {Discipline} discipline
+     * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter]
+     * @returns {boolean}
+     */
+    _matchesFilter(discipline, filter) {
+        if (!filter) return true;
+        if (filter.genders && filter.genders.length > 0 && !filter.genders.includes(discipline.gender)) return false;
+        if (filter.strokes && filter.strokes.length > 0 && !filter.strokes.includes(discipline.stroke)) return false;
+        if (filter.lanes && filter.lanes.length > 0 && !filter.lanes.map(String).includes(String(discipline.lane))) return false;
+        if (filter.distances && filter.distances.length > 0 && !filter.distances.map(String).includes(String(discipline.distance))) return false;
+        return true;
     }
 
     /**
