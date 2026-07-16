@@ -8,9 +8,10 @@ const version = '1.1.0';
  * The update is split by gender so each run stays under the Apps Script 6-minute
  * execution limit: call updateAllTimeMale() and updateAllTimeFemale() to refresh the
  * all-time leaderboard, or updateSeasonMale() and updateSeasonFemale() for the current
- * season only. Each function sends the current sheet data and club config to a hosted
- * Web App, which scrapes the DSV website for the requested gender and returns the
- * updated leaderboard; the other gender's entries pass through unchanged.
+ * season only. Each function scrapes the DSV website for the requested gender and updates
+ * the leaderboard; the other gender's entries pass through unchanged. All of this runs
+ * inside your own Google account — the scraping and processing logic is loaded from GitHub
+ * at runtime.
  * To run on a schedule, set up one Google Apps Script time trigger per function.
  * IMPORTANT: schedule the male and female triggers at different times (e.g. one hour
  * apart) — overlapping runs read and write the whole sheet and would overwrite each
@@ -85,8 +86,8 @@ function updateSeasonFemale() {
 
 /**
  * Updates one leaderboard tab, creating it if it does not exist. Loads the shared sheet.js
- * logic at runtime from GitHub so that the Web App endpoint and formatting code can be
- * updated centrally without requiring users to change this script.
+ * logic at runtime from GitHub (which in turn loads the scraping and formatting code) so that
+ * it can be updated centrally without requiring users to change this script.
  *
  * @param {string} nameOfSheet - Tab to update: 'All-Time' or a season year like '2026'.
  * @param {{genders?: string[], strokes?: string[], lanes?: number[], distances?: (string|number)[]}} [filter] -

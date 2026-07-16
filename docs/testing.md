@@ -24,7 +24,7 @@ For class responsibilities see [Data Model](data-model.md).
 ## Why a Node.js Test Suite?
 
 All source code lives in `src/app-script/` and is written for the Google Apps Script runtime. Running it
-normally requires deploying to a Web App and manually triggering it in a Google Sheet — a slow feedback loop
+normally requires copying it into a Google Sheet's Apps Script project and manually triggering it — a slow feedback loop
 for every small change.
 
 The test suite loads the same unmodified source files into Node.js using the built-in `vm` module, shims the

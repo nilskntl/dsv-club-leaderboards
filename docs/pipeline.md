@@ -12,7 +12,7 @@ For how DSV data is fetched see [DSV Scraping](dsv-scraping.md).
 
 - [Trigger](#trigger)
 - [Step 1 — Load Sheet Code](#step-1--load-sheet-code)
-- [Step 2 — Send to Web App](#step-2--send-to-web-app)
+- [Step 2 — Run the Pipeline](#step-2--run-the-pipeline)
 - [Step 3 — Extract Existing Results](#step-3--extract-existing-results)
 - [Step 4 — Fetch DSV Results](#step-4--fetch-dsv-results)
 - [Step 5 — Adjust Results](#step-5--adjust-results)
@@ -34,7 +34,8 @@ either manually or via a configured Apps Script time trigger.
 | `updateSeason()`                                | Current year, e.g. `'2026'` | All                 | Yes                     |
 
 The gendered variants exist because a full update makes ~70 DSV requests and can exceed the
-Apps Script 6-minute execution limit. Each variant fetches only its own gender; the other
+Apps Script 6-minute execution limit — and the whole pipeline now runs inside the user's own
+account, so it is subject to that limit. Each variant fetches only its own gender; the other
 gender's sheet entries pass through unchanged. The male and female triggers must be scheduled
 at different times (e.g. one hour apart) — each run reads and writes the whole tab, so
 overlapping runs would overwrite each other's results.
@@ -44,7 +45,7 @@ overlapping runs would overwrite each other's results.
 ## Step 1 — Load Sheet Code
 
 ```javascript
-let code = UrlFetchApp.fetch('.../sheet.js').getContentText();
+let code = UrlFetchApp.fetch('.../sheet/sheet.js').getContentText();
 eval(code);
 ```
 
@@ -54,58 +55,53 @@ therefore must run inside the user's own Google account context. See [Architectu
 
 ---
 
-## Step 2 — Send to Web App
+## Step 2 — Run the Pipeline
 
 First, `getNewSheetData()` resolves the configured club **name** to the internal ClubID that all DSV
-requests use (`resolveClubId(clubName)`, see [DSV Scraping](dsv-scraping.md#resolving-a-club-name-to-a-clubid)).
-This runs in the bound script (client side), before the Web App is contacted:
+requests use (`resolveClubId(clubName)`, see [DSV Scraping](dsv-scraping.md#resolving-a-club-name-to-a-clubid)):
 
 - **Exact match** → the DSV search 302-redirects straight to the club page; the ClubID is read from the
   `Location` header.
 - **Several matches** → the first row of the result table is used and logged so the user can spot a wrong pick.
 - **No match** → `getNewSheetData()` logs an error pointing to the DSV club search and aborts without
-  touching the sheet or calling the Web App.
+  touching the sheet or running the pipeline.
 
-It then reads the current tab's full data and POSTs it to the Web App:
+It then reads the current tab's full data, fetches the remaining pipeline sources from GitHub
+(`leaderboard/`, `requests/`, `pipeline.js`), `eval()`s them, and calls `runPipeline()` **in-process** —
+everything runs inside the user's own account, there is no Web App:
 
 ```javascript
-let payload = {
-    clubId: club.clubId,                         // internal ClubID resolved from clubName
-    data: sheet.getDataRange().getValues(),      // raw 2D array of the entire tab
-    entriesPerDiscipline: numberOfEntries,       // max results per discipline from config
-    filter: filter,                              // optional discipline filter, e.g. {genders: ['Männlich']}
-    requestDelayMs: requestDelayMs,              // optional: pause between DSV requests (blank → 1500)
-    rateLimitRetryDelayMs: rateLimitRetryDelayMs // optional: pause before a 429 retry (blank → 12000)
-};
+eval(code); // leaderboard/ + requests/ + pipeline.js fetched from GitHub
+
+let result = runPipeline(
+    club.clubId,      // internal ClubID resolved from clubName
+    sheetData,        // raw 2D array of the entire tab
+    numberOfEntries,  // max results per discipline from config
+    filter,           // optional discipline filter, e.g. {genders: ['Männlich']}
+    requestConfig     // {requestDelayMs, rateLimitRetryDelayMs} — blank → defaults 1500 / 12000
+);
 ```
 
 The optional `filter` restricts which disciplines are fetched from DSV in Step 4. It may contain
 `genders`, `strokes`, `lanes`, and/or `distances` arrays; provided keys combine with AND, omitted
-keys match everything. Requests without a filter (older client scripts) perform a full update.
+keys match everything. A missing filter performs a full update.
 
-`requestDelayMs` and `rateLimitRetryDelayMs` tune the DSV request pacing (see [DSV Scraping](dsv-scraping.md));
-blank or invalid values fall back to the defaults inside `RequestHandler`.
+`requestConfig` carries `requestDelayMs` / `rateLimitRetryDelayMs`, which tune the DSV request pacing
+(see [DSV Scraping](dsv-scraping.md)); blank or invalid values fall back to the defaults inside `RequestHandler`.
 
-The Web App URL is fetched from `endpoint.txt` on GitHub (not hardcoded) so the endpoint can be updated
-without users changing `main.js`.
+`runPipeline()` returns a plain object (no HTTP, no JSON round-trip):
 
-Errors travel inside the JSON response body — Web Apps always answer with HTTP 200 and the Web App's
-execution log belongs to the hosting account, so the body is the only channel visible to the user:
-
-- `error` present → the Web App run failed (exception in `doPost()`). The script logs message and stack
-  and aborts without touching the sheet.
+- `error` present → the run threw an exception. The script logs message and stack and aborts without
+  touching the sheet.
 - `warnings` non-empty → the run completed but with problems (e.g. the DSV rate limiter aborted the fetch
-  partway). Warnings are logged to the bound script's execution log (Apps Script → Executions) with a
-  timestamp and a ⚠️ prefix; they are not written into the sheet.
-
-A response that starts with `<!DOCTYPE html>` indicates an error page from an outdated Web App deployment.
-The script logs the response body and aborts without touching the sheet.
+  partway). Warnings are logged to the execution log (Apps Script → Executions) with a timestamp and a
+  ⚠️ prefix; they are not written into the sheet.
 
 ---
 
 ## Step 3 — Extract Existing Results
 
-Inside the Web App, `doPost()` creates a new `Leaderboard` and immediately calls:
+`runPipeline()` creates a new `Leaderboard` and immediately calls:
 
 ```javascript
 leaderboard.extractResultsFromSheet();
@@ -169,7 +165,7 @@ removeDuplicateResults()   →   sortResults()   →   cutResults(N)
 
 ## Step 6 — Return and Write
 
-The Web App returns:
+`runPipeline()` returns:
 
 ```json
 {
@@ -188,10 +184,11 @@ The Web App returns:
 }
 ```
 
-If `doPost()` throws, the Web App instead returns `{ "error": { "message": ..., "stack": ... }, "warnings": [...] }`
-— the bound script logs the error and leaves the sheet untouched.
+If the pipeline throws, `runPipeline()` instead returns
+`{ "error": { "message": ..., "stack": ... }, "warnings": [...] }`
+— `getNewSheetData()` logs the error and leaves the sheet untouched.
 
-Back in the bound script:
+Back in `getNewSheetData()`:
 
 1. `_writeNewDataToSheet()` writes the `data` array to the sheet starting at row 3. Rows 1–2 (season header
    and column headers) are left untouched. Any stale rows below the new data block are cleared.

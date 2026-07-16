@@ -27,6 +27,7 @@ const SRC_FILES = [
     'src/app-script/leaderboard/leaderboard.js',
     'src/app-script/requests/request-handler.js',
     'src/app-script/sheet/sheet.js',
+    'src/app-script/pipeline.js',
 ];
 
 // Names that must be reachable from tests after loading
@@ -34,6 +35,7 @@ const EXPORTS = [
     'CalendarDate', 'Time', 'Person', 'Result',
     'Discipline', 'Leaderboard', 'RequestHandler', 'Sheet',
     'STROKES', 'GENDERS', 'LANES', 'DISCIPLINES', 'DISTANCES',
+    'runPipeline',
 ];
 
 /**

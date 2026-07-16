@@ -43,8 +43,8 @@ Leaderboard
 
 **File:** `src/app-script/leaderboard/leaderboard.js`
 
-The central orchestrator. It is created fresh for every Web App request and coordinates the three pipeline
-stages: extraction, fetching, and adjustment.
+The central orchestrator. It is created fresh for every update run (by `runPipeline()`) and coordinates the
+three pipeline stages: extraction, fetching, and adjustment.
 
 ### Lifecycle
 
