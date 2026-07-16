@@ -34,7 +34,7 @@ The DSV portal uses **two unrelated identifiers**:
 The two spaces are independent — `ClubID=6544` is a completely different (foreign) club, not the one
 whose VereinsID is `6544` — so there is no formula between them, and **the search cannot be queried by
 VereinsID** (only by name / city / zip / region). Users therefore configure a **club name**, and
-`resolveClubId(clubName)` (in `sheet.js`, run client-side before the Web App call) maps it to the ClubID
+`resolveClubId(clubName)` (in `sheet.js`, run before the pipeline) maps it to the ClubID
 via the club search at `https://dsvdaten.dsv.de/Modules/Clubs/Search.aspx`:
 
 ```
@@ -193,19 +193,19 @@ several layers:
    next trigger run — so repeated runs eventually fetch every discipline instead of always failing on
    the same tail. This is a recovery strategy, not a way to send more requests.
 
-Both delays are configurable per request: the client passes `requestDelayMs` / `rateLimitRetryDelayMs`
-in the Web App body (from `main.js`), `Leaderboard` forwards them to `RequestHandler`, and blank or
-invalid values fall back to the defaults above via `_resolveDelay()`. This lets the pacing be tuned
-without redeploying the Web App.
+Both delays are configurable per run: `main.js` passes `requestDelayMs` / `rateLimitRetryDelayMs`
+into `runPipeline()` as `requestConfig`, `Leaderboard` forwards them to `RequestHandler`, and blank or
+invalid values fall back to the defaults above via `_resolveDelay()`. This lets the pacing be tuned by
+editing `main.js` — no redeploy of anything is involved.
 
 > The DSV limiter is **per IP** and behaves like a sliding window: once tripped it keeps returning 429
 > until the client stays quiet for a while — so a too-short retry pause tends to re-trigger it. The
 > defaults are deliberately conservative; raise them further if 429s persist.
 
 Failures that survive these mitigations are collected as human-readable strings in
-`RequestHandler.warnings` and returned to the client inside the Web App's JSON response (see
-[Pipeline, Step 6](pipeline.md#step-6--return-and-write)) — the hosting account's execution log is not
-visible to users, so the response body is the only error channel:
+`RequestHandler.warnings` and returned in the `runPipeline()` result (see
+[Pipeline, Step 6](pipeline.md#step-6--return-and-write)); `getNewSheetData()` then logs them to the
+user's own execution log (Apps Script → Executions) with a ⚠️ prefix:
 
 | Situation                                   | Behaviour                                                                                  |
 |---------------------------------------------|--------------------------------------------------------------------------------------------|

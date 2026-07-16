@@ -496,21 +496,20 @@ function _clubDetails(clubId, referer, extract) {
 }
 
 /**
- * Entry point for a single sheet tab update. Sends the current sheet contents and club
- * config to the Web App, which scrapes the DSV website and returns the updated leaderboard
- * data plus any new records detected this run.
+ * Entry point for a single sheet tab update. Runs the whole update inside the user's own
+ * Google account: after resolving the club name to a ClubID, it fetches the pipeline sources
+ * (leaderboard/, requests/, pipeline.js) from GitHub, eval()s them, and calls runPipeline()
+ * directly to scrape the DSV website and produce the updated leaderboard data. There is no
+ * hosted Web App — everything executes under the user's credentials.
  *
- * The Web App endpoint URL is fetched from GitHub rather than being hardcoded, so the
- * endpoint can be changed without requiring users to update their local script.
+ * The pipeline sources are fetched from GitHub (not bundled into main.js) so the scraping and
+ * merging logic can be updated centrally without users changing their local script.
  *
- * Error handling: the Web App reports failures inside its JSON body (it cannot set HTTP
- * status codes, and its execution log runs under a different account and is not visible
- * here). A response with an `error` field means the run failed — it is logged and the
- * sheet is left untouched. A `warnings` field lists non-fatal problems (e.g. the DSV rate
- * limiter aborted the run partway); warnings are logged to this script's execution log
- * (Apps Script → Executions) — column P stays a pure record history.
- * An HTML response (starting with "<!DOCTYPE html>") indicates an outdated Web App
- * deployment error page — the script logs the raw response and aborts.
+ * Error handling: runPipeline() reports failures inside its return value. A result with an
+ * `error` field means the run failed — it is logged and the sheet is left untouched. A
+ * `warnings` field lists non-fatal problems (e.g. the DSV rate limiter aborted the run
+ * partway); warnings are logged to this script's execution log (Apps Script → Executions) —
+ * column P stays a pure record history.
  *
  * @param {string} version - Current script version; compared against GitHub to warn about outdated scripts.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - The tab to update.
@@ -563,62 +562,59 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
     let sheetData = sheet.getDataRange().getValues();
     console.log('[getNewSheetData] Read ' + sheetData.length + ' row(s) from the sheet.');
 
-    let payload = {
-        clubId: club.clubId,
-        data: sheetData,
-        entriesPerDiscipline: numberOfEntries,
-        filter: filter,
+    let requestConfig = {
         requestDelayMs: (typeof requestDelayMs !== 'undefined') ? requestDelayMs : '',
         rateLimitRetryDelayMs: (typeof rateLimitRetryDelayMs !== 'undefined') ? rateLimitRetryDelayMs : ''
     };
 
-    let options = {
-        'method': 'post',
-        'contentType': 'application/json',
-        'payload': JSON.stringify(payload)
-    }
+    // Load the pipeline sources from GitHub and run everything in this account. Each file is a
+    // plain script; eval() in this (non-strict) scope makes runPipeline() and the leaderboard
+    // classes available. The Sheet class is already defined here (this file), so the fetched
+    // Leaderboard can use it via the surrounding scope.
+    console.log('[getNewSheetData] Fetching the pipeline sources from GitHub...');
+    let scriptBase = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/';
+    let scriptFiles = [
+        'leaderboard/calendar-date.js',
+        'leaderboard/time.js',
+        'leaderboard/person.js',
+        'leaderboard/result.js',
+        'leaderboard/discipline.js',
+        'leaderboard/leaderboard.js',
+        'requests/request-handler.js',
+        'pipeline.js'
+    ];
+    let code = scriptFiles
+        .map(file => UrlFetchApp.fetch(scriptBase + file).getContentText())
+        .join('\n\n');
+    eval(code);
 
-    console.log('[getNewSheetData] Fetching the Web App endpoint URL from GitHub...');
-    let endpoint = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/endpoint.txt').getContentText();
+    console.log('[getNewSheetData] Running the leaderboard pipeline for season "' + sheet.getName() + '"...');
+    let runStart = new Date().getTime();
+    let result = runPipeline(club.clubId, sheetData, numberOfEntries, filter, requestConfig);
+    console.log('[getNewSheetData] Pipeline finished in ' + (new Date().getTime() - runStart) + 'ms.');
 
-    console.log('[getNewSheetData] Sending update request to the Web App for season "' + sheet.getName() + '"...');
-    let requestStart = new Date().getTime();
-    let response = UrlFetchApp.fetch(endpoint, options).getContentText();
-    console.log('[getNewSheetData] Web App responded in ' + (new Date().getTime() - requestStart) +
-        'ms (' + response.length + ' characters).');
-
-    if (response.startsWith('<!DOCTYPE html>')) {
-        console.error('[getNewSheetData] The Web App returned an HTML error page — likely an outdated deployment.');
-        console.error('An error occurred. Please check your configuration. If the problem persists, contact the developer.');
-        console.error('Response: ' + response);
-        return;
-    }
-
-    response = JSON.parse(response);
-    console.log('[getNewSheetData] Web App response parsed successfully.');
-
-    let warnings = (response.warnings || []).map(warning => new Date().toLocaleString() + ': ⚠️ ' + warning);
+    let warnings = (result.warnings || []).map(warning => new Date().toLocaleString() + ': ⚠️ ' + warning);
     if (warnings.length > 0) {
-        console.warn('[getNewSheetData] Web App reported ' + warnings.length + ' warning(s):');
+        console.warn('[getNewSheetData] Pipeline reported ' + warnings.length + ' warning(s):');
         for (let warning of warnings) {
             console.warn(warning);
         }
     } else {
-        console.log('[getNewSheetData] Web App reported no warnings.');
+        console.log('[getNewSheetData] Pipeline reported no warnings.');
     }
 
-    if (response.error) {
-        console.error('[getNewSheetData] The Web App reported an error — the sheet was not changed.');
-        console.error('Error: ' + response.error.message);
-        if (response.error.stack) console.error('Stack: ' + response.error.stack);
+    if (result.error) {
+        console.error('[getNewSheetData] The pipeline reported an error — the sheet was not changed.');
+        console.error('Error: ' + result.error.message);
+        if (result.error.stack) console.error('Stack: ' + result.error.stack);
         return;
     }
 
     console.log('[getNewSheetData] Data updated successfully — received ' +
-        (response.data ? response.data.length : 0) + ' data row(s) and ' +
-        (response.newResults ? response.newResults.length : 0) + ' new record(s).');
+        (result.data ? result.data.length : 0) + ' data row(s) and ' +
+        (result.newResults ? result.newResults.length : 0) + ' new record(s).');
 
-    writeDataToSheet(response.data, response.newResults, sheet);
+    writeDataToSheet(result.data, result.newResults, sheet);
     if (formatSheetEveryTime) {
         console.log('[getNewSheetData] formatSheetEveryTime is enabled — reformatting sheet...');
         formatSheet(sheet, numberOfEntries, format);
