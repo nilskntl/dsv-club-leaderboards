@@ -26,6 +26,7 @@ const SRC_FILES = [
     'src/app-script/leaderboard/discipline.js',
     'src/app-script/leaderboard/leaderboard.js',
     'src/app-script/requests/request-handler.js',
+    'src/app-script/sheet/sheet-model.js',
     'src/app-script/sheet/sheet.js',
     'src/app-script/pipeline.js',
 ];

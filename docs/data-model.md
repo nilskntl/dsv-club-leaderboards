@@ -274,7 +274,8 @@ for the full technical explanation of the HTTP sequence.
 
 ## Sheet
 
-**File:** `src/app-script/sheet/sheet.js`
+**File:** `src/app-script/sheet/sheet-model.js`
 
 Translates between the domain model and the Google Sheet's raw 2D array. See [Sheet Layout](sheet-layout.md)
-for the full column and row structure.
+for the full column and row structure. (The write/format helpers and `getNewSheetData()` live separately in
+`sheet/sheet.js` — see [Architecture](architecture.md#the-eval-pattern) for why the class is split out.)

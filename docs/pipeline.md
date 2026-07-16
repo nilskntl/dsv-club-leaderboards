@@ -67,11 +67,11 @@ requests use (`resolveClubId(clubName)`, see [DSV Scraping](dsv-scraping.md#reso
   touching the sheet or running the pipeline.
 
 It then reads the current tab's full data, fetches the remaining pipeline sources from GitHub
-(`leaderboard/`, `requests/`, `pipeline.js`), `eval()`s them, and calls `runPipeline()` **in-process** —
-everything runs inside the user's own account, there is no Web App:
+(`sheet/sheet-model.js`, `leaderboard/`, `requests/`, `pipeline.js`), `eval()`s them, and calls
+`runPipeline()` **in-process** — everything runs inside the user's own account, there is no Web App:
 
 ```javascript
-eval(code); // leaderboard/ + requests/ + pipeline.js fetched from GitHub
+eval(code); // sheet-model.js + leaderboard/ + requests/ + pipeline.js fetched from GitHub
 
 let result = runPipeline(
     club.clubId,      // internal ClubID resolved from clubName
