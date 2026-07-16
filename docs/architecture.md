@@ -96,7 +96,7 @@ getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime, filter);
 **Stage 2 — `sheet.js` (inside `getNewSheetData`) loads the pipeline sources:**
 
 ```javascript
-let code = ['leaderboard/calendar-date.js', 'leaderboard/time.js', /* … */, 'pipeline.js']
+let code = ['sheet/sheet-model.js', 'leaderboard/calendar-date.js', /* … */, 'pipeline.js']
         .map(file => UrlFetchApp.fetch(scriptBase + file).getContentText())
         .join('\n\n');
 eval(code);
@@ -105,8 +105,16 @@ let result = runPipeline(club.clubId, sheetData, numberOfEntries, filter, reques
 
 Both stages rely on the same JavaScript behaviour: a direct `eval()` in non-strict code injects the
 `function` declarations it defines (`getNewSheetData`, `runPipeline`, …) into the calling scope, and those
-functions close over the classes/constants declared alongside them. Because `sheet.js` defines the `Sheet`
-class, the `Leaderboard` loaded in Stage 2 can reach it through the surrounding lexical scope.
+functions close over the classes/constants declared alongside them.
+
+**Why the `Sheet` class lives in the Stage 2 bundle (`sheet/sheet-model.js`), not in `sheet.js`.** A nested
+`eval()`'s `class` / `const` declarations do **not** leak into the surrounding scope — only `function` / `var`
+do. So classes declared in the Stage 2 bundle are invisible to Stage 1 (`sheet.js`) code. The `Sheet` class
+instantiates the domain classes (`Result`, `Person`, `Time`, `CalendarDate`), so it must share the **same**
+eval scope as them; keeping it in `sheet.js` would put it one scope too high and its methods would throw
+`ReferenceError: Result is not defined`. `sheet.js` therefore keeps only the glue that Stage 1 actually calls
+(`getNewSheetData`, `resolveClubId`, `writeDataToSheet`, `formatSheet`), all of which operate on plain arrays
+and the Google Sheets API — no domain classes.
 
 This means every source file can be updated centrally on GitHub and every user automatically receives the new
 version on their next run — without `main.js` ever changing.
@@ -145,14 +153,15 @@ src/app-script/
   requests/
     request-handler.js        DSV website scraper (2-step HTTP)
   sheet/
-    sheet.js                  Sheet ↔ model translation, club-name resolution, Google Sheets write helpers,
-                              and the glue that fetches + eval()s the pipeline sources
+    sheet.js                  Club-name resolution, Google Sheets write/format helpers, and the glue that
+                              fetches + eval()s the pipeline sources (getNewSheetData)
+    sheet-model.js            Sheet class — Sheet ↔ domain-model translation (bundled with the domain classes)
 
 main.js                       User-facing bound script: configuration + trigger functions
 ```
 
-`sheet.js` is the file `main.js` loads first; it in turn loads the `leaderboard/`, `requests/`, and
-`pipeline.js` sources and calls `runPipeline()`.
+`sheet.js` is the file `main.js` loads first; it in turn loads `sheet-model.js`, the `leaderboard/` and
+`requests/` sources, and `pipeline.js`, then calls `runPipeline()`.
 
 ---
 
