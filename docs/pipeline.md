@@ -132,6 +132,11 @@ leaderboard.requestResults(filter);
 `RequestHandler.requestResults(filter)` iterates every discipline matching the optional filter and calls
 `_fetchNewData(discipline)` for each. Disciplines excluded by the filter are not fetched — they keep the
 results loaded from the sheet in Step 3 and pass through Steps 5–6 unchanged.
+
+The matching disciplines are fetched in a **randomised order** (Fisher–Yates shuffle). If the DSV rate
+limiter aborts the run partway, a different subset is covered on each trigger run, so repeated runs
+eventually fetch every discipline rather than always stalling on the same tail. See
+[DSV Scraping](dsv-scraping.md#rate-limiting-and-error-reporting).
 The fetch is a 2-step HTTP sequence — see [DSV Scraping](dsv-scraping.md) for the full breakdown.
 
 Every result fetched from DSV receives `newRecord = true`. Results are added via `Discipline.addResult()`,

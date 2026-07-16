@@ -113,10 +113,11 @@ describe('RequestHandler error handling and warnings', () => {
         assert.equal(lb.warnings.length, 1);
         assert.match(lb.warnings[0], /Unexpected response \(HTTP 200\)/);
 
-        // the second discipline was still fetched and parsed
-        const shortCourse = lb.disciplines.find(d => d.uid === '#f502m');
-        assert.equal(shortCourse.results.length, 1);
-        assert.equal(shortCourse.results[0].person.name, 'Test Schwimmer');
+        // whichever discipline was fetched second (after the error page) was still parsed.
+        // The fetch order is randomised, so assert on the outcome, not a specific discipline.
+        const withResults = lb.disciplines.filter(d => d.results.length > 0);
+        assert.equal(withResults.length, 1);
+        assert.equal(withResults[0].results[0].person.name, 'Test Schwimmer');
     });
 
     it('a failed initial GET records a warning and makes no POST requests', () => {
@@ -210,5 +211,41 @@ describe('RequestHandler configurable delays', () => {
 
         // the 429 retry pause must use the configured value
         assert.ok(sleeps.includes(7000), 'expected a 7000ms retry pause, got ' + JSON.stringify(sleeps));
+    });
+});
+
+describe('RequestHandler discipline shuffle', () => {
+    const {Leaderboard} = getContext();
+
+    const resp = (code, body) => ({getResponseCode: () => code, getContentText: () => body});
+    const tokens = (vs, ev) => `<input type="hidden" name="__VIEWSTATE" value="${vs}" /><input type="hidden" name="__EVENTVALIDATION" value="${ev}" />`;
+
+    it('_shuffle is a permutation — keeps exactly the same elements', () => {
+        const handler = new Leaderboard('7985', [], 5)._requestHandler;
+        const original = handler._leaderboard.disciplines.map(d => d.uid);
+        const shuffled = handler._shuffle([...original]);
+        assert.equal(shuffled.length, original.length);
+        assert.deepEqual([...shuffled].sort(), [...original].sort());
+    });
+
+    it('requestResults still fetches every discipline when not rate limited', () => {
+        const ctx = createContext();
+        const fetchedUids = new Set();
+        ctx.UrlFetchApp.fetch = (url, options = {}) => {
+            if ((options.method || 'get') === 'get') return resp(200, tokens('vs0', 'ev0'));
+            // record which discipline this POST is for (via the submitted form values)
+            fetchedUids.add(options.payload['ctl00$ContentSection$_eventDropDownList'] +
+                options.payload['ctl00$ContentSection$_genderRadioButtonList'] +
+                options.payload['ctl00$ContentSection$_courseRadioButtonList']);
+            return resp(200, tokens('vs1', 'ev1'));
+        };
+
+        const lb = new ctx.Leaderboard('7985', [], 5);
+        const expected = lb.disciplines.length;
+        lb.requestResults(); // no filter → all disciplines, in randomised order
+
+        // shuffling must not drop or duplicate disciplines
+        assert.equal(fetchedUids.size, expected);
+        assert.equal(lb.warnings.length, 0);
     });
 });

@@ -67,6 +67,22 @@ class RequestHandler {
     }
 
     /**
+     * Fisher–Yates in-place shuffle. Used to randomise the discipline fetch order so that a
+     * rate-limited run which aborts partway covers a different subset each time — over several
+     * trigger runs every discipline eventually gets fetched.
+     *
+     * @param {Array} array - Mutated in place.
+     * @returns {Array} The same array, shuffled.
+     */
+    _shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    /**
      * Fetches results for every discipline matching the optional filter and adds them.
      *
      * One GET is performed at the start to obtain the initial session tokens. The VIEWSTATE
@@ -93,6 +109,12 @@ class RequestHandler {
             console.log('[RequestHandler] No disciplines match the filter — nothing to fetch.');
             return;
         }
+
+        // Randomise the fetch order. If the DSV rate limiter aborts a run partway, a different
+        // subset is fetched on each trigger run, so repeated runs eventually cover every discipline
+        // instead of always failing on the same tail.
+        this._shuffle(disciplines);
+        console.log('[RequestHandler] Fetch order randomised.');
 
         console.log('[RequestHandler] Performing initial GET to obtain session tokens...');
         let pageHtml = this._getPage();

@@ -188,6 +188,10 @@ several layers:
    response are reused for the next POST, halving the request count.
 2. A delay between POSTs (`_requestDelayMs`, default **1500 ms**).
 3. On a 429, the POST is retried **once** after a longer pause (`_rateLimitRetryDelayMs`, default **12000 ms**).
+4. The discipline fetch order is **randomised** each run (`_shuffle()`, Fisher–Yates). If the limiter
+   aborts a run partway (e.g. "13 discipline(s) not fetched"), a *different* subset is covered on the
+   next trigger run — so repeated runs eventually fetch every discipline instead of always failing on
+   the same tail. This is a recovery strategy, not a way to send more requests.
 
 Both delays are configurable per request: the client passes `requestDelayMs` / `rateLimitRetryDelayMs`
 in the Web App body (from `main.js`), `Leaderboard` forwards them to `RequestHandler`, and blank or
