@@ -131,7 +131,7 @@ async function loadHtmlContent(keys, settings) {
     }
 
     try {
-        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/feature/rework-table/src/website/index.html');
+        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.1/src/website/index.html');
         if (!response.ok) {
             let message = 'The leaderboard template could not be loaded from GitHub (HTTP '
                 + response.status + ').';
