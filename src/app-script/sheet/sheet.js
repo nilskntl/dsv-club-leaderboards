@@ -371,9 +371,23 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
         ', filter=' + (filter ? JSON.stringify(filter) : 'none (full update)'));
 
     console.log('[getNewSheetData] Checking for a newer script version on GitHub...');
-    let newestVersion = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/version.txt').getContentText();
+    let newestVersion = null;
+    try {
+        let response = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/version.txt', {muteHttpExceptions: true});
+        if (response.getResponseCode() === 200) {
+            newestVersion = response.getContentText().trim();
+        }
+    } catch (e) {
+        // Network error, timeout, etc. — treated the same as a missing file below.
+    }
 
-    if (newestVersion !== version) {
+    if (newestVersion === null) {
+        console.warn('--------------------------------------------------');
+        console.warn('⚠️ Could not determine the latest version (version file not found or unreachable).');
+        console.warn('This can happen if the file was moved in a newer release. Consider copying the latest main.js.');
+        console.warn('Find the latest script here: https://github.com/nilskntl/dsv-club-leaderboards');
+        console.warn('--------------------------------------------------');
+    } else if (newestVersion !== version) {
         console.warn('--------------------------------------------------');
         console.warn('A new version is available. Please update the script.');
         console.warn('Latest version: ' + newestVersion + ' (you have: ' + version + ')');
@@ -417,7 +431,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
     // (Result, Person, Time, CalendarDate) — a nested eval's class declarations are not visible
     // to the outer sheet.js scope.
     console.log('[getNewSheetData] Fetching the pipeline sources from GitHub...');
-    let scriptBase = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/master/src/app-script/';
+    let scriptBase = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/app-script/';
     let scriptFiles = [
         'sheet/sheet-model.js',
         'leaderboard/calendar-date.js',

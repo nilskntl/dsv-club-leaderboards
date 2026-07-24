@@ -64,7 +64,7 @@ async function loadHtmlContent(keys, settings) {
     settings = DEFAULT_SETTINGS;
 
     try {
-        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/index.html');
+        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/website/index.html');
         if (response.ok) {
             return replaceHtmlContent(await response.text(), keys, settings);
         } else {

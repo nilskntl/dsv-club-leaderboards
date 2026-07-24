@@ -76,7 +76,7 @@ Usage:
     /**
      * Loads the leaderboard HTML from GitHub and injects it into the iframe.
      */
-    fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/master/src/website/loadHtml.js')
+    fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/website/loadHtml.js')
         .then(response => response.text())
         .then(code => {
             eval(code);
