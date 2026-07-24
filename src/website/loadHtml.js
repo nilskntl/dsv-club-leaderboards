@@ -40,6 +40,48 @@ function replaceHtmlContent(htmlContent, keys, settings) {
 }
 
 /**
+ * The placeholder value shipped in the example KEYS. If it survives into a real
+ * embed the user forgot to paste their own published-sheet TSV links, so the
+ * affected season has no data to load.
+ */
+const LINK_PLACEHOLDER = 'LINK_TO_YOUR_SHEET_AS_TSV_FILE';
+
+/**
+ * Builds a minimal, self-contained HTML document shown inside the iframe when the
+ * leaderboard cannot be loaded. Keeping the failure visible on the page (instead
+ * of a blank or "undefined" frame) makes misconfiguration obvious, while the full
+ * details are also written to the console.
+ *
+ * @param {string} message - Human-readable, already plain-text explanation.
+ * @returns {string} A complete HTML document string.
+ */
+function buildErrorDocument(message) {
+    return '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
+        + '<style>body{font-family:sans-serif;color:#31353E;padding:16px;line-height:1.5}</style>'
+        + '</head><body><p><strong>The leaderboard could not be loaded.</strong></p>'
+        + '<p>' + message + '</p></body></html>';
+}
+
+/**
+ * Returns the names of the KEYS entries whose 'link' is missing or still the
+ * shipped placeholder. Such entries would fetch a non-URL and fail later with an
+ * opaque error, so callers can warn about them before attempting to load anything.
+ *
+ * @param {object} keys - Season/tab identifiers as passed to loadHtmlContent.
+ * @returns {string[]} Key names that are not configured.
+ */
+function findUnconfiguredKeys(keys) {
+    let unconfigured = [];
+    for (let key in keys) {
+        let entry = keys[key];
+        if (!entry || !entry.link || entry.link === LINK_PLACEHOLDER) {
+            unconfigured.push(key);
+        }
+    }
+    return unconfigured;
+}
+
+/**
  * Fetches the leaderboard HTML from GitHub, merges caller-supplied settings with
  * DEFAULT_SETTINGS, and returns the fully substituted HTML string.
  *
@@ -50,9 +92,14 @@ function replaceHtmlContent(htmlContent, keys, settings) {
  * The HTML is fetched from GitHub rather than bundled locally so that UI updates
  * can be deployed centrally without requiring users to update their embedding page.
  *
+ * Error handling: this function never rejects and never propagates an error to the
+ * caller. Any problem (leftover KEYS placeholders, GitHub non-200, network failure)
+ * is logged to the console and turned into a readable error document so the iframe
+ * shows *why* it failed instead of breaking the embedding page.
+ *
  * @param {object} keys - Season/tab identifiers passed through to replaceHtmlContent.
  * @param {object} settings - Partial settings object; unrecognised keys are ignored.
- * @returns {Promise<string>} Fully substituted HTML, ready to be written into an iframe.
+ * @returns {Promise<string>} Substituted HTML, or an error document — always a valid HTML string.
  */
 async function loadHtmlContent(keys, settings) {
     for (let key in settings) {
@@ -63,15 +110,39 @@ async function loadHtmlContent(keys, settings) {
     }
     settings = DEFAULT_SETTINGS;
 
+    /*
+     * The most common misconfiguration: the example KEYS were pasted but the
+     * placeholder links were never replaced. Warn per-key, and abort with a
+     * readable message only if *nothing* is configured — a partially configured
+     * KEYS (some seasons ready, others not) should still render.
+     */
+    let keyNames = Object.keys(keys || {});
+    let unconfigured = findUnconfiguredKeys(keys);
+    if (unconfigured.length > 0) {
+        console.warn('[loadHtmlContent] These entries still point to the placeholder "'
+            + LINK_PLACEHOLDER + '" and are not configured: ' + unconfigured.join(', ')
+            + '. Replace the link with your Google Sheet published as a TSV file.');
+    }
+    if (keyNames.length === 0 || unconfigured.length === keyNames.length) {
+        let message = 'No sheet links have been configured yet. Replace "' + LINK_PLACEHOLDER
+            + '" in KEYS with your Google Sheets links published as TSV files.';
+        console.error('[loadHtmlContent] ' + message);
+        return buildErrorDocument(message);
+    }
+
     try {
-        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/website/index.html');
-        if (response.ok) {
-            return replaceHtmlContent(await response.text(), keys, settings);
-        } else {
-            return new Error('Network response was not ok');
+        let response = await fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/heads/feature/rework-table/src/website/index.html');
+        if (!response.ok) {
+            let message = 'The leaderboard template could not be loaded from GitHub (HTTP '
+                + response.status + ').';
+            console.error('[loadHtmlContent] ' + message);
+            return buildErrorDocument(message);
         }
+        return replaceHtmlContent(await response.text(), keys, settings);
     } catch (error) {
-        console.error('There has been a problem with your fetch operation:', error);
+        let message = 'A network error occurred while loading the leaderboard template.';
+        console.error('[loadHtmlContent] ' + message, error);
+        return buildErrorDocument(message);
     }
 }
 
