@@ -308,15 +308,76 @@
             color: var(--primary-color);
         }
 
-        /* Loading spinner */
+        /*
+         * Skeleton loader shown while leaderboard data is being fetched.
+         * It mirrors the real content layout (distance label + discipline card
+         * with a header and result rows) so the loading state reads as "content
+         * is arriving" rather than a bare, out-of-context spinner. JS toggles
+         * #loading between 'block' and 'none'.
+         */
         #loading {
             display: none;
-            text-align: center;
-            position: relative;
-            top: 64px;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 14px;
+        }
+
+        /* Moving highlight over a neutral gray base — theme-agnostic on purpose */
+        .skeleton-bar {
+            height: 12px;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.08);
+            background-image: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(255, 255, 255, 0) 100%);
+            background-size: 200% 100%;
+            background-repeat: no-repeat;
+            animation: skeleton-shimmer 1.4s ease-in-out infinite;
+        }
+
+        @keyframes skeleton-shimmer {
+            0% {
+                background-position: -150% 0;
+            }
+            100% {
+                background-position: 150% 0;
+            }
+        }
+
+        /*
+         * Placeholder for the per-discipline distance label. Transparent wrapper
+         * (no contrasting box behind the label) sized like the real .distance cell;
+         * only the inner shimmer bar stands in for the label text.
+         */
+        .skeleton-distance {
+            width: 7%;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .skeleton-distance .skeleton-bar {
+            width: 100%;
+            height: 16px;
+        }
+
+        /*
+         * The skeleton reuses the real .leaderboard__table-header / -item classes so
+         * the column widths, gaps, padding, border and row height are identical to
+         * the loaded table by construction (the header has no gap while items do, so
+         * their columns differ slightly — reusing the classes reproduces that exactly).
+         * The placeholder bars sit inside the real column cells; only their heights
+         * are tuned to the header (14px) and row (12px) font sizes.
+         */
+        #loading .leaderboard__table-header .skeleton-bar {
+            height: 14px;
+        }
+
+        /* Keep skeleton rows static — no hover highlight/resize while loading. */
+        #loading .leaderboard__table-item:hover {
+            background-color: transparent;
+            font-size: 12px;
+        }
+
+        #loading .leaderboard__table-item-first-place:hover {
+            background-color: var(--tertiary-color);
         }
 
         .statistics__ranking {
@@ -706,17 +767,9 @@
         </div>
     </div>
 </div>
-<!-- Loading spinner -->
-<div id="loading">
-    <svg width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
-        <circle cx="50" cy="50" fill="none" stroke="#007bff" stroke-width="8" r="35"
-                stroke-dasharray="164.93361431346415 56.97787143782138">
-            <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s"
-                              values="0 50 50;360 50 50" keyTimes="0;1"></animateTransform>
-        </circle>
-    </svg>
-    <div>Bitte warten...</div>
-</div>
+<!-- Skeleton loader; placeholder cards are built by Page.renderSkeleton() so the
+     loading state mirrors the number of tables the loaded page will show. -->
+<div aria-hidden="true" id="loading"></div>
 <!-- Content area: populated by JS with leaderboards or statistics -->
 <div id="content"></div>
 <!-- Last-updated label -->
@@ -1744,6 +1797,135 @@
             this.#setPage(this._currentPage);
         }
 
+        #measureHeight(element) {
+            /**
+             * Measures an element's rendered height without showing it, by attaching it
+             * to a hidden, full-width container. Shared by #setPage (real cards) and
+             * renderSkeleton (placeholder cards) so both rely on identical measurements.
+             * @param {HTMLElement} element - Element to measure.
+             * @returns {number} Rendered height in pixels.
+             */
+            const container = document.createElement('div');
+            Object.assign(container.style, {
+                visibility: 'hidden',
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                width: '100%'
+            });
+            container.appendChild(element);
+            document.body.appendChild(container);
+            const height = element.offsetHeight;
+            document.body.removeChild(container);
+            return height;
+        }
+
+        #availableHeight() {
+            /**
+             * Vertical space available for the paginated cards: the viewport minus the
+             * fixed chrome (60px base plus the selection buttons, dropdown row and the
+             * last-updated label). This is the exact budget #setPage fills, so
+             * renderSkeleton reuses it to show the same number of cards.
+             * @returns {number} Available height in pixels.
+             */
+            const chromeHeight = ['selection-button-list', 'dropdown-list', 'last-updated']
+                .map(id => document.getElementById(id).offsetHeight)
+                .reduce((sum, height) => sum + height, 60);
+            return window.innerHeight - chromeHeight;
+        }
+
+        renderSkeleton() {
+            /**
+             * Fills #loading with shimmering placeholder cards that mirror the real
+             * leaderboard layout. Reuses the same available-height budget and per-card
+             * measurement as #setPage, so the skeleton shows the same number of tables
+             * that page 1 of the loaded leaderboard will show. Each card assumes
+             * ROWS_PER_CARD result rows, matching the app-script's default number of
+             * entries per discipline.
+             */
+            const ROWS_PER_CARD = 5;
+            const COLS = ['col1', 'col2', 'col3', 'col4', 'col5', 'col6'];
+            const loading = document.getElementById('loading');
+            loading.innerHTML = '';
+
+            const bar = (extraClass) => {
+                const b = document.createElement('div');
+                b.className = extraClass ? 'skeleton-bar ' + extraClass : 'skeleton-bar';
+                return b;
+            };
+
+            // One header/result line: a real table row (reusing the actual classes so
+            // column widths match exactly) filled with column-width placeholder bars.
+            const buildLine = (className) => {
+                const line = document.createElement('div');
+                line.className = className;
+                COLS.forEach(col => line.appendChild(bar(col)));
+                return line;
+            };
+
+            // Transparent placeholder standing in for the distance label ("50m").
+            const buildDistance = () => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'skeleton-distance';
+                wrapper.appendChild(bar());
+                return wrapper;
+            };
+
+            /*
+             * One skeleton discipline card, structurally identical to a real one.
+             * The distance label's placement is dynamic, mirroring loadLeaderboards:
+             * on mobile it sits inside the card above an <hr>, on desktop it sits
+             * beside the card in the .divider-container.
+             */
+            const buildCard = () => {
+                const container = document.createElement('div');
+                container.className = 'divider-container';
+
+                const card = document.createElement('div');
+                card.className = 'discipline';
+
+                const mobileSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mobile-size'));
+                if (window.innerWidth <= mobileSize) {
+                    card.appendChild(buildDistance());
+                    const hr = document.createElement('hr');
+                    hr.style.cssText = 'width: 100%; margin: 8px 0; border: 0; border-top: 1px solid #ccc';
+                    card.appendChild(hr);
+                } else {
+                    container.appendChild(buildDistance());
+                }
+
+                const table = document.createElement('div');
+                table.className = 'leaderboard__table';
+                table.appendChild(buildLine('leaderboard__table-header'));
+                for (let r = 0; r < ROWS_PER_CARD; r++) {
+                    // Mirror the real table: the first result row is styled as the
+                    // first-place highlight, and the first/last rows get rounded corners.
+                    const row = buildLine('leaderboard__table-item' + (r === 0 ? ' leaderboard__table-item-first-place' : ''));
+                    if (r === 0) row.setAttribute('data-radius', 'top');
+                    if (r === ROWS_PER_CARD - 1) row.setAttribute('data-radius', 'bottom');
+                    table.appendChild(row);
+                }
+                card.appendChild(table);
+                container.appendChild(card);
+                return container;
+            };
+
+            /*
+             * Same fill loop as #setPage's first page: keep adding equally sized cards
+             * while they fit the available height, always showing at least one.
+             * (#setPage reserves 44px for the page selector only on the list's final
+             * element, which never applies to a full first page, so it is omitted here.)
+             */
+            let leftSpace = this.#availableHeight();
+            do {
+                const card = buildCard();
+                leftSpace -= this.#measureHeight(card);
+                if (leftSpace > 0 || !loading.firstChild) {
+                    loading.appendChild(card);
+                }
+            } while (leftSpace > 0);
+        }
+
         #setPage(page) {
             /**
              * Renders elements for the given page into the content area.
@@ -1753,29 +1935,11 @@
             const content = document.getElementById('content');
             content.innerHTML = '';
 
-            const elementHeights = ['selection-button-list', 'dropdown-list', 'last-updated'].map(id => document.getElementById(id).offsetHeight);
-            const overAllHeight = 60 + elementHeights.reduce((sum, height) => sum + height, 0);
-            let leftSpace = window.innerHeight - overAllHeight;
-
-            const getElementHeight = (element) => {
-                const container = document.createElement('div');
-                Object.assign(container.style, {
-                    visibility: 'hidden',
-                    position: 'absolute',
-                    top: '0',
-                    left: '0',
-                    width: '100%'
-                });
-                container.appendChild(element);
-                document.body.appendChild(container);
-                const height = element.offsetHeight;
-                document.body.removeChild(container);
-                return height;
-            };
+            let leftSpace = this.#availableHeight();
 
             let startElement = this._elementsPerPage.slice(0, page - 1).reduce((sum, num) => sum + num, 0);
             for (let i = startElement; i < this._htmlElements.length; i++) {
-                const elementHeight = getElementHeight(this._htmlElements[i]);
+                const elementHeight = this.#measureHeight(this._htmlElements[i]);
                 leftSpace -= (i !== this._htmlElements.length - 1) ? elementHeight : elementHeight + 44;
 
                 if (leftSpace > 0) {
@@ -1961,6 +2125,13 @@
             toggleDisplay(this._filter.showLeaderboards);
 
             if (numResults === 0) {
+                /*
+                 * Build the skeleton while last-updated is still visible so its
+                 * available-height measurement matches the one #setPage will use once
+                 * the data has loaded — that keeps the skeleton's card count in sync
+                 * with the real page.
+                 */
+                this._page.renderSkeleton();
                 elements.loading.style.display = 'block';
                 elements.lastUpdated.style.display = 'none';
                 elements.content.style.display = 'none';

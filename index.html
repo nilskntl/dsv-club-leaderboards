@@ -1,18 +1,43 @@
 <!--
+=====================================================================
+ DSV Club Leaderboards - Embed Template
+=====================================================================
+
 Embed leaderboards from a Google Sheet into any web page.
 Results are imported as TSV files and displayed in a filterable table
 (season, gender, course length, stroke). The actual HTML is loaded
-dynamically from GitHub into an iframe.
+dynamically from GitHub into an iframe that the script below creates
+by itself - you do NOT need to add any other element to your page.
+
+More information and source code: https://github.com/nilskntl/dsv-club-leaderboards
 
 Setup:
 1. Publish your Google Sheets as TSV files and copy the links. Do the same for every season tab you want to include.
+   (In Google Sheets: File -> Share -> Publish to web -> select the tab -> "Tab-separated values (.tsv)" -> Publish.)
 2. Paste the links into the KEYS object below. The key is the season name; the value is the TSV link.
-More information and source code: https://github.com/nilskntl/dsv-club-leaderboards
 
 Usage:
-1. Create a new HTML file or embed this code into an element on your website.
-2. Copy this file's contents into it.
-3. Save the file and link to it from your site.
+Option A - standalone page:
+1. Copy this whole file onto your web space.
+2. Link to it from your site (or load it inside an existing iframe).
+
+Option B - embed into an existing page / CMS:
+1. Copy ONLY the <script> block below into an HTML element of your page
+   (e.g. a "custom HTML" widget in WordPress, Jimdo, Wix, ...).
+2. The script inserts the leaderboard iframe right where the <script> block sits.
+   It is self-contained and safe even if your page builder renders the snippet
+   twice (e.g. once for the desktop and once for the mobile layout).
+
+Troubleshooting:
+- Nothing shows up: open the browser DevTools console (F12). All errors are
+  logged there with a clear message, including the HTTP status code if a
+  download from GitHub failed.
+- The iframe has no height: when embedded into a CMS element the surrounding
+  container often has no fixed height. The iframe falls back to a minimum
+  height of 600px; adjust `min-height` in the `frame.style.cssText` line below.
+- The dropdowns show but the lists stay empty: check that the links in KEYS
+  point to published TSV files (opening one in the browser must show plain
+  text, not a Google login page).
 -->
 
 <!DOCTYPE html>
@@ -22,6 +47,11 @@ Usage:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bestenlisten</title>
     <style>
+        /*
+         * Only relevant when this file is used as a standalone page: lets the
+         * leaderboard iframe fill the whole browser window. When you embed just
+         * the <script> block into a CMS, this style block is not needed.
+         */
         html, body {
             height: 100%;
             margin: 0;
@@ -31,59 +61,154 @@ Usage:
     </style>
 </head>
 <body>
-<iframe id="contentFrame" style="width: 100%; height: 100%; border: none"></iframe>
 <script>
-
-    /**
-     * Visual and behaviour settings for the leaderboard embed.
-     * Change any value and reload the page to see the effect.
+    /*
+     * Everything lives inside an IIFE (immediately invoked function expression)
+     * so that no variable leaks into the global scope. This is important:
+     * some CMS/page builders insert the same snippet twice into one page.
+     * With global `const` declarations the second copy would crash with
+     * "redeclaration of const KEYS" - inside the IIFE each copy runs isolated.
      */
-    const SETTINGS = {
-        SHOW_STATISTICS: true,
-        ROUNDED_CORNERS: true,
-        TRANSITION_DURATION: '0.3s',
-        PRIMARY_COLOR: '#31353E',
-        SECONDARY_COLOR: '#424959',
-        TERTIARY_COLOR: '#f2f4ef',
-        CONTRAST_COLOR: '#ffffff',
-        PRIMARY_BACKGROUND: '#f3f3f3',
-        SECONDARY_BACKGROUND: '#ffffff'
-    }
+    (function () {
 
-    /**
-     * Links to your published Google Sheets in TSV format.
-     * Add one entry per season following the same pattern.
-     */
-    const KEYS = {
         /**
-         * Link Struktur
-         * https://docs.google.com/spreadsheets/d/e/ID_OF_YOUR_SPREADHSEET/pub?gid=ID_OF_SPECIFIC_SHEET&single=true&output=tsv
+         * Visual and behavior settings for the leaderboard embed.
+         * Change any value and reload the page to see the effect.
+         *
+         * SHOW_STATISTICS      - show the statistics/leaderboard toggle buttons
+         * ROUNDED_CORNERS      - rounded corners on cards, buttons and dropdowns
+         * TRANSITION_DURATION  - speed of hover/expand animations (CSS duration)
+         * PRIMARY_COLOR        - main accent color (dropdowns, headings, text)
+         * SECONDARY_COLOR      - hover color inside dropdown lists
+         * TERTIARY_COLOR       - highlight color (first place, row hover)
+         * CONTRAST_COLOR       - text/icon color on dark elements
+         * PRIMARY_BACKGROUND   - page background
+         * SECONDARY_BACKGROUND - card/table background
          */
-        'All-Time': {
-            'name': 'All-Time', /** Do NOT change this name — it is used as a special key internally. */
-            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
-        },
-        '2023': {
-            'name': '2023',
-            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
-        },
-        '2022': {
-            'name': '2022',
-            'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
+        let SETTINGS = {
+            SHOW_STATISTICS: true,
+            ROUNDED_CORNERS: true,
+            TRANSITION_DURATION: '0.3s',
+            PRIMARY_COLOR: '#31353E',
+            SECONDARY_COLOR: '#424959',
+            TERTIARY_COLOR: '#f2f4ef',
+            CONTRAST_COLOR: '#ffffff',
+            PRIMARY_BACKGROUND: '#f3f3f3',
+            SECONDARY_BACKGROUND: '#ffffff'
         }
-    }
 
-    /**
-     * Loads the leaderboard HTML from GitHub and injects it into the iframe.
-     */
-    fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/website/loadHtml.js')
-        .then(response => response.text())
-        .then(code => {
-            eval(code);
-            loadHtmlContent(KEYS, SETTINGS).then(htmlContent => {
-                insertHtmlIntoContainer('contentFrame', htmlContent);
-            });
-        });
+        /**
+         * Links to your published Google Sheets in TSV format.
+         * Add one entry per season following the same pattern.
+         *
+         * The object key and the inner 'name' are what the season dropdown
+         * displays. They can be anything ('2025/26', ...) EXCEPT for
+         * 'All-Time', which is used as a special key internally and must
+         * not be renamed or removed.
+         */
+        const KEYS = {
+            /**
+             * Link structure
+             * https://docs.google.com/spreadsheets/d/e/ID_OF_YOUR_SPREADHSEET/pub?gid=ID_OF_SPECIFIC_SHEET&single=true&output=tsv
+             */
+            'All-Time': {
+                'name': 'All-Time', /** Do NOT change this name — it is used as a special key internally. */
+                'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
+            },
+            '2025': {
+                'name': '2025',
+                'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
+            },
+            '2026': {
+                'name': '2026',
+                'link': 'LINK_TO_YOUR_SHEET_AS_TSV_FILE'
+            }
+        }
+
+        /*
+         * Remember which <script> element is currently executing. This must
+         * happen here at the top level of the script: inside callbacks
+         * (fetch, DOMContentLoaded, ...) document.currentScript is already
+         * null again. The iframe is later inserted right before this element,
+         * i.e. exactly where the snippet was pasted into the page.
+         */
+        let anchor = document.currentScript;
+
+        /**
+         * Creates the leaderboard iframe and fills it with the HTML loaded
+         * from GitHub.
+         *
+         * Flow:
+         * 1. Create an <iframe> and insert it at the snippet's position
+         *    (fallback: end of <body>, e.g. when a CMS executes the code via
+         *    eval/innerHTML and document.currentScript is unavailable).
+         * 2. Download loadHtml.js from GitHub (pinned to a release tag so a
+         *    future update cannot break existing embeds).
+         * 3. Let loadHtmlContent() (defined in loadHtml.js) download the
+         *    leaderboard HTML and substitute KEYS and SETTINGS into it.
+         * 4. Put the finished HTML into the iframe via `srcdoc`.
+         *
+         * Every step that can fail (network, GitHub rate limit, ...) ends up
+         * in the .catch() below and is logged with a clear message instead of
+         * failing silently.
+         */
+        function init() {
+            let frame = document.createElement('iframe');
+            /*
+             * min-height matters when the snippet is embedded into a CMS
+             * element without a fixed height - '100%' of an auto-sized
+             * container would collapse to 0 pixels.
+             */
+            frame.style.cssText = 'width: 100%; height: 100%; min-height: 600px; border: none';
+
+            if (anchor && anchor.parentNode) {
+                anchor.parentNode.insertBefore(frame, anchor);
+            } else {
+                document.body.appendChild(frame);
+            }
+
+            fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.1/src/website/loadHtml.js')
+                .then(function (response) {
+                    /*
+                     * raw.githubusercontent.com answers errors with a plain-text
+                     * body like "404: Not Found". Without this check that text
+                     * would reach eval() below and die with a cryptic SyntaxError.
+                     */
+                    if (!response.ok) {
+                        throw new Error('loadHtml.js konnte nicht geladen werden: HTTP ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(function (code) {
+                    /* Makes loadHtmlContent() available in this scope. */
+                    eval(code);
+                    return loadHtmlContent(KEYS, SETTINGS);
+                })
+                .then(function (htmlContent) {
+                    /*
+                     * srcdoc loads the string as a complete document; scripts
+                     * inside it are executed normally (unlike innerHTML) and
+                     * the iframe stays same-origin.
+                     */
+                    frame.srcdoc = htmlContent;
+                })
+                .catch(function (error) {
+                    console.error('Bestenlisten konnten nicht geladen werden:', error);
+                });
+        }
+
+        /*
+         * Some CMS move inline scripts into <head> - then the <body> does not
+         * exist yet at execution time. In that case wait for DOMContentLoaded;
+         * otherwise start right away.
+         */
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
 </script>
 </body>
 </html>
