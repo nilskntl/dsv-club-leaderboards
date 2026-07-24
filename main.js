@@ -1,4 +1,4 @@
-const version = '1.2.0';
+const version = '1.2.1';
 
 /**
  * Automatically creates and updates a swimming club leaderboard in Google Sheets
@@ -100,7 +100,7 @@ function _updateSheet(nameOfSheet, filter) {
     if (sheet.getName() !== nameOfSheet) {
         console.log("Something went wrong. Sheet name doesn't match '" + nameOfSheet + "'");
     }
-    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/app-script/sheet/sheet.js').getContentText();
+    let code = UrlFetchApp.fetch('https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.1/src/app-script/sheet/sheet.js').getContentText();
     eval(code);
     getNewSheetData(version, sheet, FORMAT, formatSheetEveryTime, filter);
 }

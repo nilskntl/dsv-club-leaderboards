@@ -431,7 +431,7 @@ function getNewSheetData(version, sheet, format, formatSheetEveryTime, filter) {
     // (Result, Person, Time, CalendarDate) — a nested eval's class declarations are not visible
     // to the outer sheet.js scope.
     console.log('[getNewSheetData] Fetching the pipeline sources from GitHub...');
-    let scriptBase = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.0/src/app-script/';
+    let scriptBase = 'https://raw.githubusercontent.com/nilskntl/dsv-club-leaderboards/refs/tags/1.2.1/src/app-script/';
     let scriptFiles = [
         'sheet/sheet-model.js',
         'leaderboard/calendar-date.js',
